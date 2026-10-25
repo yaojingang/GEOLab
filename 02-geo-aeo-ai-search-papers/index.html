@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GEO / AEO / AI Search 论文导航</title>
-<meta name="description" content="GEO Citation Lab 的 GEO、AEO、AI Search 论文导航页，按主题浏览 54 篇论文 PDF。">
+<meta name="description" content="GEO Citation Lab 的 GEO、AEO、AI Search 论文导航页，按主题浏览 70 篇论文，仓库含 65 份 PDF。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23f5f4ed'/%3E%3Cpath d='M18 14h28v36H18z' fill='%23faf9f5' stroke='%231B365D' stroke-width='3'/%3E%3Cpath d='M24 24h16M24 32h16M24 40h10' stroke='%231B365D' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 @font-face {
@@ -595,7 +595,7 @@ button { touch-action: manipulation; }
   <section class="hero" aria-labelledby="page-title">
     <div class="hero-copy">
       <h1 id="page-title">GEO / AEO / AI Search 论文导航</h1>
-      <p>这是一张可检索的研究地图：按 GEO 测量、AI 搜索架构、Agentic Search、RAG 检索、搜索评估与风险操纵组织 54 篇论文。</p>
+      <p>这是一张可检索的研究地图：按 GEO 测量、AI 搜索架构、Agentic Search、RAG 检索、搜索评估与风险操纵组织 70 篇论文。</p>
       <div class="hero-actions">
         <a class="btn primary" href="#main-content">浏览论文</a>
         <a class="btn" href="./00_资料说明/论文清单.csv">查看 CSV</a>
@@ -604,16 +604,16 @@ button { touch-action: manipulation; }
 
     <aside class="atlas" aria-label="论文集合概览">
       <div class="atlas-head">
-        <span>2026-07-21 update</span>
+        <span>2026-10-25 update</span>
         <span>10 topics</span>
       </div>
       <figure class="atlas-figure">
         <canvas id="topic-map" width="640" height="300" aria-label="按主题规模生成的论文地图"></canvas>
       </figure>
       <div class="atlas-foot">
-        <div class="metric"><strong id="metric-total">54</strong><span>论文 PDF</span></div>
+        <div class="metric"><strong id="metric-total">70</strong><span>论文索引</span></div>
         <div class="metric"><strong id="metric-topics">10</strong><span>主题目录</span></div>
-        <div class="metric"><strong id="metric-new">13</strong><span>新增论文</span></div>
+        <div class="metric"><strong id="metric-new">16</strong><span>新增论文</span></div>
         <div class="metric"><strong id="metric-years">2023-2026</strong><span>年份跨度</span></div>
       </div>
     </aside>
@@ -641,7 +641,7 @@ button { touch-action: manipulation; }
     <aside class="sidebar" aria-label="主题筛选">
       <p class="section-kicker">Topics</p>
       <div class="category-list" id="categories"></div>
-      <p class="note">新增批次包含 2026-06-20 近 30 天论文调研和 2026-07-21 中文生成式搜索实证论文，已收录论文保持去重。</p>
+      <p class="note">2026-10-25 新增收录 16 篇：11 篇在上一批次后首次提交，5 篇为早期遗漏补录。仓库保存 65 份 PDF，另有 5 篇通过原站阅读。</p>
     </aside>
 
     <section class="content" aria-live="polite">
@@ -662,19 +662,22 @@ const EMBEDDED_CSV = window.GEO_VIEWER_CSV || "";
 const PDF_BASE_URL = window.GEO_PDF_BASE_URL || "";
 const USE_SOURCE_PDF_URLS = window.GEO_VIEWER_USE_SOURCE_PDF_URLS || false;
 const NEW_URLS = new Set([
-  "https://arxiv.org/pdf/2606.04362",
-  "https://arxiv.org/pdf/2606.20065",
-  "https://arxiv.org/pdf/2510.11560",
-  "https://arxiv.org/pdf/2606.18947",
-  "https://arxiv.org/pdf/2606.20235",
-  "https://arxiv.org/pdf/2606.17209",
-  "https://arxiv.org/pdf/2606.20113",
-  "https://arxiv.org/pdf/2606.18508",
-  "https://arxiv.org/pdf/2606.18381",
-  "https://arxiv.org/pdf/2606.16661",
-  "https://arxiv.org/pdf/2602.07840",
-  "https://arxiv.org/pdf/2602.23234",
-  "https://arxiv.org/pdf/2607.15771v1"
+  "https://arxiv.org/pdf/2610.15033v1",
+  "https://arxiv.org/pdf/2609.40069v1",
+  "https://arxiv.org/pdf/2609.27845v1",
+  "https://arxiv.org/pdf/2609.29145v2",
+  "https://arxiv.org/pdf/2608.30023v1",
+  "https://arxiv.org/pdf/2608.29063v1",
+  "https://arxiv.org/pdf/2608.27631v1",
+  "https://arxiv.org/pdf/2607.14035v1",
+  "https://arxiv.org/pdf/2606.28356v2",
+  "https://arxiv.org/pdf/2606.12439v1",
+  "https://arxiv.org/pdf/2603.20213v1",
+  "https://arxiv.org/pdf/2609.07559v1",
+  "https://arxiv.org/pdf/2609.22655v1",
+  "https://arxiv.org/pdf/2609.02964v1",
+  "https://arxiv.org/pdf/2609.11915v1",
+  "https://arxiv.org/pdf/2604.19516v1"
 ]);
 const TOPIC_COPY = {
   "01_GEO基础框架": "GEO 概念、生成式搜索优化框架和基础比较。",
@@ -751,7 +754,7 @@ function parseCsv(text) {
     item.isNew = NEW_URLS.has(item.URL);
     item.sourceUrl = safeExternalUrl(item.URL);
     const relativeFilePath = `${item["分类"]}/${item["文件名"]}`;
-    item.filePath = USE_SOURCE_PDF_URLS
+    item.filePath = USE_SOURCE_PDF_URLS || !item["文件名"]
       ? item.sourceUrl
       : (PDF_BASE_URL ? `${PDF_BASE_URL}${relativeFilePath}` : `./${relativeFilePath}`);
     item.yearSort = parseInt((item["年份"].match(/\d{4}/) || ["0"])[0], 10);

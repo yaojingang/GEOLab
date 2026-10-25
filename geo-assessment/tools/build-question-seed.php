@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 $appRoot = dirname(__DIR__);
-$repoRoot = dirname($appRoot);
-$catalogPath = $repoRoot . '/02-geo-aeo-ai-search-papers/00_资料说明/论文清单.csv';
+$catalogPath = __DIR__ . '/paper-catalog-2026-08-04.csv';
 $outputPath = $appRoot . '/database/seeds/geo-30-v1.2.json';
 $questionPath = __DIR__ . '/question-bank-v1.2.php';
 

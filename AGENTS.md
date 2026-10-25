@@ -96,3 +96,9 @@ The release archive is generated from `tools/release-files.txt`, includes produc
 autoloading, and excludes tests, development dependencies, databases, keys, logs, backups, paper
 PDFs and research datasets. Preserve `LICENSE`, `LICENSE-CODE`, `LICENSE-CONTENT` and
 `THIRD_PARTY_NOTICES.md` in every archive.
+
+## Paper catalog maintenance
+
+The paper catalog CSV may grow independently of frozen assessment evidence. Keep original rows and source identifiers stable. Assessment seed generation reads `geo-assessment/tools/paper-catalog-2026-08-04.csv`; update that snapshot only with an explicit question-set evidence revision.
+
+A catalog row with an empty filename opens its validated original-source PDF URL. Record the author, pinned version, original license and checksum for each new paper. Papers indexed without redistribution permission keep their reading copies in the ignored local batch directory; publish metadata and source links only. Update catalog counts, category totals, batch notes and checksums together.

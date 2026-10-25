@@ -29,3 +29,7 @@ third-party material.
 The repository's [MIT software license](./LICENSE-CODE) and
 [CC BY 4.0 original-content license](./LICENSE-CONTENT) apply only to rights held by GEO Citation
 Lab contributors. See [`LICENSE`](./LICENSE) for the scope map.
+
+## Papers collected on 2026-10-25
+
+The batch adds 16 bibliography records. Eleven original PDFs are redistributed under their individual Creative Commons licenses; five papers with the arXiv non-exclusive distribution license are indexed through original-source links only. Author attribution, pinned source versions, and license links are recorded in [the batch report](https://github.com/yaojingang/geo-citation-lab/blob/main/02-geo-aeo-ai-search-papers/00_资料说明/2026-10-25_GEO论文更新记录.md) and [source manifest](https://github.com/yaojingang/geo-citation-lab/blob/main/02-geo-aeo-ai-search-papers/00_资料说明/2026-10-25_收录与来源.json). PDF files are unchanged. These papers retain their original licenses, including any non-commercial, no-derivatives, and share-alike conditions. Local reading copies excluded from Git are outside the public distribution. The lightweight Viewer includes bibliography metadata and links; it continues to exclude all paper PDFs.

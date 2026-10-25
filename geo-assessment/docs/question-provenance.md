@@ -11,6 +11,8 @@ GEO Assessment 的 30 道题是 GEO Citation Lab 原创编写的场景化测验�
 
 完整来源清单、标题、年份、链接和每题对应的 `source_refs` 位于 [`database/seeds/geo-30-v1.2.json`](../database/seeds/geo-30-v1.2.json)。仓库的 [`02-geo-aeo-ai-search-papers/`](../../02-geo-aeo-ai-search-papers/) 提供论文导航与校验信息，测试系统 Release 不包含论文 PDF。`geo-30-v1.1` 保留为历史题集，现有报告可以继续复查。
 
+题库生成工具读取冻结的[54 篇文献清单](https://github.com/yaojingang/geo-citation-lab/blob/main/geo-assessment/tools/paper-catalog-2026-08-04.csv)。这份快照保留 P01 至 P54 的顺序和书目信息，论文导航的后续扩充独立维护。
+
 ## 编写方法
 
 每道题从可验证的机制、实验观察或数据特征出发，再转换成日常业务场景。题干无需读者提前看过论文、数据仓库或数据集，论文和数据只承担解析证据。单选题检查一个最准确判断，多选题要求完整选择正确集合。每个选项都有独立说明，题目权重按认知层级与综合难度分配，总分固定为 100 分。
