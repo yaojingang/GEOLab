@@ -1,10 +1,10 @@
-# GEO Citation Lab
+# GEOLab
 
 > **用可复查的数据，研究 AI 搜索如何选择信源、吸收内容与呈现实体。**
 >
 > *Open empirical resources for studying how generative search selects sources, absorbs content, and surfaces entities.*
 
-GEO Citation Lab 是一个面向 AI 搜索引用机制的公开实证研究工作台。仓库围绕两条研究主线，整理跨平台引用实验与中文生成式搜索数据，并提供分析脚本、数据仓库、可视化报告、主题论文导航和 GEO 在线能力测试。
+GEOLab 是一个 GEO / AEO / AI Search 研究资料库，用于持续整理相关论文、数据集、实验报告、白皮书与高质量研究文章。当前资源围绕跨平台引用实验与中文生成式搜索两条实证研究主线，提供分析脚本、数据仓库、可视化报告、主题论文导航和 GEO 在线能力测试。
 
 `提问 → 搜索触发 → 信源选择 → 内容吸收 → 实体曝光 → 跨平台与跨终端差异`
 
@@ -12,8 +12,8 @@ GEO Citation Lab 是一个面向 AI 搜索引用机制的公开实证研究工�
 
 把下面这句话发送给具有网络和本地文件权限的 AI 客户端：
 
-> 安装 GEO Citation Lab 的轻量阅读版并打开：
-> https://github.com/yaojingang/geo-citation-lab
+> 安装 GEOLab 的轻量阅读版并打开：
+> https://github.com/yaojingang/GEOLab
 
 AI 客户端会下载版本固定的 `v0.1.0` Viewer、验证 SHA-256、解压并打开
 `index.html`。Viewer
@@ -25,12 +25,12 @@ AI 客户端会下载版本固定的 `v0.1.0` Viewer、验证 SHA-256、解压�
 
 | 你对 AI 说 | 执行结果 |
 | --- | --- |
-| “安装并打开 GEO Citation Lab” | 安装轻量 Viewer，并在默认浏览器打开 |
-| “把 GEO Citation Lab Viewer 部署到我的 GitHub Pages” | 保留许可与署名文件，确认目标仓库与公开可见性后运行 Pages 发布流程 |
+| “安装并打开 GEOLab” | 安装轻量 Viewer，并在默认浏览器打开 |
+| “把 GEOLab Viewer 部署到我的 GitHub Pages” | 保留许可与署名文件，确认目标仓库与公开可见性后运行 Pages 发布流程 |
 | “下载完整数据并准备分析环境” | 提示约 568 MiB 体积，再克隆仓库并配置 Python 3.11 与 `uv` |
 
 网页聊天客户端通常没有本地文件权限，可以直接使用
-[在线首页](https://yaojingang.github.io/geo-citation-lab/)。本地 AI 客户端应遵循
+[在线首页](https://yaojingang.github.io/GEOLab/)。本地 AI 客户端应遵循
 [`AGENTS.md`](./AGENTS.md) 和
 [`deploy/manifest.json`](./deploy/manifest.json) 中的安装契约。
 
@@ -44,7 +44,7 @@ AI 客户端会下载版本固定的 `v0.1.0` Viewer、验证 SHA-256、解压�
 
 论文库于 2026-10-25 新增收录 16 篇，包含 11 篇近期论文和 5 篇遗漏补录。来源、版本、许可与阅读建议见[本轮更新记录](./02-geo-aeo-ai-search-papers/00_资料说明/2026-10-25_GEO论文更新记录.md)。
 
-[在线参加 GEO 能力测试](https://ai.laoyao.cn/geo/) · [查看 CN-GEO 分析报告](https://yaojingang.github.io/geo-citation-lab/03-cn-geo-citation-dataset/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [读 3 分钟实验摘要](./01-geo-experiment-data-report/QUICK_REPORT.md) · [浏览论文导航](https://yaojingang.github.io/geo-citation-lab/02-geo-aeo-ai-search-papers/) · [打开在线首页](https://yaojingang.github.io/geo-citation-lab/)
+[在线参加 GEO 能力测试](https://ai.laoyao.cn/geo/) · [查看 CN-GEO 分析报告](https://yaojingang.github.io/GEOLab/03-cn-geo-citation-dataset/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [读 3 分钟实验摘要](./01-geo-experiment-data-report/QUICK_REPORT.md) · [浏览论文导航](https://yaojingang.github.io/GEOLab/02-geo-aeo-ai-search-papers/) · [打开在线首页](https://yaojingang.github.io/GEOLab/)
 
 ## 这套研究在看什么
 
@@ -67,9 +67,9 @@ AI 搜索中的可见性包含多个环节。一条内容可能进入检索候�
 
 | 你想做什么 | 建议入口 |
 | --- | --- |
-| 了解 GEO 研究结论 | [CN-GEO 在线分析报告](https://yaojingang.github.io/geo-citation-lab/03-cn-geo-citation-dataset/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [跨平台实验摘要](./01-geo-experiment-data-report/QUICK_REPORT.md) |
+| 了解 GEO 研究结论 | [CN-GEO 在线分析报告](https://yaojingang.github.io/GEOLab/03-cn-geo-citation-dataset/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [跨平台实验摘要](./01-geo-experiment-data-report/QUICK_REPORT.md) |
 | 使用数据或继续分析 | [CN-GEO 数据集说明](./03-cn-geo-citation-dataset/) · [清洗后数据使用说明](./03-cn-geo-citation-dataset/data/清洗后数据使用说明.md) |
-| 阅读论文或引用研究 | [两篇实证论文](#两条实证研究主线) · [70 篇论文导航](https://yaojingang.github.io/geo-citation-lab/02-geo-aeo-ai-search-papers/) |
+| 阅读论文或引用研究 | [两篇实证论文](#两条实证研究主线) · [70 篇论文导航](https://yaojingang.github.io/GEOLab/02-geo-aeo-ai-search-papers/) |
 | 复查实验与处理方法 | [跨平台实验管线](./01-geo-experiment-data-report/03-pipeline/) · [CN-GEO 构建脚本](./03-cn-geo-citation-dataset/scripts/) |
 | 测试 GEO 理解程度 | [在线测试](https://ai.laoyao.cn/geo/) · [系统源码与本地运行](./geo-assessment/) |
 
@@ -90,7 +90,7 @@ AI 搜索中的可见性包含多个环节。一条内容可能进入检索候�
 
 > Zhang Kai, He Xinyue, Yao Jingang. [From Citation Selection to Citation Absorption: A Measurement Framework for Generative Engine Optimization Across AI Search Platforms](https://arxiv.org/abs/2604.25707). arXiv:2604.25707, 2026.
 
-研究材料包括 [Prompt 与数据](./01-geo-experiment-data-report/)、[完整 Markdown 报告](./01-geo-experiment-data-report/04-repet/final_report.md) 和 [在线 HTML 报告](https://yaojingang.github.io/geo-citation-lab/01-geo-experiment-data-report/04-repet/final_report.html)。
+研究材料包括 [Prompt 与数据](./01-geo-experiment-data-report/)、[完整 Markdown 报告](./01-geo-experiment-data-report/04-repet/final_report.md) 和 [在线 HTML 报告](https://yaojingang.github.io/GEOLab/01-geo-experiment-data-report/04-repet/final_report.html)。
 
 ### 中文生成式搜索与 CN-GEO
 
@@ -106,7 +106,7 @@ CN-GEO 当前发布版包含 `214,119` 条原始引用记录、`64` 个 JSONL �
 
 论文库按 10 个主题索引 70 篇论文，仓库保存 65 份 PDF，另 5 篇提供原站链接。主题包含 GEO 基础框架、方法优化、测量评估、AI 搜索实证、AEO 理论、风险与操纵、垂直多模态、Agentic Search、RAG 和搜索评估治理。
 
-- [在线搜索与筛选](https://yaojingang.github.io/geo-citation-lab/02-geo-aeo-ai-search-papers/)
+- [在线搜索与筛选](https://yaojingang.github.io/GEOLab/02-geo-aeo-ai-search-papers/)
 - [完整论文清单](./02-geo-aeo-ai-search-papers/README.md)
 - [来源、文件校验与整理说明](./02-geo-aeo-ai-search-papers/00_资料说明/)
 
@@ -158,10 +158,10 @@ PDF、来源数据和其他第三方材料维持各自的原始条款。
 
 ## 关注更新与参与
 
-仓库后续更新主要集中在数据版本、分析报告和论文库。可以通过 GitHub 的 **Star** 收藏项目，通过 **Watch** 关注提交与讨论。
+仓库后续将持续更新论文、数据集与分析报告，并补充白皮书和高质量研究文章。可以通过 GitHub 的 **Star** 收藏项目，通过 **Watch** 关注提交与讨论。
 
-欢迎在 [Issues](https://github.com/yaojingang/geo-citation-lab/issues) 中提交：
+欢迎在 [Issues](https://github.com/yaojingang/GEOLab/issues) 中提交：
 
 - 数据字段、清洗规则或报告口径问题；
 - 可复现的分析结果与修正建议；
-- 值得补充的 GEO / AEO / AI Search 论文。
+- 值得补充的 GEO / AEO / AI Search 论文、数据集、白皮书和研究文章。

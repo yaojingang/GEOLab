@@ -1,4 +1,4 @@
-# GEO Citation Lab agent instructions
+# GEOLab agent instructions
 
 ## Intent routing
 
@@ -47,7 +47,7 @@ external mutations.
 8. Report the public URL, workflow run, source commit, release tag when applicable, and retained
    license notices.
 
-The canonical repository uses `https://yaojingang.github.io/geo-citation-lab/`.
+The canonical repository uses `https://yaojingang.github.io/GEOLab/`.
 
 ## Full repository mode
 

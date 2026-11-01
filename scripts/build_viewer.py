@@ -94,12 +94,12 @@ def _build_paper_catalog(target: Path) -> None:
     html = html.replace(script_marker, viewer_config + script_marker)
     html = html.replace(
         'href="./README.md"',
-        'href="https://github.com/yaojingang/geo-citation-lab/blob/main/'
+        'href="https://github.com/yaojingang/GEOLab/blob/main/'
         '02-geo-aeo-ai-search-papers/README.md"',
     )
     html = html.replace(
         'href="./00_资料说明/checksums.sha256"',
-        'href="https://github.com/yaojingang/geo-citation-lab/blob/main/'
+        'href="https://github.com/yaojingang/GEOLab/blob/main/'
         '02-geo-aeo-ai-search-papers/00_资料说明/checksums.sha256"',
     )
 

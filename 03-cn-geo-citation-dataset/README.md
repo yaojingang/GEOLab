@@ -16,7 +16,7 @@
 | [数据质量报告](./data/quality/release_date=2026-07-14/quality_report.md) | 查看分片校验、自动验收结果与已知限制 |
 | [数据清单](./data/manifest.json) | 复核版本、记录规模、分片路径和 SHA-256 |
 
-GitHub 代码页会把 HTML 文件显示为源码。在线浏览请使用 [GitHub Pages 报告入口](https://yaojingang.github.io/geo-citation-lab/03-cn-geo-citation-dataset/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html)。
+GitHub 代码页会把 HTML 文件显示为源码。在线浏览请使用 [GitHub Pages 报告入口](https://yaojingang.github.io/GEOLab/03-cn-geo-citation-dataset/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html)。
 
 ## 数据规模
 

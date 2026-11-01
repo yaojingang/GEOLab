@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ASSET_BASE="https://github.com/yaojingang/geo-citation-lab/releases/download/v0.1.0"
+ASSET_BASE="https://github.com/yaojingang/GEOLab/releases/download/v0.1.0"
 INSTALL_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/geo-citation-lab/viewer"
 NO_OPEN=0
 ARCHIVE_NAME="geo-citation-lab-viewer.zip"

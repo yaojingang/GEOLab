@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "name": "geo-citation-lab",
+  "name": "GEOLab",
   "distribution_version": "0.1.0",
   "release_status": "released",
   "dataset_version": "2.0.1",
-  "source_repository": "https://github.com/yaojingang/geo-citation-lab",
-  "canonical_site": "https://yaojingang.github.io/geo-citation-lab/",
+  "source_repository": "https://github.com/yaojingang/GEOLab",
+  "canonical_site": "https://yaojingang.github.io/GEOLab/",
   "licensing": {
     "scope_file": "LICENSE",
     "code": {
@@ -15,7 +15,7 @@
     "original_content": {
       "spdx": "CC-BY-4.0",
       "file": "LICENSE-CONTENT",
-      "attribution": "GEO Citation Lab contributors, GEO Citation Lab, https://github.com/yaojingang/geo-citation-lab, CC BY 4.0"
+      "attribution": "GEO Citation Lab contributors, GEO Citation Lab, https://github.com/yaojingang/GEOLab, CC BY 4.0"
     },
     "third_party_notices": "THIRD_PARTY_NOTICES.md"
   },
@@ -23,15 +23,15 @@
   "modes": {
     "viewer": {
       "description": "Lightweight offline reader with self-contained reports and a searchable paper catalog.",
-      "asset": "https://github.com/yaojingang/geo-citation-lab/releases/download/v0.1.0/geo-citation-lab-viewer.zip",
-      "checksum": "https://github.com/yaojingang/geo-citation-lab/releases/download/v0.1.0/geo-citation-lab-viewer.zip.sha256",
+      "asset": "https://github.com/yaojingang/GEOLab/releases/download/v0.1.0/geo-citation-lab-viewer.zip",
+      "checksum": "https://github.com/yaojingang/GEOLab/releases/download/v0.1.0/geo-citation-lab-viewer.zip.sha256",
       "entrypoint": "index.html",
       "max_uncompressed_mib": 15,
       "runtime_requirements": []
     },
     "full": {
       "description": "Complete research repository with datasets, papers, reports, and analysis pipelines.",
-      "git_url": "https://github.com/yaojingang/geo-citation-lab.git",
+      "git_url": "https://github.com/yaojingang/GEOLab.git",
       "approx_uncompressed_mib": 568,
       "analysis_requirements": [
         "Git",

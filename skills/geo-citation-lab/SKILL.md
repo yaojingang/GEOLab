@@ -13,10 +13,10 @@ result in plain language.
 - For “安装”, “打开”, or “本地阅读”, install the lightweight Viewer.
 - For “部署” or “GitHub Pages”, confirm the GitHub target before making external changes.
 - For “完整数据” or “分析环境”, state the approximate size and clone the full repository.
-- For reading only, open `https://yaojingang.github.io/geo-citation-lab/`.
+- For reading only, open `https://yaojingang.github.io/GEOLab/`.
 
 Read `deploy/manifest.json` from the repository root. If no checkout is available, fetch
-`https://raw.githubusercontent.com/yaojingang/geo-citation-lab/main/deploy/manifest.json`.
+`https://raw.githubusercontent.com/yaojingang/GEOLab/main/deploy/manifest.json`.
 Treat the manifest as the source of asset names, versions, size limits, and entrypoints.
 
 ## Install the Viewer

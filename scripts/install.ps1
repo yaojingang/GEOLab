@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$InstallDir,
-    [string]$AssetBase = "https://github.com/yaojingang/geo-citation-lab/releases/download/v0.1.0",
+    [string]$AssetBase = "https://github.com/yaojingang/GEOLab/releases/download/v0.1.0",
     [switch]$NoOpen
 )
 

@@ -437,7 +437,7 @@ def main() -> int:
     assert manifest["modes"]["viewer"]["runtime_requirements"] == []
     version = manifest["distribution_version"]
     release_base = (
-        "https://github.com/yaojingang/geo-citation-lab/releases/download/"
+        "https://github.com/yaojingang/GEOLab/releases/download/"
         f"v{version}"
     )
     assert manifest["modes"]["viewer"]["asset"].startswith(release_base + "/")
