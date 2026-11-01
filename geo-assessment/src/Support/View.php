@@ -56,6 +56,16 @@ final class View
         return BaiduAnalytics::enabled($this->baiduAnalyticsId);
     }
 
+    public static function sourceUrl(string $url): string
+    {
+        $redirects = [
+            'https://github.com/yaojingang/geo-citation-lab/tree/main/01-geo-experiment-data-report' => 'https://github.com/yaojingang/GEOLab/tree/main/01-experiments',
+            'https://github.com/yaojingang/geo-citation-lab/tree/main/03-cn-geo-citation-dataset' => 'https://github.com/yaojingang/GEOLab/tree/main/03-datasets',
+        ];
+
+        return $redirects[$url] ?? $url;
+    }
+
     /** @param mixed $value */
     public static function e($value): string
     {

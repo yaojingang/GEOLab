@@ -205,7 +205,7 @@ $reportStatusLabel = static function (string $status): string {
               <article><p class="detail-label">底层原理</p><p><?= $reportCopy($question['principle']) ?></p></article>
             </div>
             <?php if (!$question['is_correct']): ?><p class="misconception"><span>主要误区</span><?= $reportCopy($question['misconception_tag']) ?><?php if ($question['label'] !== '选择集合完全匹配'): ?> · <?= $reportCopy($question['label']) ?><?php endif; ?></p><?php endif; ?>
-            <div class="sources"><p class="detail-label">证据来源</p><ol><?php foreach ($question['sources'] as $source): ?><li><span><?= View::e($source['id']) ?></span><?php if ($source['url']): ?><a href="<?= View::e($source['url']) ?>" target="_blank" rel="noopener nofollow"><?= $reportCopy($source['title']) ?></a><?php else: ?><strong><?= $reportCopy($source['title']) ?></strong><?php endif; ?><small><?= View::e($source['citation']) ?></small></li><?php endforeach; ?></ol></div>
+            <div class="sources"><p class="detail-label">证据来源</p><ol><?php foreach ($question['sources'] as $source): ?><li><span><?= View::e($source['id']) ?></span><?php if ($source['url']): ?><a href="<?= View::e(View::sourceUrl($source['url'])) ?>" target="_blank" rel="noopener nofollow"><?= $reportCopy($source['title']) ?></a><?php else: ?><strong><?= $reportCopy($source['title']) ?></strong><?php endif; ?><small><?= View::e($source['citation']) ?></small></li><?php endforeach; ?></ol></div>
           </div>
         </details>
       <?php endforeach; ?>

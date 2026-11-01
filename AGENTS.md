@@ -110,6 +110,9 @@ published directory names; retain those redirects so existing report and catalog
 
 ## Paper catalog maintenance
 
+Published assessment seed payloads and their generator retain their frozen source URLs. Use
+`View::sourceUrl` when rendering moved resource links so installed question-set fingerprints stay stable.
+
 The paper catalog CSV may grow independently of frozen assessment evidence. Keep original rows and source identifiers stable. Assessment seed generation reads `geo-assessment/tools/paper-catalog-2026-08-04.csv`; update that snapshot only with an explicit question-set evidence revision.
 
 A catalog row with an empty filename opens its validated original-source PDF URL. Record the author, pinned version, original license and checksum for each new paper. Papers indexed without redistribution permission keep their reading copies in the ignored local batch directory; publish metadata and source links only. Update catalog counts, category totals, batch notes and checksums together.

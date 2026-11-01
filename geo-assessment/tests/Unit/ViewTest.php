@@ -10,6 +10,19 @@ use PHPUnit\Framework\TestCase;
 
 final class ViewTest extends TestCase
 {
+    public function test_frozen_source_links_open_the_current_resource_directories(): void
+    {
+        self::assertSame(
+            'https://github.com/yaojingang/GEOLab/tree/main/01-experiments',
+            View::sourceUrl('https://github.com/yaojingang/geo-citation-lab/tree/main/01-geo-experiment-data-report')
+        );
+        self::assertSame(
+            'https://github.com/yaojingang/GEOLab/tree/main/03-datasets',
+            View::sourceUrl('https://github.com/yaojingang/geo-citation-lab/tree/main/03-cn-geo-citation-dataset')
+        );
+        self::assertSame('https://arxiv.org/abs/2607.15771', View::sourceUrl('https://arxiv.org/abs/2607.15771'));
+    }
+
     public function test_terminal_period_is_removed_without_changing_internal_punctuation(): void
     {
         self::assertSame('一句中文描述', View::trimTerminalPeriod('一句中文描述。'));

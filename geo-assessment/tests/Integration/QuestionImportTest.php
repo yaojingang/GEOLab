@@ -9,6 +9,13 @@ use PHPUnit\Framework\TestCase;
 
 final class QuestionImportTest extends TestCase
 {
+    public function test_published_seed_files_keep_their_original_fingerprints(): void
+    {
+        $root = dirname(__DIR__, 2) . '/database/seeds/';
+        self::assertSame('7b28546de7e47e4e9fc595456e7544565beeb2cd25b7991159a68a0cb845ae0b', hash_file('sha256', $root . 'geo-30-v1.1.json'));
+        self::assertSame('f465d8dc4d974625c819420baa027c7093baa8ab6b17ad014510a75bddd256e0', hash_file('sha256', $root . 'geo-30-v1.2.json'));
+    }
+
     public function test_the_published_question_set_satisfies_the_frozen_blueprint(): void
     {
         $path = dirname(__DIR__, 2) . '/database/seeds/geo-30-v1.2.json';
