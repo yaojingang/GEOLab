@@ -1,5 +1,7 @@
 # GEOLab
 
+简体中文 | [English](./README.en.md)
+
 > **用可复查的数据，研究 AI 搜索如何选择信源、吸收内容与呈现实体。**
 >
 > *Open empirical resources for studying how generative search selects sources, absorbs content, and surfaces entities.*

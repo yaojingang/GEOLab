@@ -99,6 +99,10 @@ PDFs and research datasets. Preserve `LICENSE`, `LICENSE-CODE`, `LICENSE-CONTENT
 
 ## Resource directories
 
+Keep `README.md` in Simplified Chinese as the default repository overview and `README.en.md`
+as its English counterpart. Keep their language links, resource directories, counts, versions,
+research limitations and licensing information aligned when updating either overview.
+
 Use `01-experiments/`, `02-papers/`, `03-datasets/`, `04-whitepapers/` and `05-articles/`
 as the five public resource categories. Add white papers and research articles according to
 their directory README, including source, author or publisher, date, topic and a local link
