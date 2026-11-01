@@ -53,7 +53,7 @@ The canonical repository uses `https://yaojingang.github.io/GEOLab/`.
 
 The complete working tree is approximately 568 MiB and contains large research assets. State the
 expected size before cloning. Read the directory-level README for the selected research line.
-Python analysis for `03-cn-geo-citation-dataset` requires Python 3.11 or newer and `uv`.
+Python analysis for `03-datasets` requires Python 3.11 or newer and `uv`.
 
 Review `LICENSE`, `LICENSE-CODE`, `LICENSE-CONTENT`, and `THIRD_PARTY_NOTICES.md` before
 redistribution. Code is MIT licensed, original GEO Citation Lab content is CC BY 4.0, and paper
@@ -96,6 +96,17 @@ The release archive is generated from `tools/release-files.txt`, includes produc
 autoloading, and excludes tests, development dependencies, databases, keys, logs, backups, paper
 PDFs and research datasets. Preserve `LICENSE`, `LICENSE-CODE`, `LICENSE-CONTENT` and
 `THIRD_PARTY_NOTICES.md` in every archive.
+
+## Resource directories
+
+Use `01-experiments/`, `02-papers/`, `03-datasets/`, `04-whitepapers/` and `05-articles/`
+as the five public resource categories. Add white papers and research articles according to
+their directory README, including source, author or publisher, date, topic and a local link
+when redistribution is permitted. Keep unlicensed materials as source links and original notes.
+
+Keep repository links, the Viewer builder, distribution checks and the Windows workflow in sync
+when a resource directory moves. The Viewer builder generates redirects for the three former
+published directory names; retain those redirects so existing report and catalog URLs work.
 
 ## Paper catalog maintenance
 

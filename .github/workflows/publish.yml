@@ -72,7 +72,7 @@ jobs:
           $installDir = Join-Path $env:RUNNER_TEMP "geo-citation-lab-viewer"
           ./scripts/install.ps1 -AssetBase "./dist/release" -InstallDir $installDir -NoOpen
           ./scripts/install.ps1 -AssetBase "./dist/release" -InstallDir $installDir -NoOpen
-          $report = Join-Path $installDir "01-geo-experiment-data-report/04-repet/final_report.html"
+          $report = Join-Path $installDir "01-experiments/04-repet/final_report.html"
           Remove-Item -LiteralPath $report
           ./scripts/install.ps1 -AssetBase "./dist/release" -InstallDir $installDir -NoOpen
           if (-not (Test-Path $report)) {

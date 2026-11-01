@@ -55,7 +55,7 @@ explicit user approval.
 ## Download full data
 
 State that the complete working tree is approximately 568 MiB. Clone the repository only after the
-user requests full data or analysis. For `03-cn-geo-citation-dataset`, follow its README and use
+user requests full data or analysis. For `03-datasets`, follow its README and use
 Python 3.11 or newer with `uv`.
 
 Read `LICENSE`, `LICENSE-CODE`, `LICENSE-CONTENT`, and `THIRD_PARTY_NOTICES.md` before

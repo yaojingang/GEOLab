@@ -8,6 +8,18 @@ GEOLab 是一个 GEO / AEO / AI Search 研究资料库，用于持续整理相�
 
 `提问 → 搜索触发 → 信源选择 → 内容吸收 → 实体曝光 → 跨平台与跨终端差异`
 
+## 资料目录
+
+| 目录 | 内容 |
+| --- | --- |
+| [`01-experiments/`](./01-experiments/) | 跨平台实验、分析脚本与研究报告 |
+| [`02-papers/`](./02-papers/) | GEO / AEO / AI Search 论文与主题导航 |
+| [`03-datasets/`](./03-datasets/) | CN-GEO 引用数据、数据说明与可视化分析 |
+| [`04-whitepapers/`](./04-whitepapers/) | 行业白皮书、平台指南与方法评测报告 |
+| [`05-articles/`](./05-articles/) | 有数据、方法或来源支持的高质量研究文章 |
+
+白皮书和研究文章目录已建立，等待首批资料。添加资料时，按对应目录的 README 补充来源、日期、主题与文件链接。
+
 ## 在 AI 客户端一句话安装
 
 把下面这句话发送给具有网络和本地文件权限的 AI 客户端：
@@ -42,17 +54,17 @@ AI 客户端会下载版本固定的 `v0.1.0` Viewer、验证 SHA-256、解压�
 | GEO / AEO / AI Search 论文索引 | 70 篇，仓库含 65 份 PDF |
 | GEO 在线能力测试 | 30 题、100 分、六维诊断 |
 
-论文库于 2026-10-25 新增收录 16 篇，包含 11 篇近期论文和 5 篇遗漏补录。来源、版本、许可与阅读建议见[本轮更新记录](./02-geo-aeo-ai-search-papers/00_资料说明/2026-10-25_GEO论文更新记录.md)。
+论文库于 2026-10-25 新增收录 16 篇，包含 11 篇近期论文和 5 篇遗漏补录。来源、版本、许可与阅读建议见[本轮更新记录](./02-papers/00_资料说明/2026-10-25_GEO论文更新记录.md)。
 
-[在线参加 GEO 能力测试](https://ai.laoyao.cn/geo/) · [查看 CN-GEO 分析报告](https://yaojingang.github.io/GEOLab/03-cn-geo-citation-dataset/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [读 3 分钟实验摘要](./01-geo-experiment-data-report/QUICK_REPORT.md) · [浏览论文导航](https://yaojingang.github.io/GEOLab/02-geo-aeo-ai-search-papers/) · [打开在线首页](https://yaojingang.github.io/GEOLab/)
+[在线参加 GEO 能力测试](https://ai.laoyao.cn/geo/) · [查看 CN-GEO 分析报告](https://yaojingang.github.io/GEOLab/03-datasets/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [读 3 分钟实验摘要](./01-experiments/QUICK_REPORT.md) · [浏览论文导航](https://yaojingang.github.io/GEOLab/02-papers/) · [打开在线首页](https://yaojingang.github.io/GEOLab/)
 
 ## 这套研究在看什么
 
 AI 搜索中的可见性包含多个环节。一条内容可能进入检索候选、出现在引用列表、参与答案生成，或进一步影响品牌和实体的呈现。仓库用两套实证研究观察这条链路。
 
-- [`01-geo-experiment-data-report/`](./01-geo-experiment-data-report/) 研究 ChatGPT、Google AI Overview / Gemini 和 Perplexity 如何触发搜索、选择信源并吸收页面内容。
-- [`03-cn-geo-citation-dataset/`](./03-cn-geo-citation-dataset/) 整理国内 AI 引用记录，并从信源生态、页面特征、实体曝光和 Web / App 差异等角度提供可查询的数据与报告。
-- [`02-geo-aeo-ai-search-papers/`](./02-geo-aeo-ai-search-papers/) 为上述问题提供文献背景，覆盖 GEO 方法、测量评估、AI 搜索实证、风险操纵、Agentic Search 和 RAG 等主题。
+- [`01-experiments/`](./01-experiments/) 研究 ChatGPT、Google AI Overview / Gemini 和 Perplexity 如何触发搜索、选择信源并吸收页面内容。
+- [`03-datasets/`](./03-datasets/) 整理国内 AI 引用记录，并从信源生态、页面特征、实体曝光和 Web / App 差异等角度提供可查询的数据与报告。
+- [`02-papers/`](./02-papers/) 为上述问题提供文献背景，覆盖 GEO 方法、测量评估、AI 搜索实证、风险操纵、Agentic Search 和 RAG 等主题。
 - [`geo-assessment/`](./geo-assessment/) 将论文、跨平台实验和 CN-GEO 数据中的关键结论转化为 30 道场景题。题目以国内应用为主，面向刚接触 GEO 的用户，并生成六维能力报告。
 
 ## 三个研究发现
@@ -67,10 +79,12 @@ AI 搜索中的可见性包含多个环节。一条内容可能进入检索候�
 
 | 你想做什么 | 建议入口 |
 | --- | --- |
-| 了解 GEO 研究结论 | [CN-GEO 在线分析报告](https://yaojingang.github.io/GEOLab/03-cn-geo-citation-dataset/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [跨平台实验摘要](./01-geo-experiment-data-report/QUICK_REPORT.md) |
-| 使用数据或继续分析 | [CN-GEO 数据集说明](./03-cn-geo-citation-dataset/) · [清洗后数据使用说明](./03-cn-geo-citation-dataset/data/清洗后数据使用说明.md) |
-| 阅读论文或引用研究 | [两篇实证论文](#两条实证研究主线) · [70 篇论文导航](https://yaojingang.github.io/GEOLab/02-geo-aeo-ai-search-papers/) |
-| 复查实验与处理方法 | [跨平台实验管线](./01-geo-experiment-data-report/03-pipeline/) · [CN-GEO 构建脚本](./03-cn-geo-citation-dataset/scripts/) |
+| 了解 GEO 研究结论 | [CN-GEO 在线分析报告](https://yaojingang.github.io/GEOLab/03-datasets/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [跨平台实验摘要](./01-experiments/QUICK_REPORT.md) |
+| 使用数据或继续分析 | [CN-GEO 数据集说明](./03-datasets/) · [清洗后数据使用说明](./03-datasets/data/清洗后数据使用说明.md) |
+| 阅读论文或引用研究 | [两篇实证论文](#两条实证研究主线) · [70 篇论文导航](https://yaojingang.github.io/GEOLab/02-papers/) |
+| 查找行业白皮书与平台指南 | [白皮书目录与收录说明](./04-whitepapers/) |
+| 阅读研究文章与实务分析 | [研究文章目录与收录说明](./05-articles/) |
+| 复查实验与处理方法 | [跨平台实验管线](./01-experiments/03-pipeline/) · [CN-GEO 构建脚本](./03-datasets/scripts/) |
 | 测试 GEO 理解程度 | [在线测试](https://ai.laoyao.cn/geo/) · [系统源码与本地运行](./geo-assessment/) |
 
 只想阅读结论时，可以直接使用 GitHub Pages，无需克隆完整仓库。数据分析与复算方式分别写在两个研究目录的 README 中。
@@ -90,7 +104,7 @@ AI 搜索中的可见性包含多个环节。一条内容可能进入检索候�
 
 > Zhang Kai, He Xinyue, Yao Jingang. [From Citation Selection to Citation Absorption: A Measurement Framework for Generative Engine Optimization Across AI Search Platforms](https://arxiv.org/abs/2604.25707). arXiv:2604.25707, 2026.
 
-研究材料包括 [Prompt 与数据](./01-geo-experiment-data-report/)、[完整 Markdown 报告](./01-geo-experiment-data-report/04-repet/final_report.md) 和 [在线 HTML 报告](https://yaojingang.github.io/GEOLab/01-geo-experiment-data-report/04-repet/final_report.html)。
+研究材料包括 [Prompt 与数据](./01-experiments/)、[完整 Markdown 报告](./01-experiments/04-repet/final_report.md) 和 [在线 HTML 报告](https://yaojingang.github.io/GEOLab/01-experiments/04-repet/final_report.html)。
 
 ### 中文生成式搜索与 CN-GEO
 
@@ -106,9 +120,9 @@ CN-GEO 当前发布版包含 `214,119` 条原始引用记录、`64` 个 JSONL �
 
 论文库按 10 个主题索引 70 篇论文，仓库保存 65 份 PDF，另 5 篇提供原站链接。主题包含 GEO 基础框架、方法优化、测量评估、AI 搜索实证、AEO 理论、风险与操纵、垂直多模态、Agentic Search、RAG 和搜索评估治理。
 
-- [在线搜索与筛选](https://yaojingang.github.io/GEOLab/02-geo-aeo-ai-search-papers/)
-- [完整论文清单](./02-geo-aeo-ai-search-papers/README.md)
-- [来源、文件校验与整理说明](./02-geo-aeo-ai-search-papers/00_资料说明/)
+- [在线搜索与筛选](https://yaojingang.github.io/GEOLab/02-papers/)
+- [完整论文清单](./02-papers/README.md)
+- [来源、文件校验与整理说明](./02-papers/00_资料说明/)
 
 ## 来源、引用与使用边界
 
@@ -125,7 +139,7 @@ CN-GEO 当前发布版包含 `214,119` 条原始引用记录、`64` 个 JSONL �
 - 不同论文、原始数据和清洗仓库采用各自的样本范围与处理口径。引用数字时，以对应论文或数据版本的说明为准。
 - 本仓库采用分范围许可：代码和自动化文件使用 MIT，自有报告、文档、可视化和目录元数据使用 CC BY 4.0。论文 PDF、来源数据和其他第三方材料维持原许可。
 
-完整的数据限制和验收结果见 [CN-GEO 数据集中文说明](./03-cn-geo-citation-dataset/data/数据集中文说明.md) 与 [数据质量报告](./03-cn-geo-citation-dataset/data/quality/release_date=2026-07-14/quality_report.md)。
+完整的数据限制和验收结果见 [CN-GEO 数据集中文说明](./03-datasets/data/数据集中文说明.md) 与 [数据质量报告](./03-datasets/data/quality/release_date=2026-07-14/quality_report.md)。
 
 ## 发布轻量 Viewer
 

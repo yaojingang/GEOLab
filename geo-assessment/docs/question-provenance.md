@@ -9,9 +9,9 @@ GEO Assessment 的 30 道题是 GEO Citation Lab 原创编写的场景化测验�
 - 跨平台引用与答案吸收实验，覆盖 ChatGPT、Google AI Overview、Gemini 与 Perplexity
 - CN-GEO 中文生成式搜索引用数据，原始层包含 214,119 条引用记录
 
-完整来源清单、标题、年份、链接和每题对应的 `source_refs` 位于 [`database/seeds/geo-30-v1.2.json`](../database/seeds/geo-30-v1.2.json)。仓库的 [`02-geo-aeo-ai-search-papers/`](../../02-geo-aeo-ai-search-papers/) 提供论文导航与校验信息，测试系统 Release 不包含论文 PDF。`geo-30-v1.1` 保留为历史题集，现有报告可以继续复查。
+完整来源清单、标题、年份、链接和每题对应的 `source_refs` 位于 [`database/seeds/geo-30-v1.2.json`](../database/seeds/geo-30-v1.2.json)。仓库的 [`02-papers/`](../../02-papers/) 提供论文导航与校验信息，测试系统 Release 不包含论文 PDF。`geo-30-v1.1` 保留为历史题集，现有报告可以继续复查。
 
-题库生成工具读取冻结的[54 篇文献清单](https://github.com/yaojingang/geo-citation-lab/blob/main/geo-assessment/tools/paper-catalog-2026-08-04.csv)。这份快照保留 P01 至 P54 的顺序和书目信息，论文导航的后续扩充独立维护。
+题库生成工具读取冻结的[54 篇文献清单](https://github.com/yaojingang/GEOLab/blob/main/geo-assessment/tools/paper-catalog-2026-08-04.csv)。这份快照保留 P01 至 P54 的顺序和书目信息，论文导航的后续扩充独立维护。
 
 ## 编写方法
 

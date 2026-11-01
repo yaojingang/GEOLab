@@ -31,10 +31,10 @@ REQUIRED_FILES = {
     "LICENSE-CODE",
     "LICENSE-CONTENT",
     "THIRD_PARTY_NOTICES.md",
-    "01-geo-experiment-data-report/04-repet/final_report.html",
-    "02-geo-aeo-ai-search-papers/index.html",
-    "02-geo-aeo-ai-search-papers/00_资料说明/论文清单.csv",
-    "03-cn-geo-citation-dataset/reports/final/CN-GEO_多维数据分析报告.html",
+    "01-experiments/04-repet/final_report.html",
+    "02-papers/index.html",
+    "02-papers/00_资料说明/论文清单.csv",
+    "03-datasets/reports/final/CN-GEO_多维数据分析报告.html",
 }
 BANNED_SUFFIXES = {".pdf", ".parquet", ".duckdb", ".jsonl", ".ttf"}
 
@@ -80,6 +80,37 @@ def _verify_links(viewer: Path) -> None:
                 missing.append(f"{html_file.relative_to(viewer)} -> {value}")
     if missing:
         raise AssertionError("Missing local viewer links:\n" + "\n".join(missing))
+
+
+def _verify_resource_navigation(viewer: Path) -> None:
+    root = LinkCollector()
+    root.feed((viewer / "index.html").read_text(encoding="utf-8"))
+    for category in ("04-whitepapers", "05-articles"):
+        assert f"https://github.com/yaojingang/GEOLab/tree/main/{category}" in root.links
+        assert (REPO_ROOT / category / "README.md").is_file()
+
+    routes = {
+        "01-geo-experiment-data-report/04-repet/final_report.html":
+            "01-experiments/04-repet/final_report.html",
+        "02-geo-aeo-ai-search-papers/index.html": "02-papers/index.html",
+        "03-cn-geo-citation-dataset/reports/final/CN-GEO_多维数据分析报告.html":
+            "03-datasets/reports/final/CN-GEO_多维数据分析报告.html",
+    }
+    for old, new in routes.items():
+        page = viewer / old
+        html = page.read_text(encoding="utf-8")
+        parser = LinkCollector()
+        parser.feed(html)
+        assert (viewer / new).resolve() in {
+            _local_link_target(page, link) for link in parser.links
+        }, f"Legacy route does not link to its replacement: {old}"
+        assert 'http-equiv="refresh"' in html
+        assert "location.search + location.hash" in html
+
+    csv_suffix = Path("00_资料说明/论文清单.csv")
+    assert (viewer / "02-geo-aeo-ai-search-papers" / csv_suffix).read_bytes() == (
+        viewer / "02-papers" / csv_suffix
+    ).read_bytes()
 
 
 def _verify_archive(viewer: Path, package_dir: Path, manifest: dict) -> None:
@@ -147,7 +178,7 @@ def _verify_archive(viewer: Path, package_dir: Path, manifest: dict) -> None:
 
 def _verify_catalog(viewer: Path) -> None:
     catalog = (
-        viewer / "02-geo-aeo-ai-search-papers" / "index.html"
+        viewer / "02-papers" / "index.html"
     ).read_text(encoding="utf-8")
     assert "window.GEO_VIEWER_CSV =" in catalog, "Paper CSV was not embedded"
     assert "window.GEO_VIEWER_USE_SOURCE_PDF_URLS = true;" in catalog
@@ -161,7 +192,7 @@ def _verify_catalog(viewer: Path) -> None:
 
     csv_path = (
         viewer
-        / "02-geo-aeo-ai-search-papers"
+        / "02-papers"
         / "00_资料说明"
         / "论文清单.csv"
     )
@@ -214,7 +245,7 @@ def _verify_licenses(viewer: Path, manifest: dict) -> None:
 
     root_index = (viewer / "index.html").read_text(encoding="utf-8")
     catalog = (
-        viewer / "02-geo-aeo-ai-search-papers" / "index.html"
+        viewer / "02-papers" / "index.html"
     ).read_text(encoding="utf-8")
     for html in (root_index, catalog):
         assert 'rel="license"' in html
@@ -264,7 +295,7 @@ def _run_shell_install(package_dir: Path, install_dir: Path) -> None:
     assert not list(install_dir.parent.glob(f"{install_dir.name}.previous.*"))
 
     report_relative = Path(
-        "01-geo-experiment-data-report/04-repet/final_report.html"
+        "01-experiments/04-repet/final_report.html"
     )
     (install_dir / report_relative).unlink()
     third = subprocess.run(command, check=True, text=True, capture_output=True)
@@ -417,7 +448,7 @@ def _run_powershell_install_if_available(
     assert "status=already-installed" in second.stdout
     assert "distribution_version=0.1.0" in second.stdout
     report_relative = Path(
-        "01-geo-experiment-data-report/04-repet/final_report.html"
+        "01-experiments/04-repet/final_report.html"
     )
     (install_dir / report_relative).unlink()
     third = subprocess.run(command, check=True, text=True, capture_output=True)
@@ -478,6 +509,7 @@ def main() -> int:
         )
 
         _verify_links(viewer)
+        _verify_resource_navigation(viewer)
         _verify_catalog(viewer)
         _verify_licenses(viewer, manifest)
         _verify_archive(viewer, package_dir, manifest)
@@ -491,6 +523,7 @@ def main() -> int:
             path.stat().st_size for path in viewer.rglob("*") if path.is_file()
         )
         print("viewer_links=pass")
+        print("resource_navigation_and_legacy_routes=pass")
         print("viewer_catalog=pass")
         print("viewer_licenses=pass")
         print("agent_skill=pass")

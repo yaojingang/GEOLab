@@ -6,21 +6,23 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import posixpath
 import shutil
 import stat
 import tempfile
 import zipfile
 from pathlib import Path
+from urllib.parse import quote
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = REPO_ROOT / "dist" / "viewer"
 DEFAULT_PACKAGE_DIR = REPO_ROOT / "dist" / "release"
 MANIFEST_PATH = REPO_ROOT / "deploy" / "manifest.json"
-PAPER_DIR = REPO_ROOT / "02-geo-aeo-ai-search-papers"
+PAPER_DIR = REPO_ROOT / "02-papers"
 PAPER_CSV = PAPER_DIR / "00_资料说明" / "论文清单.csv"
 LOCAL_PAPER_PDF = (
-    "./02-geo-aeo-ai-search-papers/04_AI搜索实证/"
+    "./02-papers/04_AI搜索实证/"
     "04_AI搜索实证_Chinese_Language_Generative_Search_Engines_Citation_Study.pdf"
 )
 REMOTE_PAPER_PDF = (
@@ -28,6 +30,11 @@ REMOTE_PAPER_PDF = (
 )
 RELEASE_ASSET_NAME = "geo-citation-lab-viewer.zip"
 VIEWER_CHECKSUMS_NAME = "geo-citation-lab-files.sha256"
+LEGACY_DIRECTORIES = {
+    "01-geo-experiment-data-report": "01-experiments",
+    "02-geo-aeo-ai-search-papers": "02-papers",
+    "03-cn-geo-citation-dataset": "03-datasets",
+}
 RELEASE_FILENAMES = set(
     json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))["release_assets"]
 )
@@ -95,15 +102,15 @@ def _build_paper_catalog(target: Path) -> None:
     html = html.replace(
         'href="./README.md"',
         'href="https://github.com/yaojingang/GEOLab/blob/main/'
-        '02-geo-aeo-ai-search-papers/README.md"',
+        '02-papers/README.md"',
     )
     html = html.replace(
         'href="./00_资料说明/checksums.sha256"',
         'href="https://github.com/yaojingang/GEOLab/blob/main/'
-        '02-geo-aeo-ai-search-papers/00_资料说明/checksums.sha256"',
+        '02-papers/00_资料说明/checksums.sha256"',
     )
 
-    paper_target = target / "02-geo-aeo-ai-search-papers"
+    paper_target = target / "02-papers"
     _write_text(paper_target / "index.html", html)
     _copy_file(PAPER_CSV, paper_target / "00_资料说明" / PAPER_CSV.name)
 
@@ -117,6 +124,32 @@ def _write_viewer_checksums(target: Path) -> None:
         digest = hashlib.sha256(source.read_bytes()).hexdigest()
         lines.append(f"{digest}  {relative}")
     _write_text(target / VIEWER_CHECKSUMS_NAME, "\n".join(lines) + "\n")
+
+
+def _build_legacy_routes(target: Path) -> None:
+    for old, new in LEGACY_DIRECTORIES.items():
+        for source in sorted((target / new).rglob("*")):
+            if not source.is_file():
+                continue
+            legacy = target / old / source.relative_to(target / new)
+            if source.suffix != ".html":
+                _copy_file(source, legacy)
+                continue
+            destination = quote(posixpath.relpath(
+                source.relative_to(target).as_posix(),
+                legacy.parent.relative_to(target).as_posix(),
+            ), safe="/")
+            _write_text(legacy, (
+                '<!doctype html>\n<html lang="zh-CN"><head><meta charset="utf-8">\n'
+                '<meta name="robots" content="noindex">\n'
+                f'<link rel="canonical" href="{destination}">\n'
+                f'<meta http-equiv="refresh" content="0;url={destination}">\n'
+                '<title>GEOLab · 页面已迁移</title>\n<script>\n'
+                f'const destination = {_javascript_string_literal(destination)};\n'
+                'location.replace(destination + location.search + location.hash);\n'
+                '</script></head><body><p>此页面已迁移。'
+                f'<a href="{destination}">打开新地址</a></p></body></html>\n'
+            ))
 
 
 def build_viewer(output: Path) -> Path:
@@ -135,22 +168,22 @@ def build_viewer(output: Path) -> Path:
         _copy_file(REPO_ROOT / ".nojekyll", stage / ".nojekyll")
         _copy_file(
             REPO_ROOT
-            / "01-geo-experiment-data-report"
+            / "01-experiments"
             / "04-repet"
             / "final_report.html",
             stage
-            / "01-geo-experiment-data-report"
+            / "01-experiments"
             / "04-repet"
             / "final_report.html",
         )
         _copy_file(
             REPO_ROOT
-            / "03-cn-geo-citation-dataset"
+            / "03-datasets"
             / "reports"
             / "final"
             / "CN-GEO_多维数据分析报告.html",
             stage
-            / "03-cn-geo-citation-dataset"
+            / "03-datasets"
             / "reports"
             / "final"
             / "CN-GEO_多维数据分析报告.html",
@@ -162,6 +195,7 @@ def build_viewer(output: Path) -> Path:
         )
         for license_name in ("LICENSE", "LICENSE-CODE", "LICENSE-CONTENT"):
             _copy_file(REPO_ROOT / license_name, stage / license_name)
+        _build_legacy_routes(stage)
         _write_viewer_checksums(stage)
 
         if output.exists():

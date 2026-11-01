@@ -47,14 +47,14 @@ $sources[] = [
     'title' => '跨平台引用选择与答案吸收实验数据',
     'kind' => 'dataset',
     'citation' => '602 条 Prompt，3 个海外生成式搜索平台，证据冻结于 2026-08-04',
-    'url' => 'https://github.com/yaojingang/geo-citation-lab/tree/main/01-geo-experiment-data-report',
+    'url' => 'https://github.com/yaojingang/GEOLab/tree/main/01-experiments',
 ];
 $sources[] = [
     'id' => 'D02',
     'title' => 'CN-GEO 中文生成式搜索引用数据集',
     'kind' => 'dataset',
     'citation' => 'v2.0.1，214,119 条原始引用记录，证据冻结于 2026-08-04',
-    'url' => 'https://github.com/yaojingang/geo-citation-lab/tree/main/03-cn-geo-citation-dataset',
+    'url' => 'https://github.com/yaojingang/GEOLab/tree/main/03-datasets',
 ];
 
 $payload = [

@@ -2,7 +2,7 @@
 
 本目录收纳 GEO、AEO、AI Search、生成式搜索引擎优化与引用操纵相关论文资料。源资料来自 `GEO_AI搜索_AEO_论文合集`、2026-06-20 近 30 天新增论文调研，2026-07-21 新增的中文生成式搜索实证论文，以及 2026-10-25 文献更新。当前包含 70 篇论文索引，其中 65 份 PDF 按主题保存在 10 个目录，5 篇通过原始来源阅读。
 
-在线导航页：[https://yaojingang.github.io/GEOLab/02-geo-aeo-ai-search-papers/](https://yaojingang.github.io/GEOLab/02-geo-aeo-ai-search-papers/)
+在线导航页：[https://yaojingang.github.io/GEOLab/02-papers/](https://yaojingang.github.io/GEOLab/02-papers/)
 
 ## 分类概览
 
