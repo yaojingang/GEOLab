@@ -252,6 +252,33 @@ def _verify_licenses(viewer: Path, manifest: dict) -> None:
         assert "https://creativecommons.org/licenses/by/4.0/" in html
 
 
+def _verify_interactive_guides(viewer: Path) -> None:
+    guides = viewer / "02-papers" / "interactive-guides"
+    with (viewer / "02-papers" / "00_资料说明" / "论文清单.csv").open(
+        encoding="utf-8-sig", newline=""
+    ) as source:
+        rows = list(csv.DictReader(source))
+    pages = sorted(guides.glob("*.html"))
+    available = sum(row["下载状态"] == "已下载" for row in rows)
+    assert len(pages) == available + 1 and available > 0
+    assert (guides / "README.md").is_file()
+    assert (guides / "论文互动解读页规范.md").is_file()
+    assert list((guides / "_assets").glob("*.css"))
+    assert list((guides / "_assets").glob("*.js"))
+    loader = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4"
+    for page in [viewer / "index.html", viewer / "02-papers" / "index.html", *pages]:
+        html = page.read_text(encoding="utf-8")
+        assert html.count(loader) == 1, f"Analytics loader count: {page}"
+        assert html.index(loader) < html.index("</head>"), page
+        assert "var _hmt = _hmt || [];" in html, page
+    root = LinkCollector()
+    root.feed((viewer / "index.html").read_text(encoding="utf-8"))
+    assert "./02-papers/interactive-guides/" in root.links
+    home = (guides / "index.html").read_text(encoding="utf-8")
+    assert "https://github.com/yaojingang/GEOLab" in home
+    assert not (guides / "_build").exists(), "Authoring inputs entered the Viewer"
+
+
 def _verify_skill() -> None:
     skill_dir = REPO_ROOT / "skills" / "geo-citation-lab"
     skill_text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
@@ -511,6 +538,7 @@ def main() -> int:
         _verify_links(viewer)
         _verify_resource_navigation(viewer)
         _verify_catalog(viewer)
+        _verify_interactive_guides(viewer)
         _verify_licenses(viewer, manifest)
         _verify_archive(viewer, package_dir, manifest)
         _run_shell_install(package_dir, root / "shell-install")

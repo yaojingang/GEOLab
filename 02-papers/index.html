@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GEO / AEO / AI Search 论文导航</title>
-<meta name="description" content="GEO Citation Lab 的 GEO、AEO、AI Search 论文导航页，按主题浏览 70 篇论文，仓库含 65 份 PDF。">
+<title>SEO / 搜索原理 / GEO 论文导航 · 122 篇</title>
+<meta name="description" content="GEO Citation Lab 的 SEO、搜索引擎原理、GEO、AEO 与 AI Search 统一文献导航，按 18 个主题浏览 122 项论文。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23f5f4ed'/%3E%3Cpath d='M18 14h28v36H18z' fill='%23faf9f5' stroke='%231B365D' stroke-width='3'/%3E%3Cpath d='M24 24h16M24 32h16M24 40h10' stroke='%231B365D' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 @font-face {
@@ -267,7 +267,7 @@ button { touch-action: manipulation; }
   gap: 12px;
   align-items: center;
   padding: 16px 0;
-  margin-bottom: 32px;
+  margin-bottom: 0;
   background: linear-gradient(var(--parchment) 0%, var(--parchment) 78%, transparent 100%);
 }
 .search {
@@ -347,73 +347,63 @@ button { touch-action: manipulation; }
   font-variant-numeric: tabular-nums;
 }
 
-.layout {
+
+.layout { min-width: 0; }
+.library-state { margin: 0 0 12px; color: var(--olive); font-size: 13px; line-height: 1.7; }
+.filter-panel {
+  margin: 0 0 20px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--ivory);
+}
+.filter-panel[hidden] { display: none; }
+.filter-row {
   display: grid;
-  grid-template-columns: 270px minmax(0, 1fr);
-  gap: 42px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
   align-items: start;
   min-width: 0;
 }
-.layout > * {
-  min-width: 0;
-}
-.sidebar {
-  position: sticky;
-  top: 94px;
-  padding-top: 4px;
-  min-width: 0;
-}
-.section-kicker {
-  margin: 0 0 12px;
-  color: var(--brand);
-  font-family: var(--ui);
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.category-list {
-  display: grid;
-  gap: 8px;
-}
-.cat-button {
-  min-height: 40px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  align-items: center;
-  width: 100%;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--olive);
-  padding: 8px 10px;
-  text-align: left;
-  cursor: pointer;
-  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
-}
-.cat-button:hover {
-  background: var(--brand-tint);
-  color: var(--brand);
-}
-.cat-button.is-active {
-  background: var(--ivory);
-  color: var(--brand);
-  border-color: var(--line);
-}
-.cat-button .count {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--stone);
-  font-variant-numeric: tabular-nums;
-}
-.note {
-  margin: 24px 0 0;
-  padding: 14px 0 0;
-  border-top: 1px solid var(--border-soft);
+.filter-label {
+  padding-top: 8px;
   color: var(--stone);
   font-size: 13px;
-  line-height: 1.55;
+  white-space: nowrap;
 }
+.filter-options { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 6px 11px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dark-warm);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.filter-chip:hover { background: var(--brand-tint); color: var(--brand); }
+.filter-chip[aria-pressed="true"] { background: var(--brand); color: var(--ivory); }
+.filter-chip:active { transform: translateY(1px); }
+.filter-chip:disabled { color: var(--stone); opacity: .55; cursor: default; transform: none; }
+.filter-chip:disabled:hover { background: transparent; }
+.filter-count { font-family: var(--mono); font-size: 11px; font-variant-numeric: tabular-nums; }
+.filter-chip[aria-pressed="false"] .filter-count { color: var(--stone); }
+.filter-panel > .filter-row + .filter-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-soft); }
+.filter-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 20px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+.summary-line { margin: 0 0 24px; }
 
 .content {
   min-width: 0;
@@ -570,17 +560,7 @@ button { touch-action: manipulation; }
   .page { width: min(100% - 32px, 760px); padding-top: 38px; }
   .hero { grid-template-columns: 1fr; gap: 28px; }
   .atlas { min-height: auto; }
-  .layout { grid-template-columns: 1fr; gap: 28px; }
-  .sidebar { position: static; }
-  .category-list {
-    display: flex;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: thin;
-  }
-  .cat-button {
-    min-width: 220px;
-  }
+  .filter-meta { grid-template-columns: 1fr; gap: 10px; }
   .controls {
     grid-template-columns: 1fr;
     position: static;
@@ -588,6 +568,12 @@ button { touch-action: manipulation; }
   }
 }
 @media (max-width: 640px) {
+  .filter-panel { padding: 14px 12px; }
+  .filter-row { grid-template-columns: 1fr; gap: 6px; }
+  .filter-label { padding-top: 0; }
+  .filter-chip { min-height: 44px; padding: 7px 10px; }
+  .filter-options { gap: 4px; }
+
   .page { width: min(100% - 24px, 560px); padding-bottom: 64px; }
   .topbar { align-items: flex-start; flex-direction: column; }
   .topbar nav { justify-content: flex-start; }
@@ -613,6 +599,16 @@ button { touch-action: manipulation; }
   }
 }
 </style>
+<!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">跳到论文列表</a>
@@ -629,8 +625,8 @@ button { touch-action: manipulation; }
 
   <section class="hero" aria-labelledby="page-title">
     <div class="hero-copy">
-      <h1 id="page-title"><span class="title-topics">GEO / AEO / AI Search</span> <span class="title-name">论文导航</span></h1>
-      <p>这是一张可检索的研究地图：按 GEO 测量、AI 搜索架构、Agentic Search、RAG 检索、搜索评估与风险操纵组织 70 篇论文。</p>
+      <h1 id="page-title"><span class="title-topics">SEO / GEO / AI Search</span> <span class="title-name">论文导航</span></h1>
+      <p>从经典搜索与外链，到 GEO 与 AI 搜索：按 18 个主题检索 122 项论文。</p>
       <div class="hero-actions">
         <a class="btn primary" href="#main-content">浏览论文</a>
         <a class="btn" href="./00_资料说明/论文清单.csv">查看 CSV</a>
@@ -639,17 +635,17 @@ button { touch-action: manipulation; }
 
     <aside class="atlas" aria-label="论文集合概览">
       <div class="atlas-head">
-        <span>2026-10-25 update</span>
-        <span>10 topics</span>
+        <span>2026-11-04 update</span>
+        <span>18 topics</span>
       </div>
       <figure class="atlas-figure">
         <canvas id="topic-map" width="640" height="300" aria-label="按主题规模生成的论文地图"></canvas>
       </figure>
       <div class="atlas-foot">
-        <div class="metric"><strong id="metric-total">70</strong><span>论文索引</span></div>
-        <div class="metric"><strong id="metric-topics">10</strong><span>主题目录</span></div>
-        <div class="metric"><strong id="metric-new">16</strong><span>新增论文</span></div>
-        <div class="metric"><strong id="metric-years">2023-2026</strong><span>年份跨度</span></div>
+        <div class="metric"><strong id="metric-total">122</strong><span>已收录论文</span></div>
+        <div class="metric"><strong id="metric-topics">18</strong><span>主题目录</span></div>
+        <div class="metric"><strong id="metric-new">52</strong><span>新增论文</span></div>
+        <div class="metric"><strong id="metric-years">1955-2026</strong><span>年份跨度</span></div>
       </div>
     </aside>
   </section>
@@ -657,7 +653,7 @@ button { touch-action: manipulation; }
   <section class="controls" aria-label="论文筛选">
     <label class="search">
       <span class="sr-only">搜索论文</span>
-      <input id="search" type="search" placeholder="搜索标题、来源、年份、备注..." autocomplete="off">
+      <input id="search" type="search" placeholder="搜索标题、作者、来源、年份..." autocomplete="off">
     </label>
     <label class="select-wrap">
       <span class="sr-only">排序方式</span>
@@ -670,18 +666,20 @@ button { touch-action: manipulation; }
     <button class="btn" type="button" id="clear">清除筛选</button>
   </section>
 
-  <p class="summary-line" id="summary">正在读取论文清单...</p>
+  <p class="library-state" id="library-state" hidden></p>
 
+  <section class="filter-panel" id="filters" aria-label="多维筛选，同一维度可多选" hidden></section>
+
+  <p class="summary-line" id="summary" role="status" aria-live="polite">正在读取论文清单...</p>
+
+  <section aria-label="论文互动课堂入口" style="max-width:1440px;margin:20px auto;padding:18px 28px;border:1px solid #d6d6d1;border-radius:12px;background:#fff;box-sizing:border-box">
+    <a href="interactive-guides/index.html" style="font-size:20px;font-weight:700">论文互动学习地图 · 121 篇解读 →</a>
+    <p style="margin:6px 0 0">覆盖 122 篇文献、18 个主题、5 条学习路线；已有 121 篇互动解读，另有 1 篇仅题录。</p>
+  </section>
   <main class="layout" id="main-content">
-    <aside class="sidebar" aria-label="主题筛选">
-      <p class="section-kicker">Topics</p>
-      <div class="category-list" id="categories"></div>
-      <p class="note">2026-10-25 新增收录 16 篇：11 篇在上一批次后首次提交，5 篇为早期遗漏补录。仓库保存 65 份 PDF，另有 5 篇通过原站阅读。</p>
-    </aside>
-
-    <section class="content" aria-live="polite">
+    <section class="content">
       <div id="papers"></div>
-      <div class="empty" id="empty">没有匹配的论文。可以换一个关键词，或清除主题筛选。</div>
+      <div class="empty" id="empty">没有匹配的论文。可以调整关键词或筛选条件。</div>
     </section>
   </main>
 
@@ -696,24 +694,8 @@ const CSV_PATH = "./00_资料说明/论文清单.csv";
 const EMBEDDED_CSV = window.GEO_VIEWER_CSV || "";
 const PDF_BASE_URL = window.GEO_PDF_BASE_URL || "";
 const USE_SOURCE_PDF_URLS = window.GEO_VIEWER_USE_SOURCE_PDF_URLS || false;
-const NEW_URLS = new Set([
-  "https://arxiv.org/pdf/2610.15033v1",
-  "https://arxiv.org/pdf/2609.40069v1",
-  "https://arxiv.org/pdf/2609.27845v1",
-  "https://arxiv.org/pdf/2609.29145v2",
-  "https://arxiv.org/pdf/2608.30023v1",
-  "https://arxiv.org/pdf/2608.29063v1",
-  "https://arxiv.org/pdf/2608.27631v1",
-  "https://arxiv.org/pdf/2607.14035v1",
-  "https://arxiv.org/pdf/2606.28356v2",
-  "https://arxiv.org/pdf/2606.12439v1",
-  "https://arxiv.org/pdf/2603.20213v1",
-  "https://arxiv.org/pdf/2609.07559v1",
-  "https://arxiv.org/pdf/2609.22655v1",
-  "https://arxiv.org/pdf/2609.02964v1",
-  "https://arxiv.org/pdf/2609.11915v1",
-  "https://arxiv.org/pdf/2604.19516v1"
-]);
+const LOCAL_READING_PATHS = window.GEO_LOCAL_READING_PATHS || {};
+const NEW_URLS = new Set(["https://openlib.org/home/krichel/courses/lis618/readings/luhn57.pdf", "https://www.cl.cam.ac.uk/archive/ksj21/ksjdigipapers/jdoc72.pdf", "https://ecommons.cornell.edu/server/api/core/bitstreams/27875c09-2f8d-4ba0-8dc8-8d5ec2a0cd1f/content", "https://www.staff.city.ac.uk/~sbrp622/papers/RSJ76.pdf", "https://ecommons.cornell.edu/server/api/core/bitstreams/fc18789c-6a03-48e6-8226-7dba0ce94e32/content", "https://www.ccs.neu.edu/home/vip/teach/IRcourse/IR_surveys/robertson_foundations.pdf", "https://www.cs.cmu.edu/~christos/courses/826-resources/PAPERS%2BBOOK/google-anatomy.pdf", "https://raw.githubusercontent.com/wiki/internetarchive/heritrix3/attachments/5441/786450.pdf", "https://cui.unige.ch/tcs/cours/algoweb/2002/articles/art_marculescu_andrei_2.pdf", "https://www.vldb.org/conf/2000/P200.pdf", "https://www.cis.upenn.edu/~mkearns/teaching/NetworkedLife/broder.pdf", "https://sigir.hosting.acm.org/files/forum/F2002/broder.pdf", "https://garfield.library.upenn.edu/papers/science1955.pdf", "https://citeseerx.ist.psu.edu/document?doi=516e8f7a06a147ea8980f2a1544cfabf020adf1d\u0026repid=rep1\u0026type=pdf", "https://www.w3.org/People/Massimo/papers/quest_hypersearch.pdf", "https://gwern.net/doc/technology/google/1998-page.pdf", "https://www.cs.cornell.edu/home/kleinber/auth.pdf", "https://www.cse.iitb.ac.in/~soumen/readings/papers/BharatHenzinger1998distill.pdf", "https://graal.ens-lyon.fr/~lmarchal/art-docs-0506/SALSA.pdf", "https://www.cse.iitb.ac.in/~soumen/readings/papers/Haveliwala2002topic.pdf", "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/qd-pagerank.pdf", "https://www.cs.toronto.edu/pub/reports/csrg/405/hilltop.html", "https://www.david-hawking.net/pubs/craswell_sigir01.pdf", "https://snap.stanford.edu/class/cs224w-readings/gyongyi04trustrank.pdf", "https://airweb.cse.lehigh.edu/2005/gyongyi.pdf", "https://www.vldb.org/conf/2005/papers/p517-gyongyi.pdf", "https://airweb.cse.lehigh.edu/2005/benczur.pdf", "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/www2006.pdf", "https://www.kdd.org/exploration_files/V13-02-08-Spirin.pdf", "https://web.archive.org/web/20190307165624id_/http://pdfs.semanticscholar.org/e398/c1e11f93a0c1eba9f4a301edee42a0940b61.pdf", "https://moodle.epfl.ch/pluginfile.php/2714859/mod_resource/content/1/p147-malaga.pdf", "https://www.ron-berman.com/papers/seo.pdf", "https://ieeexplore.ieee.org/abstract/document/6463486/", "https://babur.people.clemson.edu/research/SEO_What_Drives_Organic_Traffic_to_Retail_Sites.pdf", "https://mdpi-res.com/d_attachment/futureinternet/futureinternet-11-00032/article_deploy/futureinternet-11-00032.pdf", "https://arxiv.org/pdf/2204.10078", "https://downloads.webis.de/publications/papers/bevendorff_2024a.pdf", "https://www.cs.cornell.edu/~tj/publications/joachims_02c.pdf", "https://www.microsoft.com/en-us/research/wp-content/uploads/2005/08/icml_ranking.pdf", "https://www.khoury.northeastern.edu/home/vip/teach/IRcourse/IR_surveys/1_-_learning_to_rank.pdf", "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/MSR-TR-2010-82.pdf", "https://faculty.cc.gatech.edu/~zha/CS8803WST/dcg.pdf", "https://www.cs.cornell.edu/people/tj/publications/joachims_etal_05a.pdf", "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/Whatareyoulookingfor-cutrell-chi07.pdf", "https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.112.1288\u0026rep=rep1\u0026type=pdf", "https://www.ambuehler.ethz.ch/cdstore/www2009/proc/docs/p1.pdf", "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/08/JASIS90.pdf", "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/cikm2013_DSSM_fullversion.pdf", "https://arxiv.org/pdf/1711.08611v1", "https://arxiv.org/pdf/1901.04085v5", "https://aclanthology.org/2020.emnlp-main.550.pdf", "https://arxiv.org/pdf/2004.12832v2"]);
 const TOPIC_COPY = {
   "01_GEO基础框架": "GEO 概念、生成式搜索优化框架和基础比较。",
   "02_GEO方法优化": "内容特征、角色意图、白帽优化和多查询融合。",
@@ -724,18 +706,25 @@ const TOPIC_COPY = {
   "07_垂直多模态": "电商、Pinterest、VLM 排名器与多模态场景。",
   "08_AI搜索架构与AgenticSearch": "搜索接地架构、多步检索代理和学术搜索基准。",
   "09_RAG检索优化": "段落检索、长文档树搜索和上下文扩展。",
-  "10_搜索评估治理": "LLM judge、生产标签和搜索治理。"
+  "10_搜索评估治理": "LLM judge、生产标签和搜索治理。",
+  "11_检索与文本相关性": "词频、IDF、向量空间与概率检索模型。",
+  "12_搜索架构与抓取": "早期搜索系统、URL 调度、增量抓取、Web 图与搜索意图。",
+  "13_链接分析与外链理论": "引用网络、PageRank、HITS、Hilltop、主题权威与锚文本。",
+  "14_反垃圾与链接作弊": "信任传播、链接农场、SpamRank 与内容反垃圾。",
+  "15_SEO与自然流量": "SEO 经济模型、自然点击、网站质量、品牌与纵向研究。",
+  "16_机器学习排序": "RankSVM、RankNet、LambdaMART 与学习排序综述。",
+  "17_用户行为与搜索评估": "排序指标、点击偏差、眼动与行为模型。",
+  "18_语义搜索与现代检索": "LSA、DSSM、DRMM、BERT 重排、DPR 与 ColBERT。"
 };
 
 let allPapers = [];
-let activeCategory = "all";
 let query = "";
 
 const els = {
   search: document.getElementById("search"),
   sort: document.getElementById("sort"),
   clear: document.getElementById("clear"),
-  categories: document.getElementById("categories"),
+  filters: document.getElementById("filters"),
   papers: document.getElementById("papers"),
   summary: document.getElementById("summary"),
   empty: document.getElementById("empty"),
@@ -789,11 +778,15 @@ function parseCsv(text) {
     item.isNew = NEW_URLS.has(item.URL);
     item.sourceUrl = safeExternalUrl(item.URL);
     const relativeFilePath = `${item["分类"]}/${item["文件名"]}`;
-    item.filePath = USE_SOURCE_PDF_URLS || !item["文件名"]
-      ? item.sourceUrl
-      : (PDF_BASE_URL ? `${PDF_BASE_URL}${relativeFilePath}` : `./${relativeFilePath}`);
+    const localPath = LOCAL_READING_PATHS[item["论文题名"]];
+    item.filePath = !USE_SOURCE_PDF_URLS && localPath
+      ? localPath
+      : (USE_SOURCE_PDF_URLS || !item["文件名"]
+        ? item.sourceUrl
+        : (PDF_BASE_URL ? `${PDF_BASE_URL}${relativeFilePath}` : `./${relativeFilePath}`));
+    item.years = (item["年份"].match(/\d{4}/g) || []).map(Number);
     item.yearSort = parseInt((item["年份"].match(/\d{4}/) || ["0"])[0], 10);
-    item.searchText = `${item["分类"]} ${item["论文题名"]} ${item["年份"]} ${item["来源"]} ${item["备注"]}`.toLowerCase();
+    item.searchText = `${item["分类"]} ${item["论文题名"]} ${item["年份"]} ${item["来源"]} ${item["作者"] || ""} ${item["备注"]}`.toLowerCase();
     return item;
   });
 }
@@ -829,15 +822,97 @@ function safeExternalUrl(value) {
   }
 }
 
+
+const selectedFilters = {
+  topic: new Set(), year: new Set(), status: new Set(), format: new Set(), collection: new Set()
+};
+let filterDefinitions = [];
+
+function initializeFilters() {
+  const categories = Array.from(groupByCategory(allPapers).keys());
+  const latestYear = Math.max(...allPapers.flatMap(p => p.years));
+  const periods = [
+    { value: "before2000", label: "1999 及以前", from: 0, to: 1999 },
+    { value: "2000s", label: "2000 至 2009", from: 2000, to: 2009 },
+    { value: "2010s", label: "2010 至 2019", from: 2010, to: 2019 },
+    { value: "2020-2024", label: "2020 至 2024", from: 2020, to: 2024 }
+  ];
+  for (let year = 2025; year <= latestYear; year += 1) {
+    periods.push({ value: String(year), label: String(year), from: year, to: year });
+  }
+  filterDefinitions = [
+    { key: "topic", label: "主题", options: categories.map(category => ({
+      value: category, label: categoryName(category), matches: p => p["分类"] === category
+    })) },
+    { key: "year", label: "年份", options: periods.map(period => ({
+      value: period.value, label: period.label,
+      matches: p => p.years.some(year => year >= period.from && year <= period.to)
+    })).filter(option => allPapers.some(option.matches)) },
+    { key: "status", label: "全文", options: [
+      { value: "available", label: "已保存全文", matches: p => p["下载状态"] === "已下载" },
+      { value: "pending", label: "仅题录", matches: p => p["下载状态"] === "待补全文" }
+    ] },
+    { key: "format", label: "格式", options: [
+      { value: "PDF", label: "PDF", matches: p => p["文件格式"] === "PDF" },
+      { value: "HTML", label: "网页全文", matches: p => p["文件格式"] === "HTML" },
+      { value: "none", label: "暂无文件", matches: p => !p["文件格式"] }
+    ] },
+    { key: "collection", label: "收录", options: [
+      { value: "original", label: "原有文献", matches: p => !p.isNew },
+      { value: "new", label: "本批新增", matches: p => p.isNew }
+    ] }
+  ];
+  const group = definition => `<div class="filter-row">
+    <span class="filter-label" id="filter-label-${definition.key}">${definition.label}</span>
+    <div class="filter-options" role="group" aria-labelledby="filter-label-${definition.key}">
+      <button class="filter-chip" type="button" data-facet="${definition.key}" data-value="" aria-pressed="true"><span>不限</span><span class="filter-count"></span></button>
+      ${definition.options.map(option => `<button class="filter-chip" type="button" data-facet="${definition.key}" data-value="${escapeHtml(option.value)}" aria-pressed="false"><span>${escapeHtml(option.label)}</span><span class="filter-count"></span></button>`).join("")}
+    </div>
+  </div>`;
+  els.filters.innerHTML = filterDefinitions.slice(0, 2).map(group).join("")
+    + `<div class="filter-meta">${filterDefinitions.slice(2).map(group).join("")}</div>`;
+  els.filters.hidden = false;
+  els.filters.addEventListener("click", event => {
+    const button = event.target.closest("button[data-facet]");
+    if (!button || button.disabled) return;
+    const selection = selectedFilters[button.dataset.facet];
+    const value = button.dataset.value;
+    if (!value) selection.clear();
+    else if (selection.has(value)) selection.delete(value);
+    else selection.add(value);
+    render();
+  });
+}
+
+function matchesFilters(paper, exceptFacet) {
+  const keyword = query.toLowerCase().trim();
+  if (keyword && !paper.searchText.includes(keyword)) return false;
+  return filterDefinitions.every(definition => {
+    const selected = selectedFilters[definition.key];
+    return definition.key === exceptFacet || !selected.size
+      || definition.options.some(option => selected.has(option.value) && option.matches(paper));
+  });
+}
+
+function renderFilters() {
+  for (const definition of filterDefinitions) {
+    const candidates = allPapers.filter(paper => matchesFilters(paper, definition.key));
+    const selected = selectedFilters[definition.key];
+    for (const button of els.filters.querySelectorAll(`[data-facet="${definition.key}"]`)) {
+      const value = button.dataset.value;
+      const option = definition.options.find(item => item.value === value);
+      const count = option ? candidates.filter(option.matches).length : candidates.length;
+      const active = value ? selected.has(value) : selected.size === 0;
+      button.setAttribute("aria-pressed", String(active));
+      button.querySelector(".filter-count").textContent = String(count);
+      button.title = `在其他筛选条件下，${option ? option.label : "不限"}有 ${count} 篇`;
+      button.disabled = Boolean(value && !active && count === 0);
+    }
+  }
+}
+
 function getFiltered() {
-  let papers = allPapers.slice();
-  if (activeCategory !== "all") {
-    papers = papers.filter(p => p["分类"] === activeCategory);
-  }
-  if (query) {
-    const q = query.toLowerCase().trim();
-    papers = papers.filter(p => p.searchText.includes(q));
-  }
+  const papers = allPapers.filter(paper => matchesFilters(paper));
   const mode = els.sort.value;
   if (mode === "year-desc") {
     papers.sort((a, b) => b.yearSort - a.yearSort || a["论文题名"].localeCompare(b["论文题名"]));
@@ -849,38 +924,25 @@ function getFiltered() {
   return papers;
 }
 
-function renderCategories() {
-  const grouped = groupByCategory(allPapers);
-  const totalButton = `<button class="cat-button ${activeCategory === "all" ? "is-active" : ""}" data-category="all" type="button"><span>全部论文</span><span class="count">${allPapers.length}</span></button>`;
-  const buttons = Array.from(grouped.entries()).map(([category, rows]) => (
-    `<button class="cat-button ${activeCategory === category ? "is-active" : ""}" data-category="${escapeHtml(category)}" type="button">
-      <span>${escapeHtml(categoryName(category))}</span>
-      <span class="count">${rows.length}</span>
-    </button>`
-  )).join("");
-  els.categories.innerHTML = totalButton + buttons;
-  els.categories.querySelectorAll("button").forEach(button => {
-    button.addEventListener("click", () => {
-      activeCategory = button.dataset.category;
-      render();
-    });
-  });
-}
-
 function renderPaper(paper) {
-  const newTag = paper.isNew ? `<span class="tag new">近期新增</span>` : "";
+  const priorityLabels = { P0: "优先阅读", P1: "按需补读", P2: "历史与扩展" };
+  const note = paper["备注"].replace(/^P[012](?=\s*·)/, value => priorityLabels[value]);
+  const newTag = paper["下载状态"] === "待补全文"
+    ? `<span class="tag">仅题录 · 未取得全文</span>`
+    : (paper.isNew ? `<span class="tag new">本批新增</span>` : "");
   const paperAction = paper.filePath
-    ? `<a class="pdf-link" href="${escapeHtml(encodeURI(paper.filePath))}" target="_blank" rel="noopener noreferrer">打开 PDF</a>`
+    ? `<a class="pdf-link" href="${escapeHtml(encodeURI(paper.filePath))}" target="_blank" rel="noopener noreferrer">${paper["下载状态"] === "待补全文" ? "查看出版方" : "打开论文"}</a>`
     : `<span class="pdf-link" aria-disabled="true">来源链接不可用</span>`;
   return `<article class="paper-row">
     <div class="paper-main">
       <h3 class="paper-title">${escapeHtml(paper["论文题名"])}</h3>
       <div class="paper-meta">
         <span class="tag">${escapeHtml(paper["年份"])}</span>
+        ${paper["作者"] ? `<span>${escapeHtml(paper["作者"])}</span>` : ""}
         <span>${escapeHtml(paper["来源"])}</span>
         ${newTag}
       </div>
-      <p class="paper-note">${escapeHtml(paper["备注"])}</p>
+      <p class="paper-note">${escapeHtml(note)}</p>
     </div>
     <div class="paper-action">
       ${paperAction}
@@ -903,7 +965,7 @@ function renderPapers(papers) {
           <h2 class="topic-title">${escapeHtml(categoryName(category))}</h2>
           <p class="topic-desc">${escapeHtml(TOPIC_COPY[category] || "该主题下的论文。")}</p>
         </div>
-        <span class="topic-count">${rows.length} papers</span>
+        <span class="topic-count">${rows.length} 篇</span>
       </header>
       <div class="paper-list">${rows.map(renderPaper).join("")}</div>
     </section>
@@ -911,11 +973,18 @@ function renderPapers(papers) {
 }
 
 function renderSummary(papers) {
-  const label = activeCategory === "all" ? "全部主题" : categoryName(activeCategory);
-  els.summary.innerHTML = `当前显示 <b>${papers.length}</b> / ${allPapers.length} 篇，筛选范围：<b>${escapeHtml(label)}</b>`;
+  const selectedCount = Object.values(selectedFilters).reduce((total, selected) => total + selected.size, 0);
+  const conditions = selectedCount ? ` · 已选 ${selectedCount} 项条件` : "";
+  els.summary.innerHTML = `当前显示 <b>${papers.length}</b> / ${allPapers.length} 篇${conditions}`;
 }
 
 function renderMetrics() {
+  const available = allPapers.filter(p => p["下载状态"] === "已下载").length;
+  const pdfs = allPapers.filter(p => p["文件格式"] === "PDF").length;
+  const web = allPapers.filter(p => p["文件格式"] === "HTML").length;
+  const pending = allPapers.filter(p => p["下载状态"] === "待补全文").length;
+  document.getElementById("library-state").textContent = `收录 ${allPapers.length} 篇，已保存全文 ${available} 篇（PDF ${pdfs}、网页 ${web}），另有 ${pending} 篇仅题录。`;
+  document.getElementById("library-state").hidden = false;
   const categories = new Set(allPapers.map(p => p["分类"]));
   const newCount = allPapers.filter(p => p.isNew).length;
   const years = allPapers
@@ -929,7 +998,7 @@ function renderMetrics() {
 }
 
 function render() {
-  renderCategories();
+  renderFilters();
   const papers = getFiltered();
   renderSummary(papers);
   renderPapers(papers);
@@ -1009,6 +1078,10 @@ function drawTopicMap() {
 }
 
 async function init() {
+  if (location.protocol === "file:" && !EMBEDDED_CSV) {
+    location.replace("./本地论文导航.html");
+    return;
+  }
   try {
     let csv = EMBEDDED_CSV;
     if (!csv) {
@@ -1017,6 +1090,7 @@ async function init() {
       csv = await response.text();
     }
     allPapers = parseCsv(csv);
+    initializeFilters();
     renderMetrics();
     render();
     drawTopicMap();
@@ -1035,7 +1109,7 @@ els.search.addEventListener("input", event => {
 });
 els.sort.addEventListener("change", render);
 els.clear.addEventListener("click", () => {
-  activeCategory = "all";
+  Object.values(selectedFilters).forEach(selected => selected.clear());
   query = "";
   els.search.value = "";
   els.sort.value = "category";

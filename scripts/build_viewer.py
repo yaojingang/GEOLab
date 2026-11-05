@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import posixpath
+import re
 import shutil
 import stat
 import tempfile
@@ -126,10 +128,61 @@ def _write_viewer_checksums(target: Path) -> None:
     _write_text(target / VIEWER_CHECKSUMS_NAME, "\n".join(lines) + "\n")
 
 
+def _build_interactive_guides(target: Path) -> None:
+    source_dir = PAPER_DIR / "interactive-guides"
+    guide_target = target / "02-papers" / "interactive-guides"
+    with PAPER_CSV.open(encoding="utf-8-sig", newline="") as source:
+        rows = list(csv.DictReader(source))
+    pdf_sources = {
+        f'../{row["分类"]}/{row["文件名"]}': row["URL"]
+        for row in rows if row["文件名"]
+    }
+
+    def shared_asset(content: str, suffix: str) -> str:
+        digest = hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
+        relative = f"_assets/pgs-{digest}.{suffix}"
+        _write_text(guide_target / relative, content)
+        return relative
+
+    for source in sorted(source_dir.glob("*.html")):
+        html = source.read_text(encoding="utf-8")
+        for relative, original_url in pdf_sources.items():
+            html = html.replace(relative, original_url)
+        css = re.search(
+            r"/\* ===== PGS core v2\.0.*?/\* ===== PGS core end ===== \*/",
+            html, re.S,
+        )
+        if css:
+            # Course-specific CSS, including SVG fragment URLs, stays inline.
+            if "url(" in css.group():
+                raise ValueError(f"Shared core CSS has a relative URL: {source.name}")
+            asset = shared_asset(css.group(), "css")
+            html = html[:css.start()] + (
+                f'</style><link rel="stylesheet" href="{asset}"><style>'
+            ) + html[css.end():]
+        runtime = re.search(
+            r"/\* ===== PGS core runtime v2\.0.*?"
+            r"(?=/\*\s*(?:=====\s*)?PAPER CONTENT runtime)",
+            html, re.S,
+        )
+        if runtime:
+            asset = shared_asset(runtime.group(), "js")
+            # Classic scripts execute in the original order and share global bindings.
+            html = html[:runtime.start()] + (
+                f'</script><script src="{asset}"></script><script>\n'
+            ) + html[runtime.end():]
+        _write_text(guide_target / source.name, html)
+    _copy_file(source_dir / "README.md", guide_target / "README.md")
+    _copy_file(source_dir / "论文互动解读页规范.md", guide_target / "论文互动解读页规范.md")
+
+
 def _build_legacy_routes(target: Path) -> None:
     for old, new in LEGACY_DIRECTORIES.items():
         for source in sorted((target / new).rglob("*")):
             if not source.is_file():
+                continue
+            # Learning pages were introduced under the canonical paper directory.
+            if source.relative_to(target / new).parts[0] == "interactive-guides":
                 continue
             legacy = target / old / source.relative_to(target / new)
             if source.suffix != ".html":
@@ -165,6 +218,7 @@ def build_viewer(output: Path) -> Path:
 
         _build_root_index(stage)
         _build_paper_catalog(stage)
+        _build_interactive_guides(stage)
         _copy_file(REPO_ROOT / ".nojekyll", stage / ".nojekyll")
         _copy_file(
             REPO_ROOT

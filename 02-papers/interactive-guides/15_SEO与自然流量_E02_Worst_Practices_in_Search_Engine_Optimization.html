@@ -1,0 +1,660 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SEO 的最差实践 · 论文课堂</title><meta name="description" content="黑帽手法分站内与站外两类，共同点是向搜索引擎与用户展示不同内容，一旦被识别将面临降位或除名，正常站点也可能被牵连受损。"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="Communications of the ACM"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* opt-101 新增：手法识别卡与证据条图 */
+.lesson .x-tech{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lesson .x-tech button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:1px solid var(--line-2);background:#fff;border-radius:10px;padding:10px 12px;text-align:left}
+.lesson .x-tech button b{font-size:15px;font-family:var(--serif)}
+.lesson .x-tech button small{font-family:Georgia,serif;font-size:11px;color:var(--ink-3)}
+.lesson .x-tech button .tag{margin:3px 0 0}
+.lesson .x-bars{margin:4px 0}
+.lesson .x-bar-row{display:grid;grid-template-columns:168px 1fr 82px;gap:12px;align-items:center;margin:13px 0;font-size:14px}
+.lesson .x-bar-track{position:relative;height:24px;background:var(--tint);border-radius:3px}
+.lesson .x-bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson .x-scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin:4px 0 0 180px}
+.lesson .x-duel{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .x-duel .card b{display:block;font-size:20px;margin-bottom:6px}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .x-tech{grid-template-columns:1fr 1fr}
+.lesson .x-bar-row{grid-template-columns:1fr;gap:5px}
+.lesson .x-scale{margin-left:0}
+.lesson .x-duel{grid-template-columns:1fr}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 15 SEO与自然流量</div>
+    <h1>SEO 的最差实践</h1>
+    <div class="en">2008 · 综述</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">SEO 的最差实践</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">黑帽手法分站内与站外两类，共同点是向搜索引擎与用户展示不同内容，一旦被识别将面临降位或除名，正常站点也可能被牵连受损。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">开场交代立场：这是综述课，只讲识别与防御。右下两个数字解释排名为什么值钱：六成用户只点第一页结果。提一句操作方式：M 切换专业层，N 看讲稿。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">沿着问题与证据完成这门课</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">先读结论，再拆原理、指标、方法、发现和应用。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">这页给全课地图：先认四个术语，再按索引、站内、站外与打击对手过手法，最后落到顾问核查清单。让学生点右侧章名试试跳转。术语按钮可以点开解释。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">起量越急的黑帽手法，代价是降位或除名</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">让抓取方与用户看到同一份内容，并核查外包商的具体手法<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">先看常见做法：对引擎与用户各给一套内容，短期有效，风险后置。切到研究启发，同一个目标换成合规做法。让学生说说差异在哪。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">研究对象需要先拆开再比较</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">门页：为单个关键词批量生成并重定向的页面<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">作者把 SEO 拆成选词、收录、站内、站外四个环节，黑帽手法就藏在后三个环节里。点上面三个按钮逐步讲。右侧四个术语是本课的钥匙，逐个点开。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">方法沿着这些环节产生作用</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">盘点黑帽手法类别 → 解释惩罚触发机制 → 提示顾问核查要点<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">流程页按论文的叙述顺序走：先盘点手法，再讲惩罚怎么触发，最后给核查要点。点下一步推进，专业层补了证据范围与边界。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">明确干预环节才能解释效果</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">基于 2006 年前后谷歌等引擎的规则与案例写作，具体惩罚标准随算法更新变化，不可照搬。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">定位页强调：这是实务综述，干预环节是识别手法与核对清单。上下两卡分别回答能支持什么、边界在哪。切专业层再看一次流程图。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">先把四个手法术语拆开再谈识别</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">四个术语对应四类手法：门页、伪装、链接农场、保龄球<span class="src">SEO Glossary · PDF p.2-3</span></div></div><div class="notes">这页的四个术语各对应一类手法。逐个点：门页、伪装、链接农场、保龄球。专业层给出原文机制与案例，例如 bmw.de 因门页被除名。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">实验设置限定结论的适用范围</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">CACM 实务文章，无自采数据，引用 iProspect 调查与谷歌除名宝马、Traffic Power 等案例。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">本篇无自采数据，证据是引擎规则、真实案例与一份用户行为调查。让学生点右侧三个来源标签，读英文节选，练习从原文找证据。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">保持对照一致才能解释变化</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">手法清单写于 2008 年，各引擎的具体惩罚规则此后多次更新，需对照当下政策阅读。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">把四项检查当验收单用：指南逐项复核、索要手法清单、记录年份口径、监控负向信号。勾满四项才算合格，勾选替代不了读指南。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">手法分四组：站内、站外、索引与打击对手</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">共同特征：给引擎与用户看不同内容，识别先对比两侧<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">招牌交互在这页：按四组过十张手法卡，每张卡讲运作方式、识别信号和处罚案例。先点门页示范一次，再让学生自己翻站外组。识别从对比两侧开始。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">比较改动前后可以看清操作</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">让抓取方与用户看到同一份内容，并核查外包商的具体手法<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">用一组示意文案对比整改前后：左边两套内容，右边同一份内容加外链核查。强调这是教学示意，原文没有测过整改的流量收益。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">数字需要连同口径一起读取</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">每项数值保留原论文单位、样本和适用条件。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">两个数字来自同一份 iProspect 调查、口径不同：62% 只点第一页，不足 10% 翻过第三页仍点击。切到合读看条图，结论是注意力集中在前三页。提醒看图注的口径说明。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">向引擎与用户展示不同内容是作弊共性</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">向引擎与用户展示不同内容是作弊共性<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">F1 是全课的锚：站内黑帽的共同点都是给引擎看另一套内容。切实践含义看怎么落到自查，切适用条件看年代边界。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">谷歌曾因门页除名宝马德国站点</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">谷歌曾因门页除名宝马德国站点<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">F2 用真实案例讲惩罚落地：bmw.de 与 ricoh.de 因门页被除名，Traffic Power 连客户一起被除名。问学生：外包的锅最后谁背？</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">黑帽会制造垃圾外链陷害竞争对手</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">黑帽会制造垃圾外链陷害竞争对手<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">F3 讲保龄球：给对手挂坏链接、注堆砌词，借引擎的规则害人。动机很直白，把排在前面的挤下去自己上位。切实践含义看外链监控怎么做。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">黑帽站点短期抢位会挤压正常站点</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">黑帽站点短期抢位会挤压正常站点<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">F4 讲黑帽的规模效应：自动生成上千站点，每站每天赚几美分，被除名前还能把白帽往下压。切适用条件提醒清单的年代问题。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">相关研究帮助检验迁移边界</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">对齐阶段与指标，才能比较不同研究。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">对照网页垃圾手法分类那篇：它给出学术分类与全网垃圾占比，本篇给实务清单。提醒学生两篇的阶段与口径不同，数字不能直接相加。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">宝马除名案：门页换来整站除名</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">原例：bmw.de 因门页被除名；外包连坐见 Traffic Power<span class="src">Introduction · PDF p.1</span></div></div><div class="notes">这页是论文原例：宝马德国站因门页被谷歌除名，同月 ricoh.de 同罪。让学生复述一遍因果链：手法、识别、处罚。外包连坐案例是 Traffic Power。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">不同角色需要不同的执行清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">行动建议为本课推断，需用对照试验确认。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">三个角色三张清单：业务侧盯内容一致性，采购侧用论文的顾问四问，技术侧巡检站内信号与外链。每条都标了对应发现，逐条可追溯。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态可以承接研究方法</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">成熟形态与研究方法的映射为本课推断。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">把结论落成三类工作形态：合规检查单、手法披露清单、外链审计记录。说明这层映射是本课推断，用法是先小范围试。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">结论的边界决定应用的尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">基于 2006 年前后谷歌等引擎的规则与案例写作，具体惩罚标准随算法更新变化，不可照搬。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">逐条过局限：清单写于 2008 年是最大边界；其次无自采数据，案例来自媒体报道与厂商博客。点左侧列表切换详情。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">保留结论依据与适用条件，再转为实践动作。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">六张卡对应六句带走的话，翻面看依据和用法。最后让学生点复制要点与出处，带走复习。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">利用反馈回看对应页面，核对指标与边界。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">五道题覆盖底线共识、宝马案例、62% 口径、Blog-ping 边界和时效局限。答错会给出复习页码，让学生跳回去看完再答。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>Worst Practices in Search Engine Optimization</p><p>2008 · Communications of the ACM</p><p><a href="https://moodle.epfl.ch/pluginfile.php/2714859/mod_resource/content/1/p147-malaga.pdf" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper101,
+  author = {Ross A. Malaga},
+  title = {Worst Practices in Search Engine Optimization},
+  year = {2008},
+  url = {https://moodle.epfl.ch/pluginfile.php/2714859/mod_resource/content/1/p147-malaga.pdf}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：ea3f0ac24a32e87d72ba05f8748b460803c82f18b90c2c45680e4d348c9cd56b</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={"id": 101, "zh": "SEO 的最差实践", "kind": "综述", "question": "哪些优化手法会招致搜索引擎的惩罚？", "claim": "黑帽手法分站内与站外两类，共同点是向搜索引擎与用户展示不同内容，一旦被识别将面临降位或除名，正常站点也可能被牵连受损。", "steps": ["盘点黑帽手法类别", "解释惩罚触发机制", "提示顾问核查要点"], "findings": ["向引擎与用户展示不同内容是作弊共性", "谷歌曾因门页除名宝马德国站点", "黑帽会制造垃圾外链陷害竞争对手", "黑帽站点短期抢位会挤压正常站点"], "metrics": [{"name": "门页", "plain": "为单个关键词批量生成并秒级跳转的页面", "pro": "Doorway pages：每页对应一个关键词，用快速 meta refresh 把用户送回主页；bmw.de 与 ricoh.de 因此被除名（PDF p.2）。"}, {"name": "伪装", "plain": "按来访者身份向引擎与用户展示不同页面的技术", "pro": "Cloaking：记录蜘蛛 IP，蜘蛛拿到纯文本优化页，普通用户拿到正常网页（论文 Figure 1）。"}, {"name": "链接农场", "plain": "只为互相挂链接而建的页面群", "pro": "Link farm：通常由自动化工具批量创建，目的在制造反向链接；也可被用来陷害对手。"}, {"name": "保龄球", "plain": "设法让竞争对手吃到惩罚或除名的手法统称", "pro": "Bowling：向对手注入关键词堆砌，或替对手从坏邻居挂外链；黑帽排第三时，挤掉前两名即排第一（PDF p.3）。"}], "setting": "CACM 实务文章，无自采数据，引用 iProspect 调查与谷歌除名宝马、Traffic Power 等案例。", "boundary": "基于 2006 年前后谷歌等引擎的规则与案例写作，具体惩罚标准随算法更新变化，不可照搬。", "query": "教学情境：站点想快速起量，哪些做法会让引擎和 AI 抓取方直接降权？", "before": "外包商加入隐藏关键词层与秒跳门页：引擎抓到堆词页，用户看到正常首页（教学示意）", "after": "移除两套内容，让抓取方与用户看到同一份页面，并对照指南核查外链来源（教学示意）", "finding_details": ["站内黑帽共用一个结构：给蜘蛛准备另一套内容。伪装按来访者身份切换页面，门页批量造页后秒级跳转，隐藏内容把关键词写进同色文字或隐藏层。各引擎指南将其统一归纳为：向引擎与用户展示同一份内容。", "2006 年 2 月谷歌因门页除名 bmw.de，同月 ricoh.de 同罪；外包商 Traffic Power 被除名后，其客户站点被一并除名。引擎公开口径：扭曲排名或误导用户者，可临时或永久除名。", "引擎重视外链质量，黑帽借这点陷害对手（业内俗称保龄球）：借网站搜索程序的漏洞往对手页面注入关键词堆砌，或替对手从链接农场、赌博与成人站点挂外链。动机直接：把排在前面的挤下去，自己上位。", "许多黑帽用工具自动生成成千上万个站点，每站每天只赚几美分，乘以规模便是生意。这些站点在被除名前能短期占据高位，把白帽站点往下压；被抓取复制的原站还可能被重复内容规则连带处罚。"], "catalog_title": "Worst Practices in Search Engine Optimization", "title": "Worst Practices in Search Engine Optimization", "authors": "Ross A. Malaga", "year": "2008", "category": "15_SEO与自然流量", "url": "https://moodle.epfl.ch/pluginfile.php/2714859/mod_resource/content/1/p147-malaga.pdf", "file": "15_SEO与自然流量_E02_Worst_Practices_in_Search_Engine_Optimization.html", "pdf": "", "kind_note": "概念与推导，暂无生产效果估计", "extra": "手法清单写于 2008 年，各引擎的具体惩罚规则此后多次更新，需对照当下政策阅读。", "evidence": [{"label": "摘要与研究目标", "text": "contributed articles doi: 10.1145/ 1409360.1409388 by Ross A. Malaga Worst Practices in Search Engine Optimization Many online companies have become aware of the importance of ranking well in the search engines. A recent article reveals that 62% of search engine users click only on results that appear on the first search engine results page (SERP) and less than 10% of users click on results that appear after the third page.3 In order to place well in the SERPs companies have begun to use search engine optimization techniques (SEO). That is they manipulate the site’s content and meta tags, as well as attempt to attract incoming links from other sites. However, certain SEO techniques directly violate the guidelines published by the search engines. While the specific guidelines vary a bit, they can all be summed up as: show the same content to search engines as you show to users. Failure to conform to search engine guidelines can lead to penalties, such as worse placement in the SERPs or an outright ban from the search engine. Consider the case of BMW’s German Web site (www. bmw.de). On February 7, 2006, Google banned this site for using a “doorway” page, essentially showing one page to the search engines and a different page to h", "page": 1}, {"label": "讨论与研究边界", "text": "Clearly the growth and popularity of Web search is an indication that Webmasters and online marketers must consider search engine optimization as part of their overall marketing plans. However, those that pursue SEO are up against an arsenal of black hat techniques. In addition, even those optimizers who try to stay on the white hat side may find that they have inadvertently crossed the line leading to penalties or even a ban. So, how should one proceed with SEO? When hiring an SEO consultant there are a number of factors to consider and questions to ask. First, see how the consultant or company ranks for the term “search engine optimization” on the major search engines. Obviously, if a consultant cannot rank well for their own site, it is not likely that they will succeed with your site. Second, you choose the key words and terms you want to Dec e mb e r 2 0 0 8 | vo l. 51 | n o. 1 2 | c om m u n ic at ion s of t h e acm 149 contributed articles rank well for. While a good SEO co", "page": 3}, {"label": "站外手法与保龄球", "text": "Off-page Black Hat Techniques All of the major search engines consider the number and quality of incoming links to a site as part of their algorithm. Links are especially important for ranking well on Google. Therefore, black hat optimizers use a variety of methods to increase their site’s back links (links from other sites). Bowling the Competition One of the most insidious black hat methods is manipulating competitors’ search engine results. The result is a search engine penalty or outright ban (a term black hatters call bowling). The incentive for this type of behavior is fairly obvious. If a black hat site is ranked third for a key term, the optimizer who can get the top two sites banned will be ranked first.", "page": 3}], "table": null, "version": "Communications of the ACM", "sha256": "ea3f0ac24a32e87d72ba05f8748b460803c82f18b90c2c45680e4d348c9cd56b", "stats": [{"v": "62%", "name": "只点第一页结果的用户占比", "source": "Introduction · 转引 iProspect 调查", "context": "iProspect 用户行为调查：多数用户只在第一页结果里点击，排名掉出首页后曝光锐减", "page": 1}, {"v": "10%", "name": "第三页之后仍点击的用户占比", "source": "Introduction · 转引 iProspect 调查", "context": "不足 10% 的用户会点开第三页之后的结果；前三页、尤其第一页，几乎拿走全部注意力", "page": 1}], "related": {"id": 95, "zh": "网页垃圾手法分类", "title": "Web Spam Taxonomy", "url": "./14_反垃圾与链接作弊_D02_Web_Spam_Taxonomy.html", "pdf": "https://airweb.cse.lehigh.edu/2005/gyongyi.pdf", "claim": "网页垃圾可归为抬高排名与隐藏痕迹两大类，覆盖词项与链接作弊及伪装跳转，综合多项研究估计全网 10-15% 的内容是垃圾。"}, "strength": "弱", "strength_why": "本课保守评级：概念、模拟、有限样本或未完成独立语义验证。", "limitations": [["高", "研究结论有明确范围", "基于 2006 年前后谷歌等引擎的规则与案例写作，具体惩罚标准随算法更新变化，不可照搬。"], ["高", "评价口径决定可以推断的结果", "手法清单写于 2008 年，各引擎的具体惩罚规则此后多次更新，需对照当下政策阅读。"], ["中", "环境变化需要重新验证", "引擎版本、界面、查询与候选来源变化时，重新执行同口径测量。该项为本课迁移审查。"], ["中", "证据与建议需逐项区分", "应用页的行动与成熟形态是教学推断。核查原论文方法、结果及局限后再作为实验假设。"], ["中", "相关研究提供新的对照", "网页垃圾可归为抬高排名与隐藏痕迹两大类，覆盖词项与链接作弊及伪装跳转，综合多项研究估计全网 10-15% 的内容是垃圾。"], ["低", "原文版本与内部一致性", "采用本地PDF可识别版本；不将清单页数与PDF分页混用。未逐表重算的指标仍需人工复核。"]], "quiz": [{"q": "各引擎指南虽措辞不同，共同的底线是哪一条？", "o": ["关键词密度必须控制在固定比例", "向搜索引擎展示与向用户展示相同的内容", "外链数量越多排名一定越高", "只要内容原创就不会被除名"], "a": 1, "e": "各引擎指南可归纳为一句话：给引擎与用户看同一份内容；违反者面临降位或整站除名。", "p": 13}, {"q": "2006 年 2 月谷歌除名 bmw.de 的直接原因是什么？", "o": ["站点服务器连续宕机", "页面加载速度过慢", "使用门页：引擎与用户看到的页面不同", "未按要求数量投放广告"], "a": 2, "e": "bmw.de 因门页被整站除名，同月 ricoh.de 也因同类手法被除名。", "p": 14}, {"q": "论文引用的 62% 指的是什么？", "o": ["黑帽站点最终被除名的比例", "只点击第一页搜索结果的用户占比", "企业 SEO 预算的年增长率", "被复制内容的原创站点比例"], "a": 1, "e": "出自 iProspect 用户行为调查：62% 用户只点第一页结果，第三页之后仍有点击的不足 10%。", "p": 12}, {"q": "同样是吸引引擎蜘蛛，哪种用法在论文看来仍属白帽？", "o": ["为每个关键词各建一页并秒级跳转", "按来访者身份返回不同页面", "少数博客挂链接、有更新才 ping", "在留言簿批量塞入带链接的评论"], "a": 2, "e": "Blog-ping 的温和版（少量博客、有更新才 ping）被论文列为白帽可用；其余三项对应门页、伪装与留言簿垃圾。", "p": 10}, {"q": "把这份 2008 年的手法清单用到现在，首先要做什么？", "o": ["直接照清单逐条执行", "假设各引擎规则从未变化", "对照各引擎当前指南逐项复核", "只凭是否被除名判断手法好坏"], "a": 2, "e": "清单基于 2006 年前后的规则与案例写作，惩罚标准随算法更新变化，需对照当下政策阅读。", "p": 21}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{geo:{t:"GEO",d:"改善来源在生成式答案中的可见性及归功的研究与实践。"},rag:{t:"RAG",d:"先检索外部资料，再以资料支持模型生成。"},baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},ablation:{t:"消融",d:"去除某个组件，比较它对整体结果的贡献。"},transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=e=>`<span class="src">${esc(e.label)} · PDF p.${e.page}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const researchOnly=['理论框架','综述'].includes(PAPER.kind);
+const stageNames=['手法清单来源','手法归类与机制','识别与防御要点'];
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,num:2,lim:0,role:0,proof:0,q:0,techGroup:0,tech:0,answers:[],checks:new Set(),flips:new Set()};
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function dataNumbers(){return PAPER.stats.length?`<div class="number-grid">${PAPER.stats.slice(0,4).map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div>${tip(s.source)}</div>`).join('')}</div>`:`<div class="answer"><div class="kicker">证据类型 · ${esc(PAPER.kind)}</div><h3>${esc(PAPER.zh)}</h3><p>${esc(PAPER.kind_note)}</p>${tip('本篇未在封面展示未经逐项核对的效果数值。')}</div>`}
+function flow(highlight){return `<div class="flow-line">${stageNames.map((t,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${highlight===i?'active':''}">${esc(t)}<div class="caption">${esc(PAPER.steps[i])}</div></div>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+const notesForStep=i=>[
+ `输入与目标：${PAPER.question}作者把 SEO 拆成选词、收录、站内、站外四环节，黑帽手法分布在后三个环节；证据为引擎规则与真实案例，无自采数据。`,
+ `研究比较：${PAPER.steps[1]}——各引擎指南可归纳为向引擎与用户展示同一份内容；违反者面临降位或整站除名。`,
+ `结果解读：${PAPER.steps[2]}，识别从对比引擎侧与用户侧的内容开始。回到本篇结论：${PAPER.claim}`
+][i];
+/* opt-101 招牌交互：黑帽手法识别卡（教学级示意，识别与防御导向） */
+const TECH_GROUPS=['站内手法','站外手法','索引加速','打击对手'];
+const TECH_CATALOG=[
+ [
+  {zh:'伪装',en:'Cloaking',mark:'两套内容',tone:'neg',how:'按来访者身份返回不同页面：引擎蜘蛛抓到纯关键词文本，普通用户拿到正常网页。',sig:'对比无痕窗口与引擎快照，内容对不上；同一网址对不同访问者返回不同版本。',case:'论文 Figure 1 给出示意；各引擎均将伪装视为欺骗。'},
+  {zh:'门页',en:'Doorway pages',mark:'两套内容',tone:'neg',how:'为每个关键词批量造页，页面几乎立即把用户跳转到主页，只留这些页面给引擎索引。',sig:'点开搜索结果后瞬间被跳走；成百页面共用同一模板、只差关键词。',case:'2006 年 2 月谷歌因此除名 bmw.de 与 ricoh.de。'},
+  {zh:'隐藏内容',en:'Invisible elements',mark:'两套内容',tone:'neg',how:'把关键词写进用户看不见的元素：同色文字、极小字号或隐藏的 div 层。',sig:'全选页面文本或查源码，出现屏幕上看不到的关键词块。',case:'谷歌已开始把隐藏 div 内容移出索引；用隐藏层做正常设计的站点可能被误伤。'},
+  {zh:'内容生成器',en:'Content generators',mark:'抄袭牵连',tone:'acc',how:'软件按指定词抓取他站内容，批量拼成新页面发布，一天可生成上千页。',sig:'站内出现大量与他站雷同、语句不通的页面。',case:'原创站可能被重复内容规则连带处罚。'}
+ ],
+ [
+  {zh:'留言簿垃圾',en:'Guest book spam',mark:'站外信号',tone:'acc',how:'在权威站点（多为教育、政府域名）的留言簿或评论区塞入带链接的留言。',sig:'外链记录里冒出大量与主题无关的留言页链接。',case:'论文提醒：这类外链增长与站点内容无关，容易被识别。'},
+  {zh:'链接农场',en:'Link farm',mark:'站外信号',tone:'acc',how:'一批页面专为互相挂链接而建，通常由工具批量搭建。',sig:'外链来源互相引用，页面内容几乎只有链接列表。',case:'农场链接也可被用于保龄球陷害。'},
+  {zh:'HTML 注入',en:'HTML injection',mark:'站外信号',tone:'acc',how:'利用他站搜索程序的安全漏洞，把含链接的字符串注入搜索结果页，换取权威站点的外链。',sig:'自家站点搜索结果页出现来历不明的链接。',case:'论文举例：斯坦福哲学百科全书站（PageRank 8）所用搜索程序曾是注入目标。'}
+ ],
+ [
+  {zh:'Blog-ping',en:'Blog and ping',mark:'看用量',tone:'acc',how:'批量开设成百上千博客，各自挂上目标链接，再高频宣告博客更新，引引擎蜘蛛顺链爬来。',sig:'大量内容雷同的博客集中指向同一站点。',case:'白帽温和版：少数博客、有更新才 ping，几天内即可被收录——区别在用量。'}
+ ],
+ [
+  {zh:'注入关键词堆砌',en:'Bowling · stuffing',mark:'陷害对手',tone:'neg',how:'借漏洞往对手页面注入大量重复关键词，让引擎把对手当作弊者处罚。',sig:'自家页面出现自己从未添加的关键词堆砌。',case:'论文以计算机销售站为例：页面被注入成串重复词后几乎必然受罚。'},
+  {zh:'坏邻居外链',en:'Bad neighborhood',mark:'陷害对手',tone:'neg',how:'替对手去链接农场、赌博、成人站点挂外链，触发引擎对坏邻居的惩罚。',sig:'外链突然冒出农场与灰色站点，且并非自己所为。',case:'动机：你排第三，把前两名挤下去，你就排第一。'}
+ ]
+];
+function techHtml(){
+ const g=state.techGroup,list=TECH_CATALOG[g],t=Math.min(state.tech,list.length-1),d=list[t];
+ return `<div class="choice-row" role="group" aria-label="手法分组">${TECH_GROUPS.map((n,i)=>`<button type="button" class="choice" data-action="techGroup" data-value="${i}" aria-pressed="${i===g}">${esc(n)} ${TECH_CATALOG[i].length}</button>`).join('')}</div>
+ <div class="columns"><div><div class="grp-t">${esc(TECH_GROUPS[g])} · 点卡片看运作方式与识别信号</div><div class="x-tech choice-row" role="group" aria-label="手法卡片">${list.map((x,i)=>`<button type="button" class="choice" data-action="tech" data-value="${i}" aria-pressed="${i===t}"><b>${esc(x.zh)}</b><small>${esc(x.en)}</small><span class="tag ${x.tone}">${esc(x.mark)}</span></button>`).join('')}</div></div>
+ <div class="answer" id="techOut" aria-live="polite"><h3>${esc(d.zh)} <span class="mono">${esc(d.en)}</span></h3><p>${esc(d.how)}</p><div class="callout"><b>识别信号</b>：${esc(d.sig)}</div>${d.case?`<p class="caption">${esc(d.case)}</p>`:''}</div></div>
+ <div class="only-pro pro-note">SEO 四环节：关键词研究与选择 → 争取收录 → 站内优化 → 站外优化（PDF p.2），黑帽手法集中在后三项。谷歌发言人：对扭曲排名或误导用户的站点，可临时或永久除名（PDF p.1）。判别始终回到一句问话：引擎看到的与用户看到的是否同一份内容。</div>`;
+}
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors.split("; ")[0])}${PAPER.authors.includes(";")?" 等":""} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}${PAPER.pdf?' · '+ext(PAPER.pdf,'本地PDF'):''}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿。进度自动保存在当前浏览器。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>${esc(PAPER.question)}</li><li>${esc(PAPER.metrics[0].name)}衡量什么？</li><li>${esc(PAPER.steps[1])}怎样起作用？</li><li>哪些条件会限制结论迁移？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>同一目标下，先对照常见做法与研究启发。</p>${tip('以下为围绕论文方法构造的教学情境。不给示意操作附加实测收益。')}</div><div>${choices(['常见做法','研究启发'],0,'scene')}<div class="answer" id="sceneOut" aria-live="polite"><h3>常见做法</h3><p>${esc(PAPER.before)}</p>${tip('观察这一做法遗漏了什么条件。')}</div></div></div>`;
+ else if(view==='concept')h=`${choices(PAPER.steps,0,'concept')}<div class="columns"><div class="answer" id="conceptOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p></div><div><div class="kicker">本篇要区分的量</div><ul class="fact-list">${PAPER.metrics.map((m,i)=>`<li><button type="button" class="term" data-term="metric${i}">${esc(m.name)}</button><small>${esc(m.plain)}</small></li>`).join('')}</ul></div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(notesForStep(state.step))}</p><div class="only-pro pro-note">${esc(PAPER.setting)}。证据范围：${esc(PAPER.boundary)}。</div></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按论文方法重新组织；箭头表达研究逻辑，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],1,'flow')}<div id="flowOut" aria-live="polite">${flow(1)}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric')h=`<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite"><h3>${esc(PAPER.metrics[state.metric].name)}</h3><p class="only-plain">${esc(PAPER.metrics[state.metric].plain)}</p><div class="only-pro"><p>${esc(PAPER.metrics[state.metric].plain)}</p><div class="pro-note">${esc(PAPER.metrics[state.metric].pro)}</div></div></div></div><div><div class="kicker">术语之外的检查次序</div><ul class="fact-list"><li>证据设置<small>${esc(PAPER.setting)}</small></li><li>对应结论<small>${esc(PAPER.findings[0])}</small></li><li>禁止越界<small>${esc(PAPER.boundary)}</small></li></ul></div></div>`;
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 研究设计</div><p class="intro">${esc(PAPER.setting)}</p><div class="callout">${esc(PAPER.boundary)}</div>${tip('研究类型会决定所需对照。综述需要核查纳入条件，理论需要核查假设，实证需要核查比较设计。')}</div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">给你的合规检查方案做核对 · 本课推断</div><div class="check-list">${['对照引擎当前指南逐项复核所用手法','向外包商索要手法与外链来源清单','记录调查与案例的年份、口径','监控降位、除名等负向信号并留档'].map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${s}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'具备基本合规检查要素':'继续补齐检查条件'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选用于检查方案完整性，替代不了逐条阅读引擎指南。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method')h=techHtml();
+ else if(view==='lab')h=`${choices(['操作前','操作后','并排比较'],2,'lab')}<div id="labOut" aria-live="polite">${labHtml(2)}</div><div class="callout" style="margin-top:16px">对应方法：${esc(PAPER.steps.join(' → '))}</div>${tip('教学示意。前后文案为本课构造，未在原论文中测量效果。')}`;
+ else if(view==='numbers')h=numbersHtml();
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);const fm=PAPER.metrics[[0,0,2,3][ix]];h=`<div class="ev" style="margin-bottom:16px">F${ix+1} · ${src(PAPER.evidence[0])} · 证据强度 <span class="${PAPER.strength==='弱'?'str-l':'str-m'}">${esc(PAPER.strength)}</span> ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite"><p>${esc(PAPER.finding_details[ix])}</p><div class="caption">结合本篇研究设计理解这条发现。</div></div></div><div><div class="kicker">如何核查这一发现</div><ul class="fact-list"><li>研究设置<small>${esc(PAPER.setting)}</small></li><li>相关手法<small>${esc(fm.name)}：${esc(fm.plain)}</small></li><li>迁移约束<small>${esc(ix===3?PAPER.extra:PAPER.boundary)}</small></li></ul><button type="button" class="btn" data-go="10" style="margin-top:12px">回到手法识别卡 →</button></div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes'){const quotes=[['向引擎与用户展示同一份内容','各引擎指南的共同归纳 · PDF p.1','任何优化手法先过这条底线'],['黑帽短期抢位，白帽长期受损','F4 · 自动生成的站点在除名前占据高位','排名异动时先查手法异常'],['外包的除名风险由雇主承担','F2 · Traffic Power 客户被连坐除名','验收外包时索要手法清单'],['识别信号从对比两侧开始','F1 · 站内手法都是两套内容','快照、源码与无痕窗口对照'],['温和使用的手法也有黑帽版','Blog-ping 的用量差异 · PDF p.2','看用量与意图，看清红线'],['清单会过期，指南要读当下','研究边界 · 清单写于 2008 年','定期对照引擎最新指南复核']];h=`<div class="flips">${quotes.map((s,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(s[0])}。</b><span class="flip-back">依据：${esc(s[1])}<br>用法：${esc(s[2])}。</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;}
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function labHtml(v){const a=panel('操作前 · 示意',PAPER.before),b=panel('操作后 · 示意',PAPER.after);return v===2?`<div class="two-docs">${a}${b}</div>`:v===0?a:b;}
+function numbersHtml(){
+ const n=PAPER.stats.length,v=Math.min(state.num,n);
+ return `${choices([...PAPER.stats.map(s=>s.name),'两个数字合读'],state.num,'number')}<div id="numberOut" aria-live="polite">${v<n?numberOne(v):numbersBoth()}</div>`;
+}
+function numberOne(i){const s=PAPER.stats[i];return `<div class="columns"><div><div class="kicker">${esc(s.name)}</div><div class="number-large">${esc(s.v)}</div>${src({label:s.source,page:s.page})}</div><div class="answer"><h3>这个数字表示什么</h3><p>${esc(s.context)}</p><div class="caption">${esc(PAPER.extra)}</div></div></div>`;}
+function numbersBoth(){const disp={'10%':'不足 10%'};return `<div class="columns"><div><div class="grp-t">同一 iProspect 调查的两个口径 · 满刻度 = 全部搜索用户</div><div class="x-bars">${PAPER.stats.map(s=>`<div class="x-bar-row"><span>${esc(s.name)}</span><div class="x-bar-track"><div class="x-bar-fill" style="width:${parseFloat(s.v)}%"></div></div><span class="mono">${esc(disp[s.v]||s.v)}</span></div>`).join('')}</div><div class="x-scale"><span>0%</span><span>50%</span><span>100%</span></div></div><div class="answer"><h3>两个数字合读</h3><p>注意力高度集中在前三页：第一页拿走大多数点击，翻过第三页仍点击的不足 10%。排名位置直接决定曝光与流量，这正是黑帽愿意冒险抢位的原因。</p><div class="caption">出处：Introduction 转引 iProspect Search Engine User Behavior Study（参考文献 3）· PDF p.1。条图按论文文字数值示意重绘；两个口径同出一份调查，问法与统计范围不同，已分别标注。</div></div></div>`;}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p>${relatedLink()}${tip('按相关论文摘要转述；沿用该论文的研究范围。')}</div>`;
+ return `<div class="answer"><h3>重新检查研究阶段与目标量</h3><p>${esc(PAPER.extra)}</p><p>对照阅读时记录：对象是否相同、来源是否已进入候选集、指标能否直接比较。</p>${relatedLink()}${tip('本段为教学推断。两篇论文的数字不宜直接相加。')}</div>`;
+}
+const originalCases={
+ 25:['争议问题是否有充分支持？','论文以阿斯巴甜与癌症关联等争议问题说明证据冲突。','比较真实网页中的事实、论证风格与相关性，观察模型回答变化。','Introduction / 摘要'],
+ 35:['虚构咖啡机目录中的产品如何排序？','论文分别观察很少被推荐与通常位列次选的目标产品。','控制商品目录后比较异常附加文本对首选概率的影响。','摘要 / Figure 1'],
+ 38:['消费商品推荐为何出现排序偏差？','来源正文被放入模型上下文，名称与位置也可能影响输出。','分别控制产品名、内容和位置，再比较推荐排序分布。','摘要 / Figure 1'],
+ 52:['合同的责任限制条款包括哪些内容？','句子级检索可能只取得损害类型，漏掉责任上限与例外。','层次节点保留完整条款，帮助同时回答责任限制和例外。','论文末尾 qualitative example'],
+ 58:['付费关联评测被答案采纳后需披露什么？','引文能够支持产品主张，但付费关联可能改变读者解释。','分别检查关系证据、答案采用、重要性和披露；缺证保持未决。','Introduction'],
+ 63:['背包是否符合短途旅行和工作装备需求？','卖方页面可能掩盖缺陷，让目标背包进入推荐集合。','以用户约束与效用评价结果，比较来源改写和防御前后。','Figure 1 / 摘要'],
+ 101:['宝马德国站为什么被谷歌整站除名？','bmw.de 使用门页：引擎抓到的页面与用户看到的页面不同，以此在热门关键词上抢排名。','2006 年 2 月 7 日谷歌将 bmw.de 整站除名；引擎发言人表态：扭曲排名或误导用户的站点，可被临时或永久除名。','Introduction · 参考文献 1（CNN，2006-02-07）']};
+function caseHtml(){const c=originalCases[PAPER.id];return `<div class="kicker">论文原例的中文转述 · ${esc(c[3])}</div><p class="intro">${esc(c[0])}</p><div class="two-docs">${panel('问题与输入',c[1])}${panel('操作与检查',c[2])}</div><div class="x-duel" style="margin-top:14px"><div class="card"><div class="k">外包连坐 · 2006 年 2 月</div><b>Traffic Power 及其客户</b><p>外包商被移出谷歌索引后，其客户站点被一并除名——惩罚落到雇主头上。</p></div><div class="card"><div class="k">同类手法 · 同月</div><b>ricoh.de</b><p>与 bmw.de 同因门页被谷歌除名；各引擎指南的共性由此可见。</p></div></div>${tip('出处：Introduction · 参考文献 1（CNN，2006-02-07）、参考文献 2（Cutts 博客）。本页转述论文原例，未补造流量或收益数字。')}`;}
+function personaHtml(){const roles=['内容与业务负责人','采购与外包管理者','技术与审核人员'];const todos=[['对照引擎指南核查站内：引擎与用户是否看到同一份内容','把排名位置与真实业务转化一起看，少看单日波动','发现降位、除名信号，先停用可疑手法再排查'],['用论文第一问筛选顾问：查对方自身关键排名','关键词由自己选定，警惕包排名的承诺','不全权交站，要求说明每项改动与外链来源','索要参考案例与具体投资回报'],['巡检隐藏层、秒级跳转与同色文字等站内信号','审计外链：发现农场、赌博、成人站链接及时处理','保留整改前后记录，便于申诉与对照']];const fs=[0,1,2];return `${choices(roles,state.role,'role')}<div class="columns"><div><h3>${roles[state.role]}</h3><p style="margin-top:12px">为什么关注：${esc(PAPER.findings[fs[state.role]])}。</p><div class="callout warn">避免：把两套内容当成增长手段——Traffic Power 的客户说明，除名会落到雇主站点。</div></div><div><ul class="fact-list">${todos[state.role].map((s,i)=>`<li>${esc(s)}<small>对应 F${fs[state.role]+1} · 本课应用推断</small></li>`).join('')}</ul></div></div>`;}
+function matureHtml(){const forms=[['引擎指南合规检查单','逐项对照当前指南；「引擎与用户两侧是否同一份内容」问句；注明检查日期与指南版本','盘点黑帽手法类别'],['SEO 交付手法披露清单','外包商写明所用站内、站外手法与用途；客户确认后存档','解释惩罚触发机制'],['外链来源审计记录','来源域名、类型与新增时间；农场或灰色站点标记与处理','提示顾问核查要点']];return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${forms.map(f=>`<tr><td>${esc(f[0])}</td><td>${esc(f[1])}</td><td>${esc(f[2])}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:18px">采用已有工作形态承接结论，先做小范围复验，再决定扩大应用；清单需随引擎指南更新。</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i===0?'来自本篇研究范围与局限解读。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、指标含义、适用条件与证据强弱。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','concept','flow','lab','compare','numberless','proof','number','metric','limit','tech','techGroup'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene')$('#sceneOut').innerHTML=`<h3>${v?'研究启发':'常见做法'}</h3><p>${esc(v?PAPER.after:PAPER.before)}</p>${tip(v?'本课应用推断。需要在目标场景中验证。':'教学示意，尚未进行实际效果测量。')}`;
+ else if(a==='concept')$('#conceptOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p>`;
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flow(v);
+ else if(a==='metric'){state.metric=v;const m=PAPER.metrics[v];$('#metricOut').innerHTML=`<h3>${esc(m.name)}</h3><p class="only-plain">${esc(m.plain)}</p><div class="only-pro"><p>${esc(m.plain)}</p><div class="pro-note">${esc(m.pro)}</div></div>`;}
+ else if(a==='techGroup'){state.techGroup=v;state.tech=0;box.innerHTML=draw('method');}
+ else if(a==='tech'){state.tech=v;box.innerHTML=draw('method');}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='lab')$('#labOut').innerHTML=labHtml(v);
+ else if(a==='numberless')$('#numberlessOut').textContent=v?PAPER.boundary:PAPER.setting;
+ else if(a==='number'){state.num=v;$('#numberOut').innerHTML=v<PAPER.stats.length?numberOne(v):numbersBoth();}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);$('#findingOut'+ix).innerHTML=`<p>${esc(v===0?PAPER.finding_details[ix]:v===1?'应用推断：'+PAPER.steps[ix%PAPER.steps.length]+'，并以'+PAPER.metrics[ix%PAPER.metrics.length].name+'检验。':PAPER.boundary)}</p>${tip(v===1?'行动建议属于教学推断。':v===2?PAPER.extra:'需要连同研究设计解读，勿省略条件。')}`;}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(PAPER.findings.map(t=>t+'。').join('\n')+'\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

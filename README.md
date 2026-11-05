@@ -53,12 +53,19 @@ AI 客户端会下载版本固定的 `v0.1.0` Viewer、验证 SHA-256、解压�
 | CN-GEO 原始引用记录 | 214,119 条 |
 | 国内 AI 平台与终端代码 | 12 个 |
 | 跨平台实验 Prompt | 602 条 |
-| GEO / AEO / AI Search 论文索引 | 70 篇，仓库含 65 份 PDF |
+| GEO / AEO / AI Search 论文索引 | 122 项，18 类主题，仓库含 65 份 PDF |
 | GEO 在线能力测试 | 30 题、100 分、六维诊断 |
 
 论文库于 2026-10-25 新增收录 16 篇，包含 11 篇近期论文和 5 篇遗漏补录。来源、版本、许可与阅读建议见[本轮更新记录](./02-papers/00_资料说明/2026-10-25_GEO论文更新记录.md)。
 
 [在线参加 GEO 能力测试](https://ai.laoyao.cn/geo/) · [查看 CN-GEO 分析报告](https://yaojingang.github.io/GEOLab/03-datasets/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [读 3 分钟实验摘要](./01-experiments/QUICK_REPORT.md) · [浏览论文导航](https://yaojingang.github.io/GEOLab/02-papers/) · [打开在线首页](https://yaojingang.github.io/GEOLab/)
+
+
+## 论文互动学习地图
+
+[打开在线学习地图](https://yaojingang.github.io/GEOLab/02-papers/interactive-guides/) · [页面清单与源码](./02-papers/interactive-guides/)
+
+地图索引 122 篇文献，提供 121 篇互动解读，共 2783 个白板页，覆盖 18 个主题和 5 条学习路线。每篇支持通俗与专业模式、逐页讲稿、自测反馈和本地学习进度；另有 1 篇仅题录。
 
 ## 这套研究在看什么
 
@@ -83,7 +90,7 @@ AI 搜索中的可见性包含多个环节。一条内容可能进入检索候�
 | --- | --- |
 | 了解 GEO 研究结论 | [CN-GEO 在线分析报告](https://yaojingang.github.io/GEOLab/03-datasets/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [跨平台实验摘要](./01-experiments/QUICK_REPORT.md) |
 | 使用数据或继续分析 | [CN-GEO 数据集说明](./03-datasets/) · [清洗后数据使用说明](./03-datasets/data/清洗后数据使用说明.md) |
-| 阅读论文或引用研究 | [两篇实证论文](#两条实证研究主线) · [70 篇论文导航](https://yaojingang.github.io/GEOLab/02-papers/) |
+| 阅读论文或引用研究 | [两篇实证论文](#两条实证研究主线) · [122 项论文导航](https://yaojingang.github.io/GEOLab/02-papers/) |
 | 查找行业白皮书与平台指南 | [白皮书目录与收录说明](./04-whitepapers/) |
 | 阅读研究文章与实务分析 | [研究文章目录与收录说明](./05-articles/) |
 | 复查实验与处理方法 | [跨平台实验管线](./01-experiments/03-pipeline/) · [CN-GEO 构建脚本](./03-datasets/scripts/) |
@@ -120,7 +127,7 @@ CN-GEO 当前发布版包含 `214,119` 条原始引用记录、`64` 个 JSONL �
 
 ## 论文库
 
-论文库按 10 个主题索引 70 篇论文，仓库保存 65 份 PDF，另 5 篇提供原站链接。主题包含 GEO 基础框架、方法优化、测量评估、AI 搜索实证、AEO 理论、风险与操纵、垂直多模态、Agentic Search、RAG 和搜索评估治理。
+论文库按 18 个主题索引 122 篇文献，其中 121 篇已有全文并配有互动解读，另有 1 篇仅题录。仓库保存 65 份原有 PDF，新增全文保留原站链接。主题包含 GEO 基础框架、方法优化、测量评估、AI 搜索实证、AEO 理论、风险与操纵、垂直多模态、Agentic Search、RAG 和搜索评估治理。
 
 - [在线搜索与筛选](https://yaojingang.github.io/GEOLab/02-papers/)
 - [完整论文清单](./02-papers/README.md)

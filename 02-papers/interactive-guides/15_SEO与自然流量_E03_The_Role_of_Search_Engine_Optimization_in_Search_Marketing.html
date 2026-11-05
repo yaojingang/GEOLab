@@ -1,0 +1,653 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SEO 在搜索营销中的角色 · 论文课堂</title><meta name="description" content="质量与流量估值正相关时，适度优化能修正引擎的测量误差并改善自然排序，而有赞助链接兜底时低质站点更无力竞争，引擎收入随优化变有效而下降。"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="Marketing Science"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.kicker{font-size:12px;color:var(--ink-3);letter-spacing:.05em;margin-bottom:9px}
+.intro{font-family:var(--serif);font-size:22px;line-height:1.7;color:var(--ink)}
+.english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 8px}
+.muted{color:var(--ink-2);font-size:14px}
+.caption{font-size:12px;color:var(--ink-3);line-height:1.6;margin-top:10px}
+.fact-list{list-style:none;margin:0;padding:0}
+.fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:15.5px;line-height:1.6}
+.fact-list li:last-child{border-bottom:0}
+.fact-list small{display:block;font-size:12px;color:var(--ink-3);margin-top:2px}
+.choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+button:active{transform:translateY(1px)}
+.answer{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:#fff}
+.answer h3{font-size:21px;margin-bottom:10px}
+.answer p{font-size:15.5px;margin-bottom:10px}
+.answer .caption{margin-top:8px}
+.source-text{font-family:Georgia,serif;font-size:13.5px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:16px;max-height:230px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.step-track button{font-size:15px;padding:14px 8px}
+.check-list{display:flex;flex-direction:column;gap:9px}
+.check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.check-list [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.flip-card{height:158px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:15px 16px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.flip-card b{font-family:var(--serif);font-size:17.5px;line-height:1.55}
+.flip-card .flip-back{display:none;font-size:13px;line-height:1.6}
+.flip-card[aria-pressed=true]{background:var(--tint)}
+.flip-card[aria-pressed=true] b{display:none}
+.flip-card[aria-pressed=true] .flip-back{display:block}
+.flip-card small{font-size:10.5px;color:var(--ink-3)}
+.quiz-options{display:grid;gap:8px;margin:12px 0}
+.quiz-options button{width:100%;padding:8px 13px;font-size:14px}
+.quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.number-tile{border:1px solid var(--line);border-radius:12px;padding:15px}
+.number{font-family:var(--serif);font-size:34px;font-weight:700;line-height:1.1;margin-bottom:6px;color:var(--ink)}
+.number-large{font-family:var(--serif);font-size:54px;font-weight:700;line-height:1.15;margin:10px 0}
+.number-tile .label{font-size:13px;color:var(--ink-2)}
+.two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.two-docs .answer p{font-family:var(--serif);font-size:17.5px}
+.mini-table{width:100%;border-collapse:collapse;font-size:14.5px}
+.mini-table td,.mini-table th{text-align:left;padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.mini-table th{font-size:12px;color:var(--ink-3);font-weight:500}
+.term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px;align-items:baseline}
+/* 招牌交互与数据图（x- 前缀为本课新增） */
+.x-slider{display:flex;align-items:center;gap:10px;margin:8px 0}
+.x-slider label{flex:none;width:112px;font-size:13.5px;color:var(--ink-2)}
+.x-slider input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
+.x-slider output{flex:none;width:52px;text-align:right;font-family:var(--mono);font-size:13px}
+.x-serp{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.x-serp-h{font-size:12px;color:var(--ink-3);letter-spacing:.05em;margin-bottom:8px}
+.x-rank{display:grid;grid-template-columns:26px 1fr 172px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.x-rank:last-child{border-bottom:0}
+.x-pos{font-family:var(--mono);font-size:13px;color:var(--ink-3)}
+.x-site b{font-size:14.5px}
+.x-site small{display:block;font-size:11.5px;color:var(--ink-3)}
+.x-score{position:relative;height:22px;background:var(--tint);border-radius:3px}
+.x-sfill{height:100%;background:var(--accent);border-radius:3px;opacity:.9}
+.x-sfill.dim{background:var(--c3)}
+.x-score span{position:absolute;right:6px;top:2px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2)}
+.x-pbar{position:relative;height:26px;background:var(--tint);border-radius:4px;margin:5px 0 6px}
+.x-pfill{height:100%;background:var(--pos);border-radius:4px;opacity:.85}
+.x-pbase{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px dashed var(--ink-2)}
+.x-pread{font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:2px 0}
+.x-start2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.x-stcard{border:1px solid var(--line);border-radius:12px;padding:14px}
+.x-stcard .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.x-stcard b{font-family:var(--serif);font-size:17px;display:block;margin-bottom:4px}
+.x-stcard small{font-size:12px;color:var(--ink-3);line-height:1.5;display:block}
+.x-stcard.x-on{border-color:var(--accent);background:var(--accent-tint)}
+.x-stcard.x-on b{color:var(--accent-ink)}
+.x-hbar .x-hrow{display:grid;grid-template-columns:108px 1fr;gap:10px;align-items:center;margin:8px 0}
+.x-hlab{font-size:13px;color:var(--ink-2);text-align:right}
+.x-htrack{background:var(--tint);border-radius:3px;height:24px;position:relative}
+.x-hfill{height:100%;background:var(--accent);border-radius:3px;color:#fff;font-family:var(--mono);font-size:11.5px;display:flex;align-items:center;justify-content:flex-end;padding-right:7px}
+.x-hfill.c2{background:var(--c3)}
+.x-haxis{margin-left:118px;display:flex;justify-content:space-between;margin-top:4px}
+.x-haxis span{font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+#xRevSvg{margin:4px 0 6px}
+@media(max-width:900px){
+.columns,.two-docs,.x-start2,.flips,.number-grid,.step-track{grid-template-columns:1fr;gap:14px}
+.step-track button{padding:12px 8px}
+.x-rank{grid-template-columns:22px 1fr;gap:8px}
+.x-score{grid-column:1 / -1}
+.flip-card{height:auto;min-height:132px}
+.x-slider label{width:88px;font-size:12.5px}
+.x-hbar .x-hrow{grid-template-columns:84px 1fr}
+.number{font-size:28px}.number-large{font-size:44px}
+.intro{font-size:19px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.b-body .src{white-space:normal}
+.b-body>*,.columns>*,.two-docs>*{min-width:0}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+}
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 15 SEO与自然流量</div>
+    <h1>SEO 在搜索营销中的角色</h1>
+    <div class="en">2013 · 理论框架</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">SEO 在搜索营销中的角色</h2></div><div class="b-body split-r"><div><div class="kicker">理论框架 · 2013 · Marketing Science</div><p class="intro">适度优化可能改善搜索引擎的排序质量，有赞助链接兜底时这一点更明显；但优化越有效，引擎的赞助收入越可能下降。</p><div class="english">The Role of Search Engine Optimization in Search Marketing</div><div class="muted">Ron Berman · Zsolt Katona（UC Berkeley Haas）· 署名见引用抽屉</div><div class="muted" style="margin-top:6px"><a href="https://www.ron-berman.com/papers/seo.pdf" target="_blank" rel="noopener">论文原站与署名</a></div><div class="choice-row" style="margin-top:18px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div><p class="cap">按 ← → 翻页，M 切换通俗/专业，N 查看讲稿。进度自动保存在当前浏览器。</p></div><div><div class="number-grid"><div class="number-tile"><div class="number">90%</div><div class="label">投放优化的广告主占比</div><div class="cap">SEMPO 2010 年度调查 <span class="src">Introduction · PDF p.1</span></div></div><div class="number-tile"><div class="number">81%</div><div class="label">购买赞助链接的广告主占比</div><div class="cap">同项调查，略低于投放优化的比例 <span class="src">Introduction · PDF p.1</span></div></div><div class="number-tile"><div class="number">1,500</div><div class="label">调查覆盖的广告主与代理商数量</div><div class="cap">论文用它说明优化已是普遍投入 <span class="src">Introduction · PDF p.1</span></div></div></div><p class="cap">两个百分比来自行业调查，是论文的动机背景；模型结论以命题形式给出，本课不虚构效果数值。</p></div></div><div class="b-key">质量与流量估值正相关时，适度优化能修正引擎的测量误差并改善自然排序；有赞助链接兜底时低质站点更无力竞争。<span class="src">摘要 · PDF p.2</span></div></div><div class="notes">开场先给行业事实：2010 年的调查里九成广告主做优化，八成买赞助链接。论文问的是这些投入如何互相影响。请记住封面这句话的条件结构：质量与估值正相关时优化可能是好事，这个条件后面会反复出现。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">学完这门课，你能回答四个问题</h2></div><div class="b-body split"><div><ol class="fact-list"><li>优化在什么条件下修正排序误差，什么条件下扭曲排序？<small>第 10–11 页，命题 1 与参数演示</small></li><li>赞助链接如何改变两类站点的激励？<small>第 13 页，命题 2</small></li><li>引擎收入与最低出价如何随优化变化？<small>第 15 页，推论 1</small></li><li>结论的边界在哪里，迁移前要查什么？<small>第 16、21 页</small></li></ol><div class="term-row"><button type="button" class="term" data-term="alpha">优化效力 α</button> · <button type="button" class="term" data-term="sigma">测量噪声 σ</button> · <button type="button" class="term" data-term="rho">质量估值相关 ρ</button> · <button type="button" class="term" data-term="eff">排序效率 P(α)</button></div></div><ul class="route-list"><li><button type="button" data-go="4"><span>原理 · 模型里的三方与六步时序</span><small>进入 →</small></button></li><li><button type="button" data-go="7"><span>测量 · 指标口径与研究设计</span><small>进入 →</small></button></li><li><button type="button" data-go="10"><span>方法 · 从收益函数到命题</span><small>进入 →</small></button></li><li><button type="button" data-go="13"><span>发现 · 四条结论逐条看证据</span><small>进入 →</small></button></li><li><button type="button" data-go="18"><span>应用 · JCPenney 案例与行动清单</span><small>进入 →</small></button></li><li><button type="button" data-go="21"><span>复盘 · 边界、金句与自测</span><small>进入 →</small></button></li></ul></div><div class="b-key">全课 23 页：先建模型直觉，再拆命题，最后过边界与自测。<span class="src">课程结构</span></div></div><div class="notes">这一页是路线图。左边四个问题就是论文的四步贡献：排序何时变好、赞助链接的角色、引擎收入的张力、结论边界。术语按钮可以先点开看一遍，后面每一页都会用到 α、σ、ρ 这三个符号。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">JCPenney 登顶之后，等来的是惩罚</h2></div><div class="b-body split"><div><p class="intro">2010 年节日购物季，JCPenney 的自然排名在 dresses、bedding、furniture 等通用词上蹿到第一，随后被查出 SEO 承包商使用黑帽手法，JCPenney 解雇了承包商，Google 也做出了惩罚性回应。</p><p class="cap">论文开篇引用的真实事件，转述自论文与《纽约时报》2011-02-12 报道。<span class="src">Introduction · PDF p.1–2</span></p></div><div><div class="choice-row" role="group" aria-label="两种读法"><button type="button" class="choice" data-action="scene" data-value="0" aria-pressed="true">当时的普遍担忧</button><button type="button" class="choice" data-action="scene" data-value="1" aria-pressed="false">论文的回答</button></div><div class="answer" id="sceneOut" aria-live="polite"><h3>当时的普遍担忧</h3><p>引擎立场：操纵结果伤害消费者与诚实站点，应当压制优化。照此推断，消费者应该更信任赞助链接，从赞助侧开始搜索。</p><div class="caption">论文 §1 把这一立场作为待检验的问题。</div></div></div></div><div class="b-key">论文的答案与担忧相反的一半：在质量与估值正相关的市场，适度优化把排序修正得更准。<span class="src">摘要 · Proposition 1 · PDF p.2、8</span></div></div><div class="notes">用 JCPenney 引出问题：优化一定是坏事吗。切换右边两个读法，先看引擎当时的立场，再看论文的回答。注意论文没有否认惩罚的合理性，它指出的是另一面：当引擎自身测量不准时，优化竞赛可能帮高质量站点把排序纠回来。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">模型里有三方：站点、引擎与消费者</h2></div><div class="b-body full"><div class="choice-row" role="group" aria-label="选择一方"><button type="button" class="choice" data-action="concept" data-value="0" aria-pressed="true">站点</button><button type="button" class="choice" data-action="concept" data-value="1" aria-pressed="false">搜索引擎</button><button type="button" class="choice" data-action="concept" data-value="2" aria-pressed="false">消费者</button></div><div class="columns"><div class="answer" id="conceptOut" aria-live="polite"><h3>站点</h3><p>两家站点各有真实质量 q 与流量估值 v，各分高低两档。质量是给消费者的效用，估值是每获得一位消费者的收益。两者可能正相关（好货赚头大），也可能负相关（垃圾站更会变现）。</p><div class="pro-note only-pro">Pr(q<sub>i</sub>=q<sub>L</sub>)=Pr(q<sub>i</sub>=q<sub>H</sub>)=1/2，v 同理；同一站点的 q 与 v 之间相关系数为 ρ，跨站点独立。优化投入 e<sub>i</sub> 的成本为 e<sub>i</sub>²/2。<span class="src">§2.1 · PDF p.5–6</span></div></div><div><div class="kicker">三个必须分清的符号</div><ul class="fact-list"><li><button type="button" class="term" data-term="alpha">优化效力 α</button><small>一单位优化投入能撬动多少评分</small></li><li><button type="button" class="term" data-term="sigma">测量噪声 σ</button><small>引擎评分偏离真实质量的幅度</small></li><li><button type="button" class="term" data-term="rho">质量估值相关 ρ</button><small>好质量与高估值同站的概率方向</small></li></ul><div class="callout">论文里的优化特指黑帽手法：只改变评分，不提升真实相关性。<span class="src">§1 脚注 · PDF p.2</span></div></div></div></div><div class="b-key">ρ 决定优化帮谁：正相关时帮高质量站，负相关时帮高估值的垃圾站。<span class="src">§2.1 · PDF p.5–6</span></div></div><div class="notes">模型三方各拿什么、缺什么：站点知道自己与对手的质量和估值；引擎只能带误差地测质量；消费者要付搜索成本才能看到质量。点三张卡看各自的设定。特别强调黑帽限定：本课说的优化都不提升真实相关性。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">六步时序里，优化发生在评分之前</h2></div><div class="b-body full"><div class="step-track" role="group" aria-label="博弈时序"><button type="button" class="choice" data-action="step" data-value="0" aria-pressed="true">1 公布最低出价</button><button type="button" class="choice" data-action="step" data-value="1" aria-pressed="false">2 抽取质量与估值</button><button type="button" class="choice" data-action="step" data-value="2" aria-pressed="false">3 选择优化投入</button><button type="button" class="choice" data-action="step" data-value="3" aria-pressed="false">4 评分与自然排序</button><button type="button" class="choice" data-action="step" data-value="4" aria-pressed="false">5 赞助位拍卖</button><button type="button" class="choice" data-action="step" data-value="5" aria-pressed="false">6 消费者搜索</button></div><div class="answer" id="stepOut" aria-live="polite"><h3>1 · 公布最低出价 r</h3><p>引擎先公布赞助链接的最低出价。这个次序决定了 r 是承诺变量：站点在决定优化投入时已经知道它。</p><div class="caption">时序来自论文 §2.3 Timing；箭头表达博弈顺序。</div></div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="prevStep" disabled>上一步</button><button class="btn" type="button" data-action="nextStep">下一步</button></div></div><div class="b-key">站点先看懂规则再投入优化，引擎再用评分与拍卖收结果。<span class="src">§2.3 · PDF p.7</span></div></div><div class="notes">六步走一遍：公布 r、抽 (q,v)、选 e、评分排序、赞助拍卖、消费者搜索。重点在第 3 步和第 4 步之间：优化投入发生在引擎评分之前，所以评分里会掺进 α·e。专业模式下第 4 步有式 (1)。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">黑帽、静态、单关键词：先划清模型边界</h2></div><div class="b-body even"><div><div class="grp-t">模型里有什么</div><ul class="fact-list"><li>带测量误差的评分式 s=q+αe+ε<small>优化通过 α·e 进入评分</small></li><li>赞助链接作为第二次机会<small>GSP 拍卖，最低出价 r</small></li><li>理性的顺序搜索消费者<small>每点一次付成本 c</small></li></ul></div><div><div class="grp-t">模型里没有什么</div><ul class="fact-list"><li>白帽投入<small>提升真实相关性的手法未建模</small></li><li>动态重复博弈<small>引擎声誉的长期影响未建模</small></li><li>多关键词与组合投放<small>结论按单关键词读取</small></li></ul></div></div><div class="b-key">最近的先行研究是 Xing 与 Lin（2006）的算法质量与稳健性；更早的 Sen（2005）模型曾得出优化不应出现在均衡策略中。<span class="src">§1 · PDF p.4</span></div></div><div class="notes">把论文放回文献：在它之前，自然排名大多被当作外生变量，这篇论文把优化投入和消费者搜索同时内生化。右边三样没建模的东西，就是第 21 页批判阅读的来源。相关课程《最优搜索营销策略》正好是 Sen 2005 的对照结论。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">读效果先读排序效率 P(α)</h2></div><div class="b-body split-r"><div><div class="choice-row" role="group" aria-label="选择指标"><button type="button" class="choice" data-action="metric" data-value="0" aria-pressed="true">排序效率 P(α)</button><button type="button" class="choice" data-action="metric" data-value="1" aria-pressed="false">优化效力 α</button><button type="button" class="choice" data-action="metric" data-value="2" aria-pressed="false">最低出价 r</button><button type="button" class="choice" data-action="metric" data-value="3" aria-pressed="false">搜索成本 c</button></div><div class="answer" id="metricOut" aria-live="polite"><h3>排序效率 P(α)</h3><p class="only-plain">质量最高的站点赢得自然首位的概率。它越接近 1，引擎的排名越准确，消费者越满意。优化是修正还是扭曲，就看 P(α) 上升还是下降。</p><div class="only-pro"><p>P(α)=Pr(质量最高者赢得自然首位)=F(x*(α))；论文以 P(0)&lt;1 为起点（噪声使排序失准），比较均衡投入后的 P(α) 与 P(0)。</p><div class="pro-note">基准情形：P(0) 随 σ 增大而下降（§3.1）；附录给出 x* 的显式解与单调性：ρ=1 时 P′(α)&gt;0，ρ=−1 时 P′(α)&lt;0。<span class="src">§3.1 · 附录 · PDF p.8、13</span></div></div></div></div><div><div class="kicker">读指标的次序</div><ul class="fact-list"><li>测量对象<small>自然排序的质量，先于收入指标</small></li><li>对应结论<small>P(α)↑ ⇒ 消费者福利↑（命题 1）</small></li><li>引擎自己的指标<small>赞助收入与最低出价 r 的逆 U 关系</small></li><li>禁止越界<small>理论推导无实测数值，禁止当作效果估计</small></li></ul></div></div><div class="b-key">同一门优化生意，站点侧用 P(α) 读质量，引擎侧用赞助收入读代价。<span class="src">§3 · PDF p.8–10</span></div></div><div class="notes">四个指标各管一件事。P(α) 是全课的中枢：第 11 页的参数演示会实时算它。注意最后一行：理论论文没有实测效果数字，第 12 页会专门讲哪些数字能用、哪些不能用。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">两个站点、两档质量：假设决定结论边界</h2></div><div class="b-body split"><div><p class="intro">单关键词、两家站点；质量与估值各分高低两档、概率各半；优化成本为二次型；评分含测量噪声；分别求解无赞助链接与有赞助链接两种情形。</p><div class="pro-note only-pro">噪声示意取均匀分布 ε<sub>i</sub>∼U[−σ/2, σ/2]，且要求 σ&gt;q<sub>1</sub>−q<sub>2</sub>（噪声跨度盖过质量差，误差才起作用）；赞助位按 CTR 校正的广义第二价格拍卖分配，保留价 r&lt;v<sub>H</sub>。<span class="src">§2.1–2.2 · PDF p.6–7</span></div><div class="callout">这一页决定结论能支持什么：两站点、静态、单关键词、黑帽。换环境要先换假设。<span class="src">§2 · §4</span></div></div><div><div class="choice-row" role="group" aria-label="选择原文证据"><button type="button" class="choice" data-action="proof" data-value="0" aria-pressed="true">摘要</button><button type="button" class="choice" data-action="proof" data-value="1" aria-pressed="false">命题 2</button><button type="button" class="choice" data-action="proof" data-value="2" aria-pressed="false">结论与建议</button></div><div id="proofOut" aria-live="polite"><div class="source-text" lang="en">In this paper we study the impact of search engine optimization (SEO) on the competition between advertisers for organic and sponsored search results. We find that a positive level of search engine optimization may improve the search engine's ranking quality and thus the satisfaction of its visitors. In the absence of sponsored links, the organic ranking is improved by SEO if and only if the quality provided by a website is sufficiently positively correlated with its valuation for consumers.</div><span class="src">摘要 · PDF p.2</span><div class="caption">原文节选作核验入口；完整命题与证明请打开原文。</div></div></div></div><div class="b-key">均匀噪声与二次成本是可解性假设；σ&gt;q₁−q₂ 保证误差确实能让排名出错。<span class="src">§3.1 脚注 · PDF p.8</span></div></div><div class="notes">左边把模型设定一次说全：两站点、两档质量与估值、二次成本、均匀噪声。右边可以切三段原文：摘要、命题 2 的表述、结论部分的建议。核对原文时注意脚注：σ 必须大于质量差，否则噪声根本不会改变排序。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">迁移结论前先检查四个条件</h2></div><div class="b-body split"><div><div class="grp-t">给你的项目做体检 · 本课推断</div><div class="check-list"><button type="button" class="choice" data-action="check" data-value="0" aria-pressed="false"><span class="checkmark"></span>判明本市场质量与估值的相关方向（ρ 的符号）</button><button type="button" class="choice" data-action="check" data-value="1" aria-pressed="false"><span class="checkmark"></span>估计引擎当前测量误差大小（σ 大时修正空间才大）</button><button type="button" class="choice" data-action="check" data-value="2" aria-pressed="false"><span class="checkmark"></span>把黑帽与白帽分开：模型只覆盖前者</button><button type="button" class="choice" data-action="check" data-value="3" aria-pressed="false"><span class="checkmark"></span>同时记录优化成本与赞助支出两本账</button></div></div><div class="answer" id="controlOut" aria-live="polite"><h3>继续补齐比较条件</h3><p>四项都勾上，才具备把命题当假设来检验的资格。第 1 项对应命题 1 的条件，第 2 项对应排序效率的提升空间，第 3 项对应模型边界，第 4 项对应命题 2 的收入张力。</p><div class="caption">勾选只用于自查清单，不能自动证明结论适用。</div></div></div><div class="b-key">先问 ρ 的符号与 σ 的大小，再决定要不要加大优化投入。<span class="src">基于 §3 · 本课推断</span></div></div><div class="notes">把命题翻译成四个体检项。第一项最重要：你的市场里好内容是不是也更赚钱。第二项常被忽略：引擎排得很准时，优化竞赛只剩成本没有收益。这页是检查表，不是论证，别把勾选当证据。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">从收益函数到命题：五步推出 P(α)</h2></div><div class="b-body full"><div class="step-track" role="group" aria-label="推导步骤"><button type="button" class="choice" data-action="mstep" data-value="0" aria-pressed="true">1 基准收益</button><button type="button" class="choice" data-action="mstep" data-value="1" aria-pressed="false">2 一阶条件</button><button type="button" class="choice" data-action="mstep" data-value="2" aria-pressed="false">3 排序效率</button><button type="button" class="choice" data-action="mstep" data-value="3" aria-pressed="false">4 加入赞助</button><button type="button" class="choice" data-action="mstep" data-value="4" aria-pressed="false">5 两个推论</button></div><div class="answer" id="mstepOut" aria-live="polite"><h3>1 · 基准收益</h3><p>无赞助链接时，站点 i 的收益＝估值 × 赢得自然首位的概率 − 优化成本。两家同时选投入，均衡由一阶条件决定。</p><div class="pro-note only-pro">π<sub>i</sub> = v<sub>i</sub>·Pr(s<sub>i</sub>&gt;s<sub>j</sub>) − e<sub>i</sub>²/2（式 2）。噪声示意均匀分布时，Pr 项由 ε<sub>i</sub>−ε<sub>j</sub> 的三角分布给出。<span class="src">§3.1 · PDF p.7–8</span></div><div class="caption">推导路线按论文 §3 与附录重新组织。</div></div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="prevM" disabled>上一步</button><button class="btn" type="button" data-action="nextM">下一步</button></div></div><div class="b-key">优化的均衡投入放大赛估值之差：估值差越大，评分被推得越远。<span class="src">式 3–4 · 附录 · PDF p.13</span></div></div><div class="notes">五步推导：收益函数、一阶条件、排序效率、加入赞助、两个推论。通俗层只看每步在问什么，专业层有式 (2) 与附录的均衡解。第 2 步是关键：一阶条件把评分差、质量差和估值差连在一起，后面所有命题都从这里出来。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">误差与优化强度，决定谁排第一</h2></div><div class="b-body split-r"><div><div class="grp-t">参数台 · 基准模型（无赞助链接）</div><div class="x-slider"><label for="xSig">测量噪声 σ</label><input type="range" id="xSig" min="2.5" max="8" step="0.5" value="4"><output id="xSigV" for="xSig">4.0</output></div><div class="x-slider"><label for="xAl">优化效力 α</label><input type="range" id="xAl" min="0" max="2" step="0.05" value="1"><output id="xAlV" for="xAl">1.00</output></div><div class="x-slider"><label for="xRho">质量估值相关 ρ</label><input type="range" id="xRho" min="-1" max="1" step="0.05" value="1"><output id="xRhoV" for="xRho">+1.00</output></div><div class="choice-row" role="group" aria-label="预设场景"><button type="button" class="choice" data-action="xlab" data-value="0" aria-pressed="true">正相关市场</button><button type="button" class="choice" data-action="xlab" data-value="1" aria-pressed="false">垃圾站市场</button><button type="button" class="choice" data-action="xlab" data-value="2" aria-pressed="false">零相关市场</button><button type="button" class="choice" data-action="xlabreset" aria-pressed="false">复原</button></div><p class="cap">站点固定：高质量站 q=7，低质量站 q=5；估值随 ρ 变动，v=5±3ρ。评分差与投入按附录的均匀噪声特例计算。<span class="src">§3.1 · 附录 · 模型示意</span></p></div><div id="xlabOut" aria-live="polite"><div class="x-serp"><div class="x-serp-h">自然结果 · 均衡评分（示意）</div><div class="x-rank"><span class="x-pos">1</span><div class="x-site"><b>高质量站点 <span class="tag">q=7</span></b><small>估值 v=8.0 · 均衡投入 e=0.73</small></div><div class="x-score"><div class="x-sfill" style="width:77%"></div><span>评分 7.7</span></div></div><div class="x-rank"><span class="x-pos">2</span><div class="x-site"><b>低质量站点 <span class="tag">q=5</span></b><small>估值 v=2.0 · 均衡投入 e=0.18</small></div><div class="x-score"><div class="x-sfill dim" style="width:52%"></div><span>评分 5.2</span></div></div></div><div class="grp-t" style="margin-top:14px">排序效率 P(α)：高质量站赢得自然首位的概率</div><div class="x-pbar"><div class="x-pfill" style="width:93.4%"></div><span class="x-pbase" style="left:87.5%"></span></div><div class="x-pread">P(α) = <b>93.4%</b>，无优化时 P(0) = 87.5%　<span class="tag pos">修正误差 +5.9pt</span>　<span class="tag pos">高质量站利润 +0.21</span>　<span class="tag neg">低质量站利润 −0.13</span></div><div class="pro-note only-pro">评分差 x* = (σ²µ + σα²Δv)/(σ² + α²·|Δv|)，µ=q<sub>H</sub>−q<sub>L</sub>=2，Δv=6ρ；投入 e<sub>i</sub>=α·v<sub>i</sub>·f(x*)，f 为 ε<sub>i</sub>−ε<sub>j</sub> 的三角分布密度 f(x)=(σ−|x|)/σ²，成本 e²/2。附录要求 α² 足够小（相对 σ 与 v<sub>H</sub> 的约束）时一阶与二阶条件同时成立，超出该范围的读数只看方向。<span class="src">附录 · PDF p.13</span></div></div></div><div class="b-key">ρ&gt;0：适度优化修正测量误差；ρ&lt;0：同样的投入把垃圾站推上前；ρ=0：排名不变、双方白烧成本。<span class="src">Proposition 1 · PDF p.8</span></div></div><div class="notes">这是全课的动手页。三个滑杆：噪声 σ、优化效力 α、相关系数 ρ。先在正相关市场把 α 从 0 慢慢推高，看 P(α) 离开虚线基线向上走：这是修正误差。再切到垃圾站市场做同样的事：同样的投入把低质量站推上第一。零相关市场最扎心：排名不动，两家都在烧钱。利润标签会告诉你排名改善未必等于赚钱。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">行业背景有两个数字，模型效果靠推导</h2></div><div class="b-body split"><div><div class="x-hbar"><div class="grp-t">SEMPO 2010 年度调查 · 1,500 名广告主与代理商（Introduction · PDF p.1）</div><div class="x-hrow"><span class="x-hlab">投放优化</span><div class="x-htrack"><div class="x-hfill" style="width:90%">90%</div></div></div><div class="x-hrow"><span class="x-hlab">购买赞助链接</span><div class="x-htrack"><div class="x-hfill c2" style="width:81%">81%</div></div></div><div class="x-haxis"><span>0</span><span>50%</span><span>100%</span></div></div><div class="callout">证据类型：理论框架。模型结论以命题与推论形式给出，论文未提供实测效果数值；以上两个百分比是引言引用的行业调查，属于动机背景，不能当作模型效果。</div><p class="cap">横条自零点起算，宽度即占比；两比例来自同一调查，可直接比较。</p></div><div><div class="number-grid"><div class="number-tile"><div class="number">90%</div><div class="label">开展 SEO 的广告主与代理商占比</div><div class="cap">引言转述 SEMPO 调查 <span class="src">Introduction · PDF p.1</span></div></div><div class="number-tile"><div class="number">1,500</div><div class="label">调查样本量（家）</div><div class="cap">口径：广告主与代理商合计 <span class="src">Introduction · PDF p.1</span></div></div></div><div class="answer"><h3>哪些数字不能这样用</h3><p>模型参数 σ、α、ρ、r 是假设或决策变量，没有观测值。第 11、15 页演示中的数字全部按论文公式计算并标注示意，用于看清机制。</p><div class="caption">参数读数请回到公式与命题，禁止把示意值当统计结果。</div></div></div></div><div class="b-key">能用的是两个调查百分比；机制读数一律回公式。<span class="src">Introduction · PDF p.1</span></div></div><div class="notes">证据读数页先分清两类数字：调查百分比有出处有样本，可以直接引用；模型参数与演示数值是构造出来的，只能帮助理解机制。看左边两条横条：做优化的比买赞助的还多 9 个百分点，这正是论文要解释的资源挪移。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">有赞助链接时，优化反而利好高质量站点</h2></div><div class="b-body split-r"><div><div class="ev" style="margin-bottom:12px">F1 · 证据：命题 2 与其直觉论证 · 证据强度 <span class="str-l">弱（理论推导）</span>：结论自洽但未经实测验证<span class="src">PDF p.9–10</span></div><div class="choice-row" role="group" aria-label="切换读法"><button type="button" class="choice" data-action="find0" data-value="0" aria-pressed="true">论文发现</button><button type="button" class="choice" data-action="find0" data-value="1" aria-pressed="false">机制拆解</button><button type="button" class="choice" data-action="find0" data-value="2" aria-pressed="false">适用条件</button></div><div class="answer" id="findOut0" aria-live="polite"><p>赞助链接为没拿到自然首位的高质量站点兜底；买家迟早会找到它们，低质量站点争夺自然位的价值因此下降，高质量站点的优化竞争压力反而变小。</p><div class="caption">命题 2：消费者从自然侧开始搜索，高质量站赢得自然位的概率随 α 上升。</div></div></div><div><div class="kicker">兜底机制的两步</div><ul class="fact-list"><li>高质量站点被挤出自然首位时<small>可以买赞助位，点击不丢失</small></li><li>消费者搜索成本很低时<small>会逐个点完结果，高质量站仍被找到</small></li></ul><div class="callout">于是低质量站点抢自然首位也留不住买家，优化投入的回报缩水；高质量站点的主要收益变成省下的赞助点击费。<span class="src">§3.2 · PDF p.10</span></div></div></div><div class="b-key">兜底改变激励：赞助位越可靠，低质量站点越没理由争自然第一。<span class="src">Proposition 2 · PDF p.9–10</span></div></div><div class="notes">这是全文最反直觉的发现。机制分两步：赞助位给高质量站兜底，理性消费者又会穷尽搜索。两步合起来，低质量站点争夺自然第一的回报下降，高质量站赢得自然位的概率反而上升。证据强度标弱，因为这是命题推导，没有实测。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">自然结果更可靠时，消费者先点自然结果</h2></div><div class="b-body split-r"><div><div class="ev" style="margin-bottom:12px">F2 · 证据：命题 2 第 1 条 · 证据强度 <span class="str-l">弱（理论推导）</span>：理性搜索均衡的唯一结果<span class="src">PDF p.9</span></div><div class="choice-row" role="group" aria-label="切换读法"><button type="button" class="choice" data-action="find1" data-value="0" aria-pressed="true">论文发现</button><button type="button" class="choice" data-action="find1" data-value="1" aria-pressed="false">机制拆解</button><button type="button" class="choice" data-action="find1" data-value="2" aria-pressed="false">适用条件</button></div><div class="answer" id="findOut1" aria-live="polite"><p>均衡中消费者从自然侧开始搜索。高质量站点的优化投入抬高了自然列表的期望质量，理性消费者从期望质量更高的一侧开始点击。</p><div class="caption">命题 2 第 1 条：存在 c̄，搜索成本低于它时该结论成立。</div></div></div><div><div class="kicker">起点选择的比较</div><div class="x-start2"><div class="x-stcard x-on"><div class="k">自然侧 · 先点</div><b>期望质量更高</b><small>高质量站更可能占据自然结果</small></div><div class="x-stcard"><div class="k">赞助侧 · 后点</div><b>期望质量更低</b><small>按出价分配，与质量相关更弱</small></div></div><p class="cap">两侧期望质量的比较为均衡性质，示意呈现。<span class="src">Proposition 2.1 · PDF p.9</span></p></div></div><div class="b-key">搜索顺序本身是均衡结果：优化让自然侧更可靠，流量起点随之移动。<span class="src">Proposition 2.1 · PDF p.9</span></div></div><div class="notes">很多人以为消费者会先点广告位，模型的答案相反：只要搜索成本足够低，均衡从自然侧开始。原因还是那条机制链：优化竞赛抬高了自然侧的期望质量。右边的对比卡就是两侧期望质量的定性比较。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">优化越有效，搜索引擎收入越可能下降</h2></div><div class="b-body split-r"><div><div class="ev" style="margin-bottom:12px">F3 · 证据：命题 2 第 4 条与推论 1 · 证据强度 <span class="str-l">弱（理论推导）</span><span class="src">PDF p.9–10</span></div><div class="grp-t">引擎赞助收入 vs 最低出价 r（按推论 1 定性绘制的示意曲线）</div><div id="xRevSvg" aria-live="polite"></div><div class="x-slider"><label for="xR">最低出价 r</label><input type="range" id="xR" min="0" max="8" step="0.1" value="2"><output id="xRV" for="xR">2.0</output></div><div class="choice-row" role="group" aria-label="优化效力档位"><button type="button" class="choice" data-action="rev" data-value="0" aria-pressed="true">α 低</button><button type="button" class="choice" data-action="rev" data-value="1" aria-pressed="false">α 中</button><button type="button" class="choice" data-action="rev" data-value="2" aria-pressed="false">α 高</button></div></div><div id="xRevOut" aria-live="polite"><div class="answer"><h3>当前读数（示意）</h3><p>当前收入 R(2.0) = 1.50；最优最低出价 r̂(α) = 4.0，对应峰值收入 2.02。</p><span class="tag acc">还有提价空间：r 低于 r̂</span><div class="caption">曲线按推论 1 的逆 U 形状示意绘制，论文未给解析式；优化效力 α 越高，峰值 r̂ 越靠左。</div></div><div class="callout">张力的来源：高质量站赢得自然位后不再竞购赞助链接，优化越有效、这种情形越常见，赞助收入随之减少。<span class="src">Proposition 2.4 · PDF p.10</span></div></div></div><div class="b-key">引擎压优化会伤排序质量，放任优化会丢赞助收入；最优最低出价随 α 上升而左移。<span class="src">Corollary 1 · PDF p.10</span></div></div><div class="notes">这一页解释引擎为什么讨厌优化：丢的首先是钱，排序质量反而是次要的。拖动 r 滑杆沿曲线走：先升后降，顶点 r̂ 就是推论 1 的最优最低出价。切 α 档位，看顶点左移——优化越普及，引擎越该早点降低出价下限。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">结论站在四个模型假设之上</h2></div><div class="b-body split-r"><div><div class="ev" style="margin-bottom:12px">F4 · 证据：§4 局限讨论 · 证据强度 <span class="str-m">中</span>：作者自述的边界<span class="src">PDF p.12</span></div><div class="choice-row" role="group" aria-label="选择假设"><button type="button" class="choice" data-action="find3" data-value="0" aria-pressed="true">静态单期</button><button type="button" class="choice" data-action="find3" data-value="1" aria-pressed="false">单关键词</button><button type="button" class="choice" data-action="find3" data-value="2" aria-pressed="false">黑帽限定</button><button type="button" class="choice" data-action="find3" data-value="3" aria-pressed="false">理性消费者</button></div><div class="answer" id="findOut3" aria-live="polite"><p>模型是静态单期博弈；现实中站点动态投入、互相反应，引擎声誉的长期影响因此无法在这套模型里讨论。</p><div class="caption">作者在结论部分逐条列出的局限，本页按放宽假设组织。</div></div></div><div><div class="kicker">放宽假设后的研究方向</div><ul class="fact-list"><li>动态化<small>优化投入的跨期策略与引擎声誉的长期影响</small></li><li>多关键词<small>批量投放下的组合与预算分摊</small></li><li>纳入白帽<small>提升真实相关性的投入如何改变结论</small></li><li>行为消费者<small>分心与误点对两侧点击率的再分配</small></li></ul><button type="button" class="btn" data-go="21" style="margin-top:10px">到批判阅读页看完整边界 →</button></div></div><div class="b-key">四个假设各守一条边界：静态、单关键词、黑帽、理性。<span class="src">§4 · PDF p.12</span></div></div><div class="notes">作者自己承认的四条局限。每点一张卡，右边是放宽假设后的研究方向。注意第 3 条：论文说的优化只有黑帽，白帽直接提升质量，属于另一套问题。这些局限在第 21 页会展开成六条批判阅读。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">与相邻研究对照，边界更清楚</h2></div><div class="b-body full"><div class="choice-row" role="group" aria-label="选择对照"><button type="button" class="choice" data-action="compare" data-value="0" aria-pressed="true">本篇研究</button><button type="button" class="choice" data-action="compare" data-value="1" aria-pressed="false">仓库对照 · Sen 2005</button><button type="button" class="choice" data-action="compare" data-value="2" aria-pressed="false">文献转述 · Xing 与 Lin 2006</button></div><div id="compareOut" aria-live="polite"><div class="columns"><div class="answer"><h3>本篇研究</h3><p>把优化投入与消费者搜索同时内生化：适度优化在质量与估值正相关时修正引擎测量误差；有赞助链接兜底时，结论对任意相关系数成立。</p><div class="caption">证据边界：两站点静态博弈，黑帽优化，理论推导无实测。<span class="src">摘要 · §3 · PDF p.2、8–10</span></div></div><div class="answer"><h3>对照时对齐三件事</h3><p>对象是否相同（站点与关键词层级）、优化口径是否相同（黑帽还是含白帽）、指标是否可比（排序效率还是收入）。不同阶段的数字不能直接相加。</p><div class="caption">本段为本课推断，用于阅读纪律。</div></div></div></div></div><div class="b-key">同口径才可比：阶段、口径、指标三者对齐再谈一致或冲突。<span class="src">本课推断</span></div></div><div class="notes">对照页给三个对象：本篇、仓库里的 Sen 2005 课程、以及论文文献综述里的 Xing 与 Lin 2006。Sen 的结论是优化不进均衡策略，与本篇的适度优化结论形成有趣张力，差别在于模型假设。点开看每一条的适用范围。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">JCPenney 案例展示优化的两面</h2></div><div class="b-body full"><div class="kicker">论文原例的中文转述（论文引用公开报道，非模型数值案例）</div><div class="two-docs"><div class="answer"><p>2010 年节日购物季，JCPenney 的自然排名在 dresses、bedding、furniture 等通用查询上蹿到首位，且长时间停留。</p><div class="caption">查询与现象。<span class="src">Introduction · PDF p.1</span></div></div><div class="answer"><p>调查发现其 SEO 承包商使用黑帽手法；JCPenney 解雇承包商，Google 做出惩罚性回应。论文由此引出问题：优化到底改善还是破坏排序质量。</p><div class="caption">操作与检查。<span class="src">Introduction · PDF p.1–2，引《纽约时报》2011-02-12</span></div></div></div><div class="columns" style="margin-top:16px"><div class="callout"><b>模型读法一：</b>黑帽手段相当于低成本撬动 α·e：评分被推离真实质量，测量误差被放大成排名优势。</div><div class="callout"><b>模型读法二：</b>引擎的惩罚相当于压低 α（提高优化起效成本）；论文指出这类反制与改进测量算法互补——算法越准，越值得压 α。<span class="src">§3.1 · PDF p.8–9</span></div></div><p class="cap">本页转述论文开篇案例；论文未给出该案例的模型参数或收益数值，本课不补造。</p></div><div class="b-key">同一套黑帽手法，在模型里既能修正误差也能扭曲排序，方向取决于 ρ 与 α。<span class="src">Introduction · Proposition 1</span></div></div><div class="notes">JCPenney 是论文开篇的真实事件，也是全课的案例锚点。两个模型读法把案例接回第 11 页的参数台：黑帽优化等于低成本放大 α·e；惩罚等于压低 α。注意案例没有数值，别把排名变化当成模型收益。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">三类角色各自带走一份行动清单</h2></div><div class="b-body full"><div class="choice-row" role="group" aria-label="选择角色"><button type="button" class="choice" data-action="role" data-value="0" aria-pressed="true">内容与业务负责人</button><button type="button" class="choice" data-action="role" data-value="1" aria-pressed="false">平台与投放侧</button><button type="button" class="choice" data-action="role" data-value="2" aria-pressed="false">研究与审核人员</button></div><div class="columns"><div><h3 id="roleName">内容与业务负责人</h3><p style="margin-top:10px" id="roleWhy">为什么适合：命题 2 表明高质量站点有赞助位兜底，自然可见性投入的回报更确定。</p><div class="callout warn" id="roleAvoid">避免：使用黑帽手段。模型只覆盖黑帽且真实引擎会惩罚（JCPenney 案例）。</div></div><div><ul class="fact-list" id="roleTodos"><li>判明自家市场质量与估值的相关方向（ρ 符号）<small>对应 F1 · 命题 1 条件</small></li><li>估计自然排序的测量误差：排得很准时修正空间小<small>对应 F2 · σ 与 P(0)</small></li><li>把自然可见性投入排在竞价之前做规划<small>对应 F2 · 消费者从自然侧开始</small></li><li>保留赞助位预算作为自然排名波动时的兜底<small>对应 F1 · 第二次机会</small></li></ul><p class="cap">行动建议为本课推断，需用对照试验确认。</p></div></div></div><div class="b-key">清单每条都能追到一条发现：F1 兜底、F2 顺序、F3 收入、F4 边界。<span class="src">F1–F4 · 本课应用推断</span></div></div><div class="notes">三个角色三份清单。内容负责人先判断 ρ 再定投入；平台侧盯着收入曲线调最低出价；研究审核负责把四条假设当检查表。每条建议后面标了对应发现，方便回查证据强度。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态可以直接承接模型变量</h2></div><div class="b-body full"><div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody><tr><td>优化与竞价预算决策表</td><td>ρ 判断、σ 估计、两本账（优化成本 / 赞助支出）</td><td>站点收益函数与均衡投入（式 2）</td></tr><tr><td>排序质量监测报告</td><td>按关键词记录首位易主率与排序变动</td><td>排序效率 P(α) 的监测口径</td></tr><tr><td>最低出价实验记录</td><td>r 档位、对应收入、回升或下滑拐点</td><td>推论 1 的逆 U 关系</td></tr></tbody></table><div class="callout" style="margin-top:14px">采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。<span class="src">本课推断 · 映射 §2–3 变量</span></div></div><div class="b-key">决策表、监测报告、实验记录：三张表把模型变量接进日常工作。<span class="src">本课推断</span></div></div><div class="notes">把模型变量映射到三张现成的工作表：预算决策表承接收益函数，排序监测承接 P(α)，出价实验承接推论 1。映射关系是本课推断，先小范围试再推广。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">六条边界决定结论能用在哪</h2></div><div class="b-body split"><div><div class="choice-row" role="group" aria-label="选择边界"><button type="button" class="choice" data-action="limit" data-value="0" aria-pressed="true">研究范围</button><button type="button" class="choice" data-action="limit" data-value="1" aria-pressed="false">优化口径</button><button type="button" class="choice" data-action="limit" data-value="2" aria-pressed="false">环境迁移</button><button type="button" class="choice" data-action="limit" data-value="3" aria-pressed="false">证据与建议</button><button type="button" class="choice" data-action="limit" data-value="4" aria-pressed="false">相关研究张力</button><button type="button" class="choice" data-action="limit" data-value="5" aria-pressed="false">版本核对</button></div></div><div class="answer" id="limitOut" aria-live="polite"><span class="tag neg">影响高</span><h3>研究结论有明确范围</h3><p>两站点单关键词静态博弈，优化限定为不改变真实相关性的黑帽手法，消费者完全理性。任何一项放宽都需要重新推导或重新验证。</p><div class="caption">来自 §4 作者自述的局限与本课解读。</div></div></div><div class="b-key">作者自述四条局限，加上口径与环境两条本课审查，共六条。<span class="src">§4 · PDF p.12</span></div></div><div class="notes">六条边界：前两条高影响（范围与口径），中间两条是迁移纪律，第五条是仓库对照——Sen 2005 在自己的模型里得出优化不进均衡策略，提示结论对假设敏感；第六条提醒核对版本。至少前三条要在任何应用前过一遍。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">六张卡片带走结论与条件</h2></div><div class="b-body full"><div class="flips"><button type="button" class="flip-card" data-action="flip" data-value="0" aria-pressed="false"><b>适度优化可能改善排序质量。</b><span class="flip-back">依据：命题 1——质量与估值足够正相关时 P(α) 上升。<br>用法：先判 ρ 的符号，再定投入方向。</span><small>本课提炼 · 点击查看依据</small></button><button type="button" class="flip-card" data-action="flip" data-value="1" aria-pressed="false"><b>赞助链接是高质量站点的兜底。</b><span class="flip-back">依据：命题 2——第二次机会削弱低质量站的争位动机。<br>用法：质量站的预算可以后置到赞助位。</span><small>本课提炼 · 点击查看依据</small></button><button type="button" class="flip-card" data-action="flip" data-value="2" aria-pressed="false"><b>消费者会从自然侧开始搜索。</b><span class="flip-back">依据：命题 2.1——均衡中自然侧期望质量更高。<br>用法：自然可见性优先于竞价位次。</span><small>本课提炼 · 点击查看依据</small></button><button type="button" class="flip-card" data-action="flip" data-value="3" aria-pressed="false"><b>优化越有效，引擎收入越低。</b><span class="flip-back">依据：命题 2.4——高质量站赢得自然位后不再竞购赞助链接。<br>用法：平台把 SEO 支出与赞助收入放进同一张表。</span><small>本课提炼 · 点击查看依据</small></button><button type="button" class="flip-card" data-action="flip" data-value="4" aria-pressed="false"><b>最优最低出价随优化活动下降。</b><span class="flip-back">依据：推论 1——收入对 r 呈逆 U 型，峰值 r̂(α) 随 α 左移。<br>用法：出价下限跟着优化活跃度定期复核。</span><small>本课提炼 · 点击查看依据</small></button><button type="button" class="flip-card" data-action="flip" data-value="5" aria-pressed="false"><b>反优化投入与更好的算法互补。</b><span class="flip-back">依据：§3.1——算法越准，压制优化越值得。<br>用法：引擎先修测量误差，再谈压 α。</span><small>本课提炼 · 点击查看依据</small></button></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div></div><div class="b-key">每张卡正面是结论，背面是依据与一个用法。<span class="src">命题 1–2 · 推论 1 · §3.1</span></div></div><div class="notes">六张卡片按发现顺序排列：三条给站点，两条给引擎，一条给算法策略。翻面看依据，复制按钮会把六条要点连同论文信息一起复制，方便带回会议。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">五道题检验是否真的读懂</h2></div><div class="b-body split-r"><div id="quizOut" aria-live="polite"><div class="kicker">第 1 题 / 共 5 题</div><h3>无赞助链接时，优化在什么条件下改善自然排序？</h3><div class="quiz-options" role="group" aria-label="第 1 题选项"><button type="button" class="choice" data-action="answer" data-value="0">只要两家站点都投入足够多</button><button type="button" class="choice" data-action="answer" data-value="1">当且仅当站点质量与流量估值足够正相关时</button><button type="button" class="choice" data-action="answer" data-value="2">与相关性无关，取决于谁的预算更大</button><button type="button" class="choice" data-action="answer" data-value="3">只在低质量站点投入时改善</button></div></div><div><div class="answer"><h3>自测的目的</h3><p>五道题覆盖核心结论、反常发现、指标理解、适用边界与推论机制。答错会给出对应复习页。</p><div class="caption"><a href="https://www.ron-berman.com/papers/seo.pdf" target="_blank" rel="noopener">打开原文核对</a> · 可切换专业模式回看公式口径。</div></div></div></div><div class="b-key">答完看得分页，按每题反馈回看对应页面。<span class="src">覆盖第 7–21 页</span></div></div><div class="notes">五道题对应五个考点：命题 1 的条件、命题 2 的反常直觉、P(α) 的定义、适用边界、推论 1 的逆 U。做完看分数页，每道题的解析都标了复习页码。</div></section>
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>The Role of Search Engine Optimization in Search Marketing</p><p>2013 · Marketing Science</p><p><a href="https://www.ron-berman.com/papers/seo.pdf" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper102,
+  author = {Ron Berman and Zsolt Katona},
+  title = {The Role of Search Engine Optimization in Search Marketing},
+  year = {2013},
+  url = {https://www.ron-berman.com/papers/seo.pdf}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：278d5eff6cfb286e5d24f00c4d9f6325ed9c3f676e3abb12a3e26b8ce3d20a25</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "问题场景与四个学习问题"}, {"t": "原理", "d": "三方、符号与六步时序"}, {"t": "测量", "d": "排序效率与模型设定"}, {"t": "方法", "d": "从收益函数到命题"}, {"t": "发现", "d": "四条结论逐条读证据"}, {"t": "应用", "d": "JCPenney 案例与行动清单"}, {"t": "复盘", "d": "边界、要点与自测"}];
+const PAPER={"id": 102, "zh": "SEO 在搜索营销中的角色", "kind": "理论框架", "question": "网站投入搜索引擎优化会改善还是破坏排名质量？", "claim": "质量与流量估值正相关时，适度优化能修正引擎的测量误差并改善自然排序，而有赞助链接兜底时低质站点更无力竞争，引擎收入随优化变有效而下降。", "steps": ["公布最低出价 r", "抽取质量与估值", "选择优化投入", "评分与自然排序", "赞助位拍卖", "消费者搜索"], "findings": ["有赞助链接时优化反而利好高质量站点", "自然结果更可靠时消费者先点自然结果", "优化越有效搜索引擎收入越可能下降", "结论基于黑帽优化与理性搜索的模型假设"], "metrics": [{"name": "排序效率 P(α)", "plain": "最高质量站点赢得自然首位的概率，衡量排名准确性"}, {"name": "优化效力 α", "plain": "一单位优化投入能撬动多少评分"}, {"name": "最低出价 r", "plain": "引擎为赞助链接设的出价下限，与利润呈逆 U 关系"}, {"name": "搜索成本 c", "plain": "消费者每点开一个链接付出的成本"}], "setting": "单关键词双站点博弈，质量与估值各分高低两档，优化成本为二次型，评分含测量噪声，分有无赞助链接两种情形。", "boundary": "两站点单关键词静态博弈，优化限定为不提升真实相关性的黑帽手法，消费者理性搜索的假设较强。", "query": "教学情境：生成式引擎更看重自然可信来源，竞价预算该挪去优化吗？", "before": "只盯着竞价排名，把内容投入当成额外开支", "after": "高质量站点可加大内容与自然可见性投入，弱站点则要评估回报", "finding_details": ["赞助链接为没拿到自然首位的高质量站点兜底，买家迟早会找到它们；低质量站点争夺自然首位的价值因此下降，高质量站点面对的优化竞争反而变小。", "高质量站点的优化投入抬高自然列表的期望质量；理性消费者按期望质量选择起点，均衡中从自然侧开始点击，高质量站点也由此省下赞助位的按点击支出。", "高质量站点赢得自然首位后的主要收益是省下的赞助点击费，于是不再竞购赞助链接；优化越有效、这种情形越常见，引擎赞助收入随之减少。", "结论依赖四个假设：单关键词、静态单期、优化只指不改变真实相关性的黑帽手法、消费者完全理性；白帽投入与消费者偏差均未建模。"], "catalog_title": "The Role of Search Engine Optimization in Search Marketing", "title": "The Role of Search Engine Optimization in Search Marketing", "authors": "Ron Berman; Zsolt Katona", "year": "2013", "category": "15_SEO与自然流量", "url": "https://www.ron-berman.com/papers/seo.pdf", "file": "15_SEO与自然流量_E03_The_Role_of_Search_Engine_Optimization_in_Search_Marketing.html", "pdf": "", "kind_note": "概念与推导，暂无生产效果估计", "extra": "论文中的优化特指不提升真实相关性的黑帽手法，白帽投入未建模。", "evidence": [{"label": "摘要", "text": "In this paper we study the impact of search engine optimization (SEO) on the competition between advertisers for organic and sponsored search results. We find that a positive level of search engine optimization may improve the search engine's ranking quality and thus the satisfaction of its visitors. In the absence of sponsored links, the organic ranking is improved by SEO if and only if the quality provided by a website is sufficiently positively correlated with its valuation for consumers. In the presence of sponsored links, the results are accentuated and hold regardless of the correlation.", "page": 2}, {"label": "命题 2", "text": "There exists a c > 0, such that if c < c then 1. In the unique equilibrium consumers begin their search on the organic side. 2. If r < vL the likelihood of a high quality organic link is increasing in α for any −1 ≤ ρ ≤ 1. 3. If vL ≤ r, the likelihood of a high quality organic link is increasing in α iff ρ is high enough. 4. The search engine's revenue increases in α iff the likelihood of a high quality organic link decreases.", "page": 9}, {"label": "结论与建议", "text": "We find that, contrary to popular belief, SEO can sometimes be beneficial to consumers by giving an advantage to high quality sites, especially when the search engine's crawling algorithms do not provide an accurate ranking. Such improvement in the quality of search results will attract more consumers, yet will hurt the revenues of search engines.", "page": 12}], "table": null, "version": "Marketing Science", "sha256": "278d5eff6cfb286e5d24f00c4d9f6325ed9c3f676e3abb12a3e26b8ce3d20a25", "stats": [{"v": "90%", "name": "投放优化的广告主占比", "source": "Introduction", "context": "2010 年 SEMPO 年度调查（1,500 名广告主与代理商）中开展 SEO 的比例", "page": 1}, {"v": "81%", "name": "购买赞助链接的广告主占比", "source": "Introduction", "context": "同项调查中购买赞助链接的比例，略低于投放优化的比例", "page": 1}, {"v": "1500", "name": "调查覆盖的样本量", "source": "Introduction", "context": "2010 年 SEMPO 年度调查的广告主与代理商数量", "page": 1}], "related": {"id": 100, "zh": "最优搜索营销策略", "title": "Optimal Search Engine Marketing Strategy", "url": "./15_SEO与自然流量_E01_Optimal_Search_Engine_Marketing_Strategy.html", "pdf": "https://web.archive.org/web/20190307165624id_/http://pdfs.semanticscholar.org/e398/c1e11f93a0c1eba9f4a301edee42a0940b61.pdf", "claim": "模型显示，即使优化与付费成本相同、且优化能稳定拿到高位排名，均衡仍是双方都购买付费排名，最优搜索营销策略不含优化。"}, "strength": "弱", "strength_why": "本课保守评级：概念、模拟、有限样本或未完成独立语义验证。", "limitations": [["高", "研究结论有明确范围", "两站点单关键词静态博弈，优化限定为不改变真实相关性的黑帽手法，消费者完全理性。任何一项放宽都需要重新推导或重新验证。"], ["高", "优化口径决定可推断的结果", "论文把优化一词完全留给黑帽手法；白帽投入直接提升质量，会同时改变 q 与排序，本模型结论对其不适用。"], ["中", "环境变化需要重新验证", "引擎算法、界面与查询组合变化会改变测量误差 σ 与优化效力 α 的对应关系；迁移前按同口径重测。该项为本课迁移审查。"], ["中", "证据与建议需逐项区分", "应用页的行动清单与成熟形态对照是教学推断，使用前应按原文方法、结果与局限逐项核对，再作为实验假设。"], ["中", "相关研究提供新的对照", "仓库内《最优搜索营销策略》（Sen 2005）在同成本假设下得出均衡不含优化；与本篇结论的张力提示结论对假设敏感。"], ["低", "原文版本与内部一致性", "采用本地作者稿（2012-11-06 版），正式版为 Marketing Science 2013；引用命题与推论时以正式版页码为准。"]], "quiz": [{"q": "无赞助链接时，优化在什么条件下改善自然排序？", "o": ["只要两家站点都投入足够多", "当且仅当站点质量与流量估值足够正相关时", "与相关性无关，取决于谁的预算更大", "只在低质量站点投入时改善"], "a": 1, "e": "命题 1：ρ=1 时任意不太大的 α>0 都提升排序效率 P(α)；ρ=−1 时优化有损。改善来自修正引擎的测量误差。", "p": 10}, {"q": "有赞助链接时，低质量站点为什么反而减少优化投入？", "o": ["黑帽手法的成本高于竞价费用", "担心被引擎发现后惩罚降权", "赞助位是第二次获得点击的机会，而消费者会穷尽搜索找到高质量站点，争自然首位的价值下降", "优化服务只卖给高质量站点"], "a": 2, "e": "命题 2 的直觉：赞助位为拿不到自然首位的高质量站兜底，低搜索成本下买家迟早找到它们，低质量站点争位回报缩水。", "p": 13}, {"q": "论文里的排序效率 P(α) 度量什么？", "o": ["引擎从赞助链接获得的收入", "最高质量站点赢得自然首位的概率", "消费者点击赞助链接的比例", "优化投入转化为评分的比率"], "a": 1, "e": "P(α)=Pr(最高质量站点赢得自然首位)，是全课的中枢指标；干扰项分别对应收入、点击份额与 α 的角色。", "p": 7}, {"q": "把结论用于真实投放账户前，必须记住哪条边界？", "o": ["模型只覆盖单关键词、静态单期的黑帽优化，并假设消费者完全理性", "结论对所有市场与平台普适", "白帽优化也已包含在模型内", "只要加大预算，结论必然成立"], "a": 0, "e": "§4 作者自述四条局限：静态、单关键词、黑帽限定、理性消费者；迁移前逐条对照自己的场景。", "p": 16}, {"q": "最低出价与引擎利润的关系是哪一种？", "o": ["单调递增，出价下限越高越好", "单调递减，应尽量取消下限", "逆 U 型：最优最低出价随优化活动水平上升而下降", "与优化活动无关"], "a": 2, "e": "推论 1：收入对 r 呈逆 U 型；优化越有效，提高下限越快把站点推向优化投入，峰值 r̂(α) 随 α 左移。", "p": 15}]};
+const GLOSSARY={alpha:{t:"优化效力 α",d:"一单位优化投入能撬动多少评分；进入评分式 s=q+αe+ε，引擎可通过反制提高优化的单位成本（即压低 α）。"},sigma:{t:"测量噪声 σ",d:"引擎评分偏离真实质量的幅度；论文要求 σ 大于站点间的质量差，噪声才足以让排名出错。"},rho:{t:"质量估值相关 ρ",d:"同一站点质量与流量估值的相关系数：正相关表示好货更赚钱，负相关表示垃圾站更会变现。"},eff:{t:"排序效率 P(α)",d:"最高质量站点赢得自然首位的概率；论文用它判断优化是修正了测量误差还是扭曲了排序。"},minbid:{t:"最低出价 r",d:"引擎为赞助链接设的出价下限；与引擎利润呈逆 U 关系，最优值随优化活动水平下降。"},gsp:{t:"广义第二价格拍卖",d:"赞助位的分配机制：按点击率校正后的出价排序，获胜者支付次高价校正后的金额。"},blackhat:{t:"黑帽优化",d:"只操纵评分、不提升网页真实相关性的优化手法；本论文的「优化」一词仅指这类手法。"},csearch:{t:"理性搜索",d:"消费者每点一个链接付出成本 c，按期望质量选择起点，继续搜索当且仅当期望收益超过成本。"},natural:{t:"自然结果",d:"按相关性算法排序的搜索结果；模型中由带噪声的评分决定座次。"},sponsored:{t:"赞助链接",d:"通过竞价拍卖购买的广告位；在模型中充当没拿到自然首位站点的第二次机会。"}};
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER or the X* data objects below. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sg=v=>(v>0?'+':v<0?'−':'±');
+const n2=v=>v.toFixed(2), n1=v=>v.toFixed(1);
+const XS={scene:0,concept:0,step:0,mstep:0,metric:0,proof:0,lim:0,cmp:0,role:0,rev:{r:2,a:0},lab:{sigma:4,alpha:1,rho:1},checks:new Set(),flips:new Set(),q:0,answers:[]};
+const XCONCEPTS=[
+ {n:'站点',p:'两家站点各有真实质量 q 与流量估值 v，各分高低两档。质量是消费者得到的效用，估值是每获得一位消费者的收益；两者可能正相关（好货赚头大），也可能负相关（垃圾站更会变现）。',pro:'Pr(q<sub>i</sub>=q<sub>L</sub>)=Pr(q<sub>i</sub>=q<sub>H</sub>)=1/2，v 同理；同站 q 与 v 的相关系数为 ρ，跨站点独立。优化投入 e<sub>i</sub> 的成本为 e<sub>i</sub>²/2。<span class="src">§2.1 · PDF p.5–6</span>'},
+ {n:'搜索引擎',p:'引擎想把高质量站排到自然第一位，同时靠赞助位赚钱。它无法直接观测质量，只能带误差地打分；它还能设定赞助位的最低出价。',pro:'评分式 (1)：s<sub>i</sub>=q<sub>i</sub>+α·e<sub>i</sub>+ε<sub>i</sub>，ε 均值 0；赞助位按 CTR 校正的广义第二价格拍卖分配，保留价 r。<span class="src">§2.2 · PDF p.6</span>'},
+ {n:'消费者',p:'消费者想找到高质量站点，每点一个链接付一次搜索成本，看到质量后决定留下、继续搜索或放弃。从哪一侧开始由期望质量决定。',pro:'理性顺序搜索：继续搜索当且仅当期望效用增量超过 c。命题 2.1：搜索成本足够低时，均衡从自然侧开始。<span class="src">§2.1 · Proposition 2 · PDF p.5、9</span>'}];
+const XSTEPS=[
+ {t:'公布最低出价 r',p:'引擎先公布赞助链接的最低出价。站点在决定优化投入时已经知道 r，所以 r 是承诺变量，引擎后续反悔不在模型内。',pro:'r 为赞助位保留价；§3.2 先讨论 r&lt;v<sub>L</sub>（人人买得起赞助位），再讨论更高的下限。'},
+ {t:'抽取质量与估值',p:'自然为每家站点抽取质量 q 与流量估值 v，各分高低两档、概率各半；同一站点内两者的相关性由 ρ 给定。',pro:'Pr(q<sub>i</sub>=q<sub>L</sub>)=Pr(q<sub>i</sub>=q<sub>H</sub>)=1/2，v 同理；q 与 v 相关系数 ρ，跨站点独立。'},
+ {t:'选择优化投入',p:'两家站点同时决定优化投入。投入只改变评分，不改变真实质量；成本随投入加速上涨。',pro:'成本 e<sub>i</sub>²/2（二次型）：边际成本递增，压住无限投入。'},
+ {t:'评分与自然排序',p:'引擎给每家站点打分并排出自然座次。优化投入经效力 α 放大进入评分，测量噪声让评分偏离真实质量。',pro:'式 (1)：s<sub>i</sub> = q<sub>i</sub> + α·e<sub>i</sub> + ε<sub>i</sub>，ε<sub>i</sub> 均值 0；示意取 U[−σ/2, σ/2] 且 σ&gt;q<sub>1</sub>−q<sub>2</sub>。',f:'s<sub>i</sub> = q<sub>i</sub> + α·e<sub>i</sub> + ε<sub>i</sub>'},
+ {t:'赞助位拍卖',p:'站点为赞助位出价，按点击付费；出价经点击率校正后排序，低于最低出价的出价无效。',pro:'CTR 校正的广义第二价格拍卖，保留价 r；获胜者支付次高价经 CTR 校正后的金额。'},
+ {t:'消费者搜索',p:'消费者选择从哪一侧开始点击，每点一次付成本 c，看到质量后决定消费、继续或离开。',pro:'理性预期下从期望质量更高的一侧开始；命题 2.1：均衡中自然侧先被点击。'}];
+const XMSTEPS=[
+ {t:'基准收益',p:'无赞助链接时，站点收益＝估值 × 赢得自然首位的概率 − 优化成本，两家同时选择投入。',pro:'式 (2)：π<sub>i</sub> = v<sub>i</sub>·Pr(s<sub>i</sub>&gt;s<sub>j</sub>) − e<sub>i</sub>²/2；示意均匀噪声下概率项由 ε<sub>i</sub>−ε<sub>j</sub> 的三角分布给出。',f:'π<sub>i</sub> = v<sub>i</sub>·Pr(s<sub>i</sub>&gt;s<sub>j</sub>) − e<sub>i</sub>²/2'},
+ {t:'一阶条件',p:'对投入求边际：把评分再推高一分带来的收益，等于二次成本的边际。两家的条件相减，把评分差、质量差与估值差连在一起。',pro:'式 (3)–(4)：v<sub>i</sub>·f(x)=(s̄<sub>i</sub>−q<sub>i</sub>)/α²，相减得 f(x)=(x−µ)/(α²(v<sub>i</sub>−v<sub>j</sub>))，µ=q<sub>i</sub>−q<sub>j</sub>；附录据此解出均衡评分差 x*。',f:'v<sub>i</sub>·f(x) = (x−µ) / (α²(v<sub>i</sub>−v<sub>j</sub>))'},
+ {t:'排序效率',p:'把均衡评分差代回赢得概率得到 P(α)。质量与估值正相关时 P(α) 随 α 上升，负相关时下降。',pro:'P(α)=F(x*)；附录：ρ=1 时 P′(α)&gt;0，ρ=−1 时 P′(α)&lt;0；基准 P(0)&lt;1 且随 σ 增大而下降。',f:'P(α) = F(x*)'},
+ {t:'加入赞助',p:'赞助位成为第二次机会：低质量站点争位价值下降，高质量站赢得自然位的概率随 α 上升，消费者改从自然侧开始搜索。',pro:'命题 2（c&lt;c̄）：1) 均衡中消费者从自然侧开始；2) r&lt;v<sub>L</sub> 时高质量自然位概率对任意 ρ∈[−1,1] 随 α 上升；3) v<sub>L</sub>≤r 时需 ρ 足够高；4) 引擎收入随 α 上升当且仅当高质量自然位概率下降。'},
+ {t:'两个推论',p:'利润重新分配：高质量站利润上升、低质量站下降；引擎收入对最低出价呈逆 U 型，最优出价随优化活动上升而下移。',pro:'推论 1：存在 r̂(α)，r&lt;r̂ 时收入随 r 上升，r&gt;r̂ 时下降，r̂ 随 α 递减。推论 2：r&lt;v<sub>L</sub> 且质量不同时，高质量站利润随 α 上升，低质量站下降。'}];
+const XMETRICS=[
+ {n:'排序效率 P(α)',plain:'最高质量站点赢得自然首位的概率，越接近 1 排名越准。优化是修正还是扭曲，就看它上升还是下降。',pro:'P(α)=F(x*(α))，x* 为均衡评分差；附录证明 ρ=1 时 P′&gt;0、ρ=−1 时 P′&lt;0。<span class="src">§3.1 · 附录 · PDF p.8、13</span>'},
+ {n:'优化效力 α',plain:'一单位优化投入能撬动多少评分；α 越大，同样的钱对排名的影响越大。',pro:'进入评分式 s<sub>i</sub>=q<sub>i</sub>+α·e<sub>i</sub>+ε<sub>i</sub>；1/α 可理解为优化的单位成本，引擎的反制相当于提高 1/α。<span class="src">§2.2 · PDF p.6</span>'},
+ {n:'最低出价 r',plain:'引擎为赞助链接设的出价下限：太低点击被贱卖，太高把站点推向优化投入。',pro:'推论 1：收入对 r 呈逆 U 型，最优 r̂(α) 随 α 递减；模型假设 r&lt;v<sub>H</sub>。<span class="src">§2.2 · Corollary 1 · PDF p.7、10</span>'},
+ {n:'搜索成本 c',plain:'消费者每点开一个链接付出的时间与精力；成本越低，越可能把两侧结果点完。',pro:'命题 2 在 c&lt;c̄ 时成立：低搜索成本保证消费者穷尽搜索，赞助位的兜底机制才起作用。<span class="src">§2.1 · Proposition 2 · PDF p.5、9</span>'}];
+const XEV=[{label:'摘要',page:2},{label:'命题 2',page:9},{label:'结论与建议',page:12}];
+const XFIND={
+ 0:['赞助链接为没拿到自然首位的高质量站点兜底；买家迟早会找到它们，低质量站点争夺自然首位的价值因此下降，高质量站点面对的优化竞争反而变小。','两步机制：其一，赞助位给高质量站兜底，拿不到自然首位也丢不了点击；其二，搜索成本很低时消费者会点完两侧，高质量站迟早被找到。两步叠加，低质量站占据自然首位也留不住买家。','需要搜索成本足够低（命题 2 的 c&lt;c̄）且赞助位确实可得（r&lt;v<sub>H</sub>）。结论对任意相关系数 ρ 成立，这一条靠的是激励结构。'],
+ 1:['均衡中消费者从自然侧开始搜索：高质量站点的优化投入抬高自然列表的期望质量，理性消费者从期望质量更高的一侧开始点击。','起点选择本身就是均衡结果：优化竞赛把高质量站推向自然侧，自然侧期望质量随之升高；消费者的起点又反过来强化高质量站争自然位的动机。','搜索成本 c&lt;c̄ 时成立。若成本很高，消费者点一次就停，起点两侧的期望质量差距收窄，结论不再保证。'],
+ 3:['模型是静态单期博弈；现实中站点动态投入、互相反应，引擎声誉的长期影响因此无法在这套模型里讨论。','单关键词模型看不到真实账户的跨关键词组合：广告主竞购大量关键词，优化也可能一次影响多个词的排名，预算分摊效应被排除在模型外。','论文把优化一词完全留给不提升真实相关性的黑帽手法。白帽投入直接提高质量 q，同时改变效用与排序，属于另一套问题。','消费者被假设理性且目标明确。真实的分心、品牌偏好与误点会重新分配两侧点击率，引擎的收入张力可能因此缓和或加剧。']};
+const XCOMPARE=[
+ ['文献转述 · Xing 与 Lin 2006','论文综述称其为最近的先行研究：定义「算法质量」与「算法稳健性」描述引擎准确识别相关站点的能力；当广告主对自然首位的估值足够高时，SEO 可以持续，服务商借「寄生性质」搭引擎的便车。该文未把站点质量、估值与消费者搜索纳入考量。<span class="src">§1 · PDF p.4</span>']];
+const XROLES=[
+ {n:'内容与业务负责人',why:'命题 2 表明高质量站点有赞助位兜底，自然可见性投入的回报更确定；命题 1 提示修正空间取决于市场相关性与引擎误差。',avoid:'避免：使用黑帽手段。模型只覆盖黑帽且真实引擎会惩罚（JCPenney 案例）。',todos:[['判明自家市场质量与估值的相关方向（ρ 的符号）','F1 · 命题 1 条件'],['估计自然排序的测量误差：排得很准时修正空间小','F2 · σ 与 P(0)'],['把自然可见性投入排在竞价之前做规划','F2 · 消费者从自然侧开始'],['保留赞助位预算，作为自然排名波动时的兜底','F1 · 第二次机会']]},
+ {n:'平台与投放侧',why:'命题 2.4 与推论 1 给出引擎侧的两条杠杆：赞助收入随优化有效性下降，最低出价的最优值随优化活动左移。',avoid:'避免：把最低出价一味调高——越过 r̂ 之后，提价反而把站点推向优化，收入下降。',todos:[['把优化支出与赞助收入放进同一张监测表','F3 · 命题 2.4'],['按优化活跃度复核最低出价：α 越高，r̂ 越低','F3 · 推论 1'],['压低优化效力（反制）与改进测量算法同做，两者互补','F4 · §3.1 讨论'],['跟踪自然侧期望质量，判断消费者起点是否移动','F2 · 命题 2.1']]},
+ {n:'研究与审核人员',why:'命题的每个结论都挂着假设清单：静态、单关键词、黑帽、理性消费者；审核的起点是把假设与场景逐条对齐。',avoid:'避免：把命题推导当作实测效果引用，或把示意数值当统计数据。',todos:[['核对四条假设与目标场景的差异','F4 · §4'],['与仓库内《最优搜索营销策略》做同口径对照','F4 · Sen 2005'],['设计对照试验检验迁移：先小范围，再扩大','F1–F3 · 本课推断'],['记录版本与口径：作者稿与正式版页码不同','F4 · 版本核对']]}];
+function conceptHtml(i){const c=XCONCEPTS[i];return `<h3>${esc(c.n)}</h3><p>${c.p}</p><div class="only-pro"><div class="pro-note">${c.pro}</div></div>`;}
+function stepHtml(i){const s=XSTEPS[i];return `<h3>${i+1} · ${esc(s.t)}</h3><p>${s.p}</p>${s.f?`<div class="only-pro"><div class="formula">${s.f}</div></div>`:''}<div class="only-pro"><div class="pro-note">${s.pro}</div></div><div class="caption">时序来自论文 §2.3 Timing；步骤编号表达博弈顺序。</div>`;}
+function mstepHtml(i){const s=XMSTEPS[i];return `<h3>${i+1} · ${esc(s.t)}</h3><p>${s.p}</p>${s.f?`<div class="only-pro"><div class="formula">${s.f}</div></div>`:''}<div class="only-pro"><div class="pro-note">${s.pro}</div></div><div class="caption">推导路线按论文 §3 与附录重新组织。</div>`;}
+function metricHtml(i){const m=XMETRICS[i];return `<h3>${esc(m.n)}</h3><p>${m.plain}</p><div class="only-pro"><p>${m.plain}</p><div class="pro-note">${m.pro}</div></div>`;}
+function proofHtml(i){const e=PAPER.evidence[i];return `<div class="source-text" lang="en">${esc(e.text)}</div><span class="src">${esc(e.label)} · PDF p.${e.page}</span><div class="caption">原文节选作核验入口；完整命题与证明请打开原文。</div>`;}
+function syncTrack(sel,cur){$$(sel+' .choice').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===cur)));}
+function syncBtns(box,cur,max){const bs=$$('button[data-action]',box);bs.forEach(b=>{const a=b.dataset.action;if(a==='prevStep'||a==='prevM')b.disabled=cur===0;if(a==='nextStep'||a==='nextM')b.disabled=cur===max;});}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':l[0]==='中'?'acc':''}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?`<div class="caption"><a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · <a href="${esc(PAPER.related.pdf)}" target="_blank" rel="noopener">对照原文</a></div>`:`<div class="caption">${i===0||i===1?'来自 §4 作者自述局限与本课解读。':i===5?'版本提示：本地为作者稿（2012-11-06），正式版为 Marketing Science 2013。':'本课审查提示，使用前结合原文核验。'}`}`;}
+/* 招牌交互：测量误差 × 优化强度 */
+function xlabCalc(){
+ const {sigma:s,alpha,rho}=XS.lab, mu=2, dv=6*rho, vH=5+3*rho, vL=5-3*rho, a2=alpha*alpha;
+ let x;
+ if(dv>=0)x=(s*s*mu+s*a2*dv)/(s*s+a2*dv);
+ else{const ad=a2*(-dv),num=s*s*mu-s*ad;x=ad<=s*mu?num/(s*s-ad):num/(s*s+ad);}
+ const f=t=>(s-Math.abs(t))/(s*s);
+ const F=t=>t<=0?(s+t)*(s+t)/(2*s*s):1-(s-t)*(s-t)/(2*s*s);
+ const P=F(x),P0=F(mu),eH=alpha*vH*f(x),eL=alpha*vL*f(x),cH=eH*eH/2,cL=eL*eL/2;
+ return {x,P,P0,vH,vL,eH,eL,cH,cL,piH:vH*P-cH,piL:vL*(1-P)-cL,piH0:vH*P0,piL0:vL*(1-P0),sH:7+alpha*eH,sL:5+alpha*eL,dP:(P-P0)*100,dH:vH*(P-P0)-cH,dL:vL*(P0-P)-cL,dv};
+}
+function renderLab(){
+ const p=XS.lab,r=xlabCalc();
+ $('#xSigV').textContent=n1(p.sigma);$('#xAlV').textContent=n2(p.alpha);$('#xRhoV').textContent=(p.rho>0?'+':'')+n2(p.rho);
+ let rt,rc;
+ if(r.dv===0){rt='排名不变：投入成为纯成本';rc='tag neg';}
+ else if(r.dP>0.3){rt='修正误差 '+sg(r.dP)+n1(Math.abs(r.dP))+'pt';rc='tag pos';}
+ else if(r.dP<-0.3){rt='扭曲排序 '+sg(r.dP).replace('+','')+n1(Math.abs(r.dP))+'pt';rc='tag neg';}
+ else{rt='变化很小（<0.3pt）';rc='tag';}
+ const hc=r.dH>0.02?'tag pos':r.dH<-0.02?'tag neg':'tag';
+ const lc=r.dL>0.02?'tag pos':r.dL<-0.02?'tag neg':'tag';
+ const h1=r.x>=0;
+ const row=(pos,name,q,v,e,sc,cls)=>`<div class="x-rank"><span class="x-pos">${pos}</span><div class="x-site"><b>${name} <span class="tag">q=${q}</span></b><small>估值 v=${v} · 均衡投入 e=${n2(e)}</small></div><div class="x-score"><div class="x-sfill${cls}" style="width:${(sc*10).toFixed(0)}%"></div><span>评分 ${n1(sc)}</span></div></div>`;
+ const sH=7+p.alpha*r.eH, sL=5+p.alpha*r.eL;
+ $('#xlabOut').innerHTML=`<div class="x-serp"><div class="x-serp-h">自然结果 · 均衡评分（示意）</div>${row(1,h1?'高质量站点':'低质量站点',h1?'7':'5',h1?n1(r.vH):n1(r.vL),h1?r.eH:r.eL,h1?sH:sL,h1?'':' dim')}${row(2,h1?'低质量站点':'高质量站点',h1?'5':'7',h1?n1(r.vL):n1(r.vH),h1?r.eL:r.eH,h1?sL:sH,h1?' dim':'')}</div><div class="grp-t" style="margin-top:14px">排序效率 P(α)：高质量站赢得自然首位的概率</div><div class="x-pbar"><div class="x-pfill" style="width:${(r.P*100).toFixed(1)}%"></div><span class="x-pbase" style="left:${(r.P0*100).toFixed(1)}%"></span></div><div class="x-pread">P(α) = <b>${(r.P*100).toFixed(1)}%</b>，无优化时 P(0) = ${(r.P0*100).toFixed(1)}%　<span class="${rc}">${rt}</span>　<span class="${hc}">高质量站利润 ${sg(r.dH)}${n2(Math.abs(r.dH))}</span>　<span class="${lc}">低质量站利润 ${sg(r.dL)}${n2(Math.abs(r.dL))}</span></div><div class="x-pread muted">两家合计优化成本 ${(r.cH+r.cL).toFixed(2)}；利润为相对无优化基准的变化（示意）。</div><div class="pro-note only-pro">评分差 x* = (σ²µ + σα²Δv)/(σ² + α²·|Δv|)，µ=q<sub>H</sub>−q<sub>L</sub>=2，Δv=6ρ；投入 e<sub>i</sub>=α·v<sub>i</sub>·f(x*)，f 为 ε<sub>i</sub>−ε<sub>j</sub> 的三角分布密度 f(x)=(σ−|x|)/σ²，成本 e²/2。附录要求 α² 足够小（相对 σ 与 v<sub>H</sub> 的约束）时一阶与二阶条件同时成立，超出该范围的读数只看方向。<span class="src">附录 · PDF p.13</span></div>`;
+}
+function bindLab(){
+ const upd=()=>{XS.lab.sigma=parseFloat($('#xSig').value);XS.lab.alpha=parseFloat($('#xAl').value);XS.lab.rho=parseFloat($('#xRho').value);$$('.choice-row [data-action="xlab"]').forEach(b=>b.setAttribute('aria-pressed','false'));renderLab();};
+ ['xSig','xAl','xRho'].forEach(id=>$('#'+id).addEventListener('input',upd));
+}
+const XAL=[0.3,1,2.5];
+function renderRev(){
+ const a=XAL[XS.rev.a],tau=10/(1+0.8*a),rhat=tau/2;
+ const X=r=>40+(r/10)*500, Y=v=>210-(v/2.2)*180;
+ let pts=[];
+ for(let rr=0;rr<=10.001;rr+=0.2){const R=rr<=tau?rr*(1-rr/tau):0;pts.push(X(rr).toFixed(1)+','+Y(R).toFixed(1));}
+ const r=XS.rev.r,R=r<=tau?r*(1-r/tau):0;
+ const tick=[0,2,4,6,8,10].map(t=>`<line x1="${X(t)}" y1="210" x2="${X(t)}" y2="214" stroke="#d6d6d1"/><text x="${X(t)}" y="226" text-anchor="middle" font-size="11" fill="#8b8b87">${t}</text>`).join('');
+ $('#xRevSvg').innerHTML=`<svg viewBox="0 0 560 232" role="img" aria-label="最低出价与引擎收入的逆 U 型示意曲线" style="width:100%;height:auto"><line x1="40" y1="210" x2="540" y2="210" stroke="#d6d6d1"/><line x1="40" y1="20" x2="40" y2="210" stroke="#d6d6d1"/>${tick}<polyline points="${pts.join(' ')}" fill="none" stroke="#2446d8" stroke-width="2"/><line x1="${X(rhat)}" y1="${Y(tau/4)}" x2="${X(rhat)}" y2="210" stroke="#8b8b87" stroke-dasharray="4 4"/><circle cx="${X(rhat)}" cy="${Y(tau/4)}" r="3.5" fill="#8b8b87"/><text x="${X(rhat)+6}" y="${Y(tau/4)+4}" font-size="11" fill="#8b8b87">r̂=${rhat.toFixed(1)}</text><circle cx="${X(r)}" cy="${Y(R)}" r="5" fill="#2446d8"/><text x="546" y="214" text-anchor="end" font-size="11" fill="#8b8b87">r</text><text x="10" y="24" font-size="11" fill="#8b8b87">收入</text></svg>`;
+ $('#xRV').textContent=n1(r);
+ let vt,vc;
+ if(r<rhat-0.15){vt='还有提价空间：r 低于 r̂';vc='tag acc';}
+ else if(r>rhat+0.15){vt='已过高点：提价把站点推向优化';vc='tag neg';}
+ else{vt='接近最优最低出价';vc='tag pos';}
+ $('#xRevOut').innerHTML=`<div class="answer"><h3>当前读数（示意）</h3><p>当前收入 R(${n1(r)}) = ${R.toFixed(2)}；最优最低出价 r̂(α) = ${rhat.toFixed(1)}，对应峰值收入 ${(tau/4).toFixed(2)}。</p><span class="${vc}">${vt}</span><div class="caption">曲线按推论 1 的逆 U 形状示意绘制，论文未给解析式；α 档位越高，峰值 r̂ 越靠左、峰值收入越低。</div></div><div class="callout">张力的来源：高质量站点赢得自然位后不再竞购赞助链接，优化越有效、这种情形越常见，赞助收入随之减少。<span class="src">Proposition 2.4 · PDF p.10</span></div>`;
+}
+const QUIZ_OUT=()=>{const q=PAPER.quiz[XS.q];if(!q){const sc=XS.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="kicker">自测完成</div><div class="number-large">${sc} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div><div class="caption"><a href="${esc(PAPER.url)}" target="_blank" rel="noopener">打开原文核对</a></div>`;}
+ const a=XS.answers[XS.q];
+ return `<div class="kicker">第 ${XS.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options" role="group" aria-label="第 ${XS.q+1} 题选项">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${XS.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}`;};
+function renderQuiz(){$('#quizOut').innerHTML=QUIZ_OUT();}
+/* 事件分发：只更新受影响的学习活动 */
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;
+ const v=+(b.dataset.value||0),a=b.dataset.action;
+ const page=b.closest('.page');
+ const acts=['scene','concept','metric','proof','compare','limit','find0','find1','find3','rev'];
+ if(acts.includes(a)||a==='xlab'||a==='xlabreset'){const row=b.closest('.choice-row');if(row)$$('button',row).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}
+ if(a==='scene')$('#sceneOut').innerHTML=`<h3>${v?'论文的回答':'当时的普遍担忧'}</h3><p>${v?'适度优化可能改善排序质量：质量与估值正相关时，优化竞赛把排序推向真实质量；有赞助链接时结论更强，对任意相关系数成立。':'引擎立场：操纵结果伤害消费者与诚实站点，应当压制优化。照此推断，消费者应该更信任赞助链接，从赞助侧开始搜索。'}</p><div class="caption">${v?'命题 1 与命题 2；均以理论推导为证据，无实测数值。<span class="src">PDF p.8–10</span>':'论文 §1 把这一立场作为待检验的问题。'}</div>`;
+ else if(a==='concept'){$('#conceptOut').innerHTML=conceptHtml(v);}
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){XS.step=a==='step'?v:Math.max(0,Math.min(5,XS.step+(a==='nextStep'?1:-1)));$('#stepOut').innerHTML=stepHtml(XS.step);syncTrack('.page[data-view="pipeline"] .step-track',XS.step);syncBtns($('#stepOut').parentElement,XS.step,5);}
+ else if(a==='mstep'||a==='prevM'||a==='nextM'){XS.mstep=a==='mstep'?v:Math.max(0,Math.min(4,XS.mstep+(a==='nextM'?1:-1)));$('#mstepOut').innerHTML=mstepHtml(XS.mstep);syncTrack('.page[data-view="method"] .step-track',XS.mstep);syncBtns($('#mstepOut').parentElement,XS.mstep,4);}
+ else if(a==='metric')$('#metricOut').innerHTML=metricHtml(v);
+ else if(a==='proof')$('#proofOut').innerHTML=proofHtml(v);
+ else if(a==='check'){XS.checks.has(v)?XS.checks.delete(v):XS.checks.add(v);b.setAttribute('aria-pressed',String(XS.checks.has(v)));$('.checkmark',b).textContent=XS.checks.has(v)?'✓':'';const n=XS.checks.size;$('#controlOut').innerHTML=`<h3>${n===4?'四项条件齐备，可以设计检验':'继续补齐比较条件（'+n+'/4）'}</h3><p>${n===4?'把命题当作待检验假设：先在小流量上验证 ρ 方向与误差大小，再决定投入。':'四项分别对应命题 1 的条件、排序效率的提升空间、模型口径与命题 2 的收入张力。'}</p><div class="caption">勾选只用于自查清单，不能自动证明结论适用。</div>`;}
+ else if(a==='find0'||a==='find1')$('#findOut'+a.slice(-1)).innerHTML=`<p>${XFIND[a.slice(-1)][v]}</p><div class="caption">${v===0?'命题原文的中文转述。':v===1?'机制为本课拆解，忠实于论文论证。':'适用条件摘自论文假设。<span class="src">§2–3</span>'}</div>`;
+ else if(a==='find3'){$('#findOut3').innerHTML=`<p>${XFIND[3][v]}</p><div class="caption">作者在结论部分逐条列出的局限，本页按放宽假设组织。</div>`;}
+ else if(a==='compare'){if(v===0)$('#compareOut').innerHTML=`<div class="columns"><div class="answer"><h3>本篇研究</h3><p>把优化投入与消费者搜索同时内生化：适度优化在质量与估值正相关时修正引擎测量误差；有赞助链接兜底时，结论对任意相关系数成立。</p><div class="caption">证据边界：两站点静态博弈，黑帽优化，理论推导无实测。<span class="src">摘要 · §3 · PDF p.2、8–10</span></div></div><div class="answer"><h3>对照时对齐三件事</h3><p>对象是否相同（站点与关键词层级）、优化口径是否相同（黑帽还是含白帽）、指标是否可比（排序效率还是收入）。不同阶段的数字不能直接相加。</p><div class="caption">本段为本课推断，用于阅读纪律。</div></div></div>`;else if(v===1)$('#compareOut').innerHTML=`<div class="answer"><h3>仓库对照 · 最优搜索营销策略（Sen 2005）</h3><p>${esc(PAPER.related.claim)}与本篇的差别来自消费者搜索与测量误差的建模：本篇让排名带噪、消费者穷尽搜索，优化因此有了修正空间。</p><div class="caption"><a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · <a href="${esc(PAPER.related.pdf)}" target="_blank" rel="noopener">对照原文</a> · 按该文摘要转述</div></div>`;else $('#compareOut').innerHTML=`<div class="answer"><h3>${XCOMPARE[0][0]}</h3><p>${XCOMPARE[0][1]}</p></div>`;}
+ else if(a==='role'){XS.role=v;const r=XROLES[v];$('#roleName').textContent=r.n;$('#roleWhy').textContent='为什么适合：'+r.why;$('#roleAvoid').textContent=r.avoid;$('#roleTodos').innerHTML=r.todos.map(t=>`<li>${t[0]}<small>${t[1]} · 本课应用推断</small></li>`).join('');}
+ else if(a==='limit'){$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){XS.flips.has(v)?XS.flips.delete(v):XS.flips.add(v);b.setAttribute('aria-pressed',String(XS.flips.has(v)));}
+ else if(a==='xlab'){const pre=[[4,1,1],[4,1.5,-1],[4,1,0]][v];XS.lab={sigma:pre[0],alpha:pre[1],rho:pre[2]};$('#xSig').value=pre[0];$('#xAl').value=pre[1];$('#xRho').value=pre[2];renderLab();}
+ else if(a==='xlabreset'){XS.lab={sigma:4,alpha:1,rho:1};$('#xSig').value=4;$('#xAl').value=1;$('#xRho').value=1;$$('.choice-row [data-action="xlab"]').forEach(x=>x.setAttribute('aria-pressed','false'));renderLab();}
+ else if(a==='rev'){XS.rev.a=v;$$('.choice-row [data-action="rev"]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderRev();}
+ else if(a==='copySummary')copyText(PAPER.findings.map(t=>'· '+t+'。').join('\n')+'\n依据：'+PAPER.title+'（'+PAPER.authors+'，'+PAPER.version+' '+PAPER.year+'）\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&XS.answers[XS.q]==null){XS.answers[XS.q]=v;renderQuiz();}
+ else if(a==='nextQuiz'){XS.q++;renderQuiz();}
+ else if(a==='resetQuiz'){XS.q=0;XS.answers=[];renderQuiz();}
+ // 重渲染后保持键盘焦点连续
+ if(!b.isConnected){const rep=page&&page.querySelector(`[data-action="${a}"]`);if(rep)rep.focus({preventScroll:true});}
+ if(page)checkOverflow(pages.indexOf(page));
+});
+$('#xR').addEventListener('input',()=>{XS.rev.r=parseFloat($('#xR').value);renderRev();});
+bindLab();renderRev();
+/* 组件内方向键切换选项，不触发翻页 */
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.choice-row button,.step-track button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();
+ const group=b.parentElement,bs=$$('button',group),ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;
+ bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

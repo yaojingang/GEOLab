@@ -1,0 +1,755 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>多问题的冲突融合 · 论文课堂</title><meta name="description" content="IF-GEO先提取多问题偏好，再在有限内容预算下融合改写指令"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="2601.13938v1"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* opt-7 新增组件（x- 前缀，避免与 PGS 组件冲突） */
+.lesson .x-brow{display:grid;grid-template-columns:168px minmax(0,1fr) 66px;gap:10px;align-items:center;margin:7px 0;font-size:13.5px;line-height:1.5}
+.lesson .x-brow.x-bwide{grid-template-columns:196px minmax(0,1fr) 76px}
+.lesson .x-btrack{position:relative;height:16px;background:var(--tint);border-radius:3px;min-width:0}
+.lesson .x-bfill{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:3px}
+.lesson .x-bfill.x-dim{background:var(--line-2)}
+.lesson .x-bfill.x-bmid{background:var(--c3)}
+.lesson .x-bfill.x-bzero{background:var(--line-2)}
+.lesson .x-bval{font-family:var(--mono);font-size:12px;text-align:right;color:var(--ink-2);white-space:nowrap}
+.lesson .x-stat{display:flex;gap:8px 22px;flex-wrap:wrap;margin:12px 0 2px;font-size:13px;color:var(--ink-2)}
+.lesson .x-stat b{display:block;font-family:var(--serif);font-size:22px;line-height:1.2;color:var(--ink)}
+.lesson .x-budget{display:flex;align-items:center;gap:12px;margin:2px 0 14px;font-size:13.5px}
+.lesson .x-budget input[type=range]{flex:1;min-width:0}
+.lesson .x-bnum{font-family:var(--mono);font-size:14px;min-width:92px;text-align:right;white-space:nowrap}
+.lesson .x-log{list-style:none;margin:0;padding:0;font-size:13px;color:var(--ink-2)}
+.lesson .x-log li{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.lesson .x-log li:last-child{border-bottom:0}
+.lesson .x-log .x-g{font-family:var(--mono);font-size:11px;color:var(--ink-3);flex:none}
+.lesson .x-log .x-st{margin-left:auto;flex:none;font-size:12px;white-space:nowrap}
+.lesson .x-verdict{padding:10px 14px;border-radius:10px;background:var(--tint);font-size:14px;line-height:1.65;color:var(--ink-2)}
+.lesson .x-verdict.x-tight{background:var(--neg-tint);color:#5b2117}
+.lesson .x-verdict.x-ok{background:var(--pos-tint);color:#0f4d30}
+@media(max-width:900px){
+.lesson .x-brow,.lesson .x-brow.x-bwide{grid-template-columns:minmax(0,1fr) 60px;gap:4px}
+.lesson .x-brow .x-btrack{grid-column:1 / -1}
+.lesson .x-stat{gap:6px 16px}
+}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 02 GEO方法优化</div>
+    <h1>多问题的冲突融合</h1>
+    <div class="en">2026 · 实证方法</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">多问题的冲突融合</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">IF-GEO 客观可见性平均提升 11.03，约为最强基线 Auto-GEO（7.59）的 1.5 倍<span class="src">Table 1 · PDF p.6</span></div></div><div class="notes">封面先记三个数：客观增益 11.03、胜平率 80.50%、每篇约 1 万 token 的成本。全课回答一个问题：一篇网页怎样同时服务多个互相冲突的查询。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">沿着问题与证据完成这门课</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">先记结论，再拆两阶段方法、四类稳定性指标、证据与代价<span class="src">课程路线</span></div></div><div class="notes">课程按七段走：问题、原理、测量、方法、发现、应用、复盘。方法章有一个可操作的预算实验台，发现章逐条核对论文数字，复盘章明确边界。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">一篇网页怎样兼顾互相冲突的问题</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">同一页面要同时回答 5 类查询，可新增的文字只有一份<span class="src">图 1 · PDF p.1</span></div></div><div class="notes">论文图 1 画出的处境：一篇网页同时被问定义、病因、风险、术语区别。逐条满足会把预算挤爆，这就是带约束的优化问题。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">研究对象需要先拆开再比较</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">三个关键词：潜在查询、结构化改写请求、全局修改蓝图<span class="src">§3–4 · PDF p.3–4</span></div></div><div class="notes">先拆研究对象：查询集、逐查询增益、聚合方式。点击三个环节看论文定义，术语按钮可查看通俗解释，专业层有公式。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">方法沿着这些环节产生作用</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">分散挖查询与请求；汇聚做过滤、消重、冲突解决与蓝图<span class="src">图 2 · PDF p.4</span></div></div><div class="notes">步进器走完两阶段：分散阶段挖 5 条查询、逐条生成改写请求；汇聚阶段过滤与合并、裁决互斥指令，最后产出蓝图交给改写器执行。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">明确干预环节才能解释效果</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">干预环节在文档内容改写；检索与引擎排序保持不动<span class="src">§4 · PDF p.3</span></div></div><div class="notes">IF-GEO 只改文档内容，不碰检索排名。切换上方三个位置，看研究输入、干预环节与结果口径分别是什么。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">指标分别回答不同的效果问题</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">WCP 看最差查询，DR 只罚负增益，WTR 看不退步占比<span class="src">式 6–8 · PDF p.5</span></div></div><div class="notes">平均增益会掩盖低端。论文配了三件风险工具：WCP、DR、WTR。切换四条指标，通俗层看含义，专业层有公式与 Table 2 数值。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">实验设置限定结论的适用范围</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">RAID 多查询基准：每篇 5 条相关查询，主实验 1,000 条<span class="src">§5 · PDF p.6</span></div></div><div class="notes">实验设置决定结论适用范围：GPT-4o-mini 模拟引擎、三条基线、1,000 条查询。切换右侧证据卡核对原文，出处精确到页。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">保持对照一致才能解释变化</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">复验要记录 token 成本；均值与最低收益同时报告<span class="src">§8 · PDF p.8</span></div></div><div class="notes">这张清单把论文方法转成你自己的复验方案：固定引擎版本、保留未改样本、同时报告均值与 WCP、DR。勾满四项再动手。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">方法的每一步都有独立作用</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">优先级 g=w×s 过滤请求，阈值 τ=0.7，默认挖 5 条查询<span class="src">§4 · PDF p.3–5</span></div></div><div class="notes">逐步看三个环节各自做什么：挖掘加权查询、生成带必要度的请求、融合成蓝图。专业层给出打分公式与默认参数。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">拖动内容预算，看各问题的满足度怎样互相挤占</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">预算越紧冲突越尖锐；融合把同一锚点的指令合并共享<span class="src">机制按附录 C · PDF p.13</span></div></div><div class="notes">实验台用论文附录 C 的真实查询与权重。先在逐条拼接模式拖预算看挤占，再切到融合模式对比平均满足度和最差查询。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">数字需要连同口径一起读取</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">客观增益 11.03 对 7.59；token 成本约为单遍基线 4 倍<span class="src">Table 1/5 · PDF p.6、14</span></div></div><div class="notes">逐项读数：主结果、胜平率、诊断实验、token 成本。每张条形图都从零点基线起算并标注出处，最后可切到原文表格节选。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">单篇内容同时承接多种查询</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">目标查询增益 0.277，其余仅 0.087 且 69.2% 为负溢出<span class="src">Table 4 · PDF p.11</span></div></div><div class="notes">附录 A 的诊断实验：只优化一个查询，收益集中在它身上，其他查询平均只有它的三分之一，七成查询对出现负溢出。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">指令之间可能相互竞争</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">三条建议指向同一定义句却互斥，必须裁决或合成<span class="src">附录 C · PDF p.13</span></div></div><div class="notes">冲突的样子：附录 C 里三条建议都要改首句，一个要通俗化，两个对术语的解释互相矛盾。各自合理，加起来就是冲突。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">先分散再汇聚可以协调改写</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">去掉冲突解决，平均增益从 9.24 跌到 6.14<span class="src">Table 3 · PDF p.8</span></div></div><div class="notes">消融实验分出分工：冲突解决是安全阀，指令融合稳住胜平率，蓝图主要影响增益能否落地。切换三个环节看各自贡献。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">稳定性评估需要关注低表现查询</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">WCP −0.0090、WTR 80.50%：低端损失也更小<span class="src">Table 2 · PDF p.7</span></div></div><div class="notes">IF-GEO 的方差反而更大（0.0189），论文提醒方差混入正向波动；判断低端要看 WCP 与 DR，IF-GEO 在这两项都是全场最优。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">相关研究帮助检验迁移边界</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">C-SEO Bench 提醒：多方采用下多数改写策略收益有限<span class="src">相关论文摘要</span></div></div><div class="notes">对照 C-SEO Bench：它测的是多方同时采用下对话式 SEO 的收益侵蚀。与本文的阶段和指标不同，数字不能直接相加。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">论文原例：一个医学词条的术语冲突融合</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">5 条查询权重 0.90–0.70；蓝图限定首段内 1–2 句消歧<span class="src">附录 C · PDF p.13</span></div></div><div class="notes">完整走一遍论文原例：凝血障碍词条、5 条加权查询、三条互斥建议、融合后的蓝图与改写结果。出处与页码在图注。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">不同角色需要不同的执行清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">行动建议为本课推断，需用对照试验确认<span class="src">本课推断</span></div></div><div class="notes">三类角色各自能做的事：内容方准备多查询清单，工程方记录调用成本并留档蓝图，研究方先复现再谈迁移。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态可以承接研究方法</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">成熟形态映射为本课推断：多查询简报与分层测量报告<span class="src">本课推断</span></div></div><div class="notes">把方法接到日常工作：内容简报带查询清单，测量报告同时给均值与低端指标，实验记录保存蓝图 JSON。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">结论的边界决定应用的尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">三条自述局限：调用成本、模拟差距、依赖查询发现<span class="src">§8 · PDF p.8</span></div></div><div class="notes">按影响排序读六条边界。前两条来自论文自述：多阶段更贵，模拟环境未必等于商业引擎。点开每条看依据。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">六张卡片可翻面：正面是结论，背面是依据与用法<span class="src">本课提炼</span></div></div><div class="notes">卡片背面写论文依据与一个具体用法。复制按钮会附上论文出处与适用边界，方便带走。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">五题覆盖结论、反常发现、指标、成本与局限<span class="src">本课自测</span></div></div><div class="notes">每题答完给出解释与复习页码。答错不要紧，回看对应页再继续，全部完成后可重新作答。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>IF-GEO: Conflict-Aware Instruction Fusion for Multi-Query Generative Engine Optimization</p><p>2026 · 2601.13938v1</p><p><a href="https://arxiv.org/pdf/2601.13938" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper7,
+  author = {Heyang Zhou and JiaJia Chen and Xiaolu Chen and Jie Bao and Zhen Chen and Yong Liao},
+  title = {IF-GEO: Conflict-Aware Instruction Fusion for Multi-Query Generative Engine Optimization},
+  year = {2026},
+  url = {https://arxiv.org/pdf/2601.13938}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：631d7555244fa63204d9397a02239bfbb7378813a6cb72c082a000993515b455</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={"id": 7, "zh": "多问题的冲突融合", "kind": "实证方法", "question": "一篇网页怎样兼顾互相冲突的问题？", "claim": "IF-GEO先提取多问题偏好，再在有限内容预算下融合改写指令", "steps": ["挖掘潜在查询偏好", "识别冲突与竞争", "融合全局修改蓝图"], "findings": ["单篇内容同时承接多种查询", "指令之间可能相互竞争", "先分散再汇聚可以协调改写", "稳定性评估需要关注低表现查询"],
+"metrics": [
+ {"name": "平均增益", "plain": "改写后在全部查询上的平均可见性提升", "pro": "Δ = A({Δvi})（式 2），A 常取均值。Table 1：IF-GEO 客观 Overall 11.03、主观 Average 5.87，均为全场最高。"},
+ {"name": "最差查询表现 WCP", "plain": "全部查询里最差那个的增益，代表低端安全下限", "pro": "WCP = min Δvi（式 6）。Table 2：IF-GEO 客观 −0.0090 最好，Auto-GEO 为 −0.0511，RAID 为 −0.1141。"},
+ {"name": "下行风险 DR", "plain": "只惩罚负增益，把真实损害与有益波动分开", "pro": "DR = (1/m)·Σ[min(0,Δvi)]²（式 7）。Table 2：IF-GEO 客观 0.0023 最低；其方差 VAR 0.0189 反而偏高，因为方差混入正向波动。"},
+ {"name": "胜平率 WTR", "plain": "改写后不出现退步的查询占比", "pro": "WTR = (1/m)·Σ I(Δvi ≥ 0)（式 8）。Table 2：IF-GEO 客观 80.50%、主观 85.56%，客观口径全场最高。"}],
+"setting": "RAID 多查询基准（GEO-Bench 扩展）· GPT-4o-mini 模拟引擎 · 主实验 1,000 条查询", "boundary": "潜在查询生成与融合器的偏差可能遗漏真实需求", "query": "一篇页面要同时答好 5 类问题，可新增的文字只有一份，先给谁？", "before": "把各查询的改写指令直接依次拼接执行，让它们互相挤占预算", "after": "同一锚点的指令先合并，再按优先级合成一份按段落组织的修改蓝图",
+"finding_details": ["页面能容纳的文字有限，不同查询会争夺解释空间。附录 A 诊断显示：只优化一个查询时，目标查询平均增益 0.277，其余查询仅 0.087，且 69.2% 的查询对出现负溢出。", "逐条指令都合理，合起来仍可能冲突：附录 C 原例中三条建议都指向同一定义句，给出的术语解释却互斥，必须先裁决或合成，再交给改写器执行。", "查询偏好先分别挖掘，再去重、按 g=w×s 排序并解决冲突，形成按段落组织的蓝图。消融显示去掉冲突解决后，平均增益从 9.24 降到 6.14。", "只看平均会隐藏被牺牲的查询。IF-GEO 平均增益 11.03 高于 Auto-GEO 的 7.59，同时 WCP −0.0090、WTR 80.50%、DR 0.0023 均为全场最优。"],
+"finding_src": ["Table 4 · PDF p.11", "附录 C · PDF p.13", "Table 3 · PDF p.8", "Table 2 · PDF p.7"],
+"finding_check": ["目标查询增益 0.277，非目标仅 0.087；负溢出概率 69.2%（202 条记录）", "三条互斥建议与合并后的蓝图条目（附录 C.3–C.4）", "完整 9.24 → 去掉冲突解决 6.14、去掉指令融合 7.07（Table 3）", "客观 WCP −0.0090 · WTR 80.50% · DR 0.0023（Table 2）"],
+"finding_impl": ["把页面要承接的查询先列成加权清单再动手；改完逐条查询回看，确认收益没有集中在单一意图上。", "改写前先找出落在同一段落上的多条要求；能合并成一句共享改写的，就不要各写各的。", "多查询场景先分散生成候选，再统一裁决与排序；版面或预算固定时，先保住高优先级请求。", "汇报效果时把均值与低端放在一起：WCP、DR、WTR 与平均增益同时报告。"],
+"finding_cond": ["诊断与主实验都在 LLM 模拟引擎（GPT-4o-mini）上进行，商业引擎上需要重新测量。", "冲突示例来自医学词条；锚点重叠程度不同时，冲突形态会不一样。", "消融基于 250 条查询子集，与主实验 1,000 条的口径不同。", "方差会混入正向波动；判断低端风险要看 WCP 与 DR，判断覆盖面看 WTR。"],
+"catalog_title": "IF-GEO: Conflict-Aware Instruction Fusion for Multi-Query Generative Engine Optimization", "title": "IF-GEO: Conflict-Aware Instruction Fusion for Multi-Query Generative Engine Optimization", "authors": "Heyang Zhou; JiaJia Chen; Xiaolu Chen; Jie Bao; Zhen Chen; Yong Liao", "year": "2026", "category": "02_GEO方法优化", "url": "https://arxiv.org/pdf/2601.13938", "file": "02_GEO方法优化_IF_GEO_Conflict_Aware_Instruction_Fusion.html", "pdf": "../02_GEO方法优化/02_GEO方法优化_IF_GEO_Conflict_Aware_Instruction_Fusion.pdf", "kind_note": "基于受测环境，迁移效果需要另测", "extra": "多阶段融合需要更多调用；最低收益与平均值必须同时看。",
+"evidence": [
+ {"label": "摘要与研究目标", "text": "As Generative Engines revolutionize information retrieval by synthesizing direct answers from retrieved sources, ensuring source visibility becomes a significant challenge. However, optimizing a document for diverse queries presents a constrained optimization challenge where heterogeneous queries often impose conflicting and competing revision requirements under a limited content budget. We propose IF-GEO, a “diverge-then-converge” framework comprising two phases: (i) mining distinct optimization preferences from representative latent queries; (ii) synthesizing a Global Revision Blueprint for guided editing by coordinating preferences via conflict-aware instruction fusion.", "page": 1},
+ {"label": "方法概览与查询挖掘", "text": "We propose IF-GEO, a two-stage framework for GEO under generative engines. IF-GEO follows a “diverge-then-converge” workflow. We treat query mining as reverse retrieval: given D, we guide the LLM to act as a search analyst and discover diverse queries for which the document should be a relevant result. This step outputs a weighted query set Q(D) = {(qi, wi)}, where the associated weight wi is a scalar score (0–100) estimating query popularity.", "page": 3},
+ {"label": "冲突解决规则", "text": "Selection: When the model perceives a significant priority gap, the higher-scoring instruction is strictly retained, and the conflicting one is discarded. Synthesis: When the model determines that priority scores are comparable (gi ≈ gj), it generates a new compromise instruction. This instruction balances the valid needs of both queries rather than satisfying only one.", "page": 4},
+ {"label": "风险感知指标定义", "text": "Standard visibility maximization often masks tail degradations and conflates beneficial upside with harmful downside volatility. Worst Case Performance (WCP) establishes a safety lower bound by capturing the maximum single-query drop. Downside Risk (DR) exclusively penalizes the magnitude of negative gains to distinguish harmful failures from beneficial volatility. Win-Tie Rate (WTR) quantifies the coverage of non-regressive optimization.", "page": 5},
+ {"label": "实验设置与基线", "text": "We adopt the benchmark introduced by RAID, which expands the widely-used GEO-Bench. RAID extends each source query into a cluster of five related queries. Main results are evaluated on 1,000 queries, matching the original GEO test set. All baselines and IF-GEO are implemented using the same underlying LLM (GPT-4o-mini). For IF-GEO: query expansion size Nq=5, suggestions per query Ns=5, internal temperature 0.2, and global priority filtering threshold τ=0.7.", "page": 6},
+ {"label": "单查询优化诊断", "text": "The optimized (target) query i∗ achieves a substantially larger mean gain (0.277), with a relatively low negative-gain rate (P(gain < 0) = 0.124) and small downside magnitude (DM=0.017). In contrast, the non-target queries show weaker and less reliable improvements: while the mean gain remains positive (0.087), the negative-gain rate more than doubles (0.306). On average, non-target queries lag behind the optimized query by 0.189, and in 69.2% of query pairs the spillover is negative (P(rj < 0) = 0.692).", "page": 11}],
+"table": {"text": "Table 1: Comparison of IF-GEO with baseline methods on objective and subjective visibility improvements. We\nreport overall improvement (Mean) to summarize average gains. Underlined indicates the best baseline.\n\n                  Objective Impression                                Subjective Impression\n Method\n                Word    Position   Overall   Rel.    Infl.   Unique     Div.   FollowUp   Pos.    Count   Average\n Tran. SEO      1.83     1.77       1.84     1.44    1.62     1.24     1.50     1.44      1.73    1.58     1.51\n Uniq. Word     -0.70    -1.00      -0.79    -0.20   -0.16    -0.44    -0.42    -0.46     -0.71   -0.38    -0.39\n Simp. Expr.    0.16     0.28       0.28     0.59    0.84     0.73     0.72     0.35      1.02    0.57     0.69\n Auth. Expr.    0.97     0.88       0.92     0.56    1.08     0.60     0.86     0.57      1.29    0.74     0.81\n Flue. Expr.    0.92     0.94       1.03     0.52    0.82     0.48     0.48     0.29      1.23    0.56     0.63\n Term. Addi.    1.00     1.07       1.17     0.71    1.22     0.50     0.73     0.43      1.06    0.63     0.75\n Cite Sources   4.47     4.59       4.71     3.17    3.45     3.36     3.16     2.96      3.83    3.26     3.31\n Quot. Addi.    4.29     4.19       4.23     2.57    2.87     3.10     2.45     2.25      3.28    2.48     2.71\n Stat. Addi.    3.28     3.39       3.49     2.15    2.48     2.54     1.97     1.89      3.01    2.16     2.31\n RAID           1.06     0.78       0.88     1.44    1.75     1.40     1.08     0.84      1.68    1.34     1.36\n Auto-GEO       7.80      7.64      7.59     4.99    5.68      5.18    4.74     4.19       6.63    4.77    5.30\n IF-GEO         11.07    11.15      11.03    5.12    6.16     5.90      5.29     5.34     7.32    5.98     5.87\n\n\n   Intent-based: RAID G-SEO (Chen et al., 2025b).            tiate the aggregation functional A(·) (defined in §3)\nRepresenting", "page": 6, "label": "Table 1 / Table I 原文抽取"},
+"version": "2601.13938v1", "sha256": "631d7555244fa63204d9397a02239bfbb7378813a6cb72c082a000993515b455",
+"stats": [
+ {"v": "+11.03", "name": "客观可见性平均提升", "source": "Table 1 · PDF p.6", "page": 6, "context": "位置加权字数（PAWC）口径下，IF-GEO 在 1,000 条查询上的平均改进；零点即基线（不改动的原网页）。最强基线 Auto-GEO 为 7.59。", "chart": {"base": "客观 Overall 平均改进 · 零点 = 基线（不改动）", "rows": [["IF-GEO", 11.03], ["Auto-GEO（最强基线）", 7.59], ["引用来源（GEO 启发式）", 4.71], ["添加统计数据（GEO 启发式）", 3.49], ["传统 SEO", 1.84], ["RAID", 0.88]]}},
+ {"v": "80.50%", "name": "胜平率 WTR（客观）", "source": "Table 2 · PDF p.7", "page": 7, "context": "改写后不出现负增益的查询占比。IF-GEO 为 80.50%，最强基线 Auto-GEO 为 73.56%；主观口径下 IF-GEO 为 85.56%。", "chart": {"base": "胜平率 WTR · 客观 Overall（%）", "rows": [["IF-GEO", 80.50], ["Auto-GEO", 73.56], ["添加统计数据", 72.58], ["引用来源", 72.06], ["RAID", 64.50]]}},
+ {"v": "69.2%", "name": "单查询优化的负溢出概率", "source": "Table 4 · PDF p.11", "page": 11, "context": "只针对一个查询改写时，其余查询被落下的程度：目标查询平均增益 0.277，非目标查询仅 0.087；69.2% 的查询对溢出为负。", "chart": {"base": "单查询优化的平均增益（×100）", "rows": [["目标查询", 27.7], ["非目标查询", 8.7]]}},
+ {"v": "10,327.7", "name": "每篇文档平均 token 消耗", "source": "Table 5 · PDF p.14", "page": 14, "context": "两阶段四步合计（提示 + 补全），其中指令融合一步占 4,487.6；单遍基线为 2,171.6–2,802.2，IF-GEO 约为其 4 倍。", "chart": {"base": "每篇平均 token（提示 + 补全）", "rows": [["IF-GEO（两阶段）", 10327.7], ["添加统计数据（单遍基线）", 2802.2], ["传统 SEO（单遍基线）", 2653.9]]}},
+ {"v": "−0.0090", "name": "最差查询表现 WCP（客观）", "source": "Table 2 · PDF p.7", "page": 7, "context": "全部查询里最差那个的增益，越接近 0 越安全；Auto-GEO 为 −0.0511，RAID 为 −0.1141。条长为损失幅度，越短越安全。", "chart": {"base": "最差查询的损失幅度（×100，越短越安全）", "rows": [["IF-GEO", 0.90], ["Auto-GEO", 5.11], ["引用来源", 7.85], ["传统 SEO", 8.78], ["RAID", 11.41]]}},
+ {"v": "+5.87", "name": "主观印象平均提升", "source": "Table 1 · PDF p.6", "page": 6, "context": "G-EVAL 七维打分并校准到与 PAWC 同均值方差；Auto-GEO 为 5.30。主观增益约为客观的一半，两套口径要分开读。", "chart": {"base": "主观 Average 平均改进 · 零点 = 基线（不改动）", "rows": [["IF-GEO", 5.87], ["Auto-GEO", 5.30], ["引用来源", 3.31], ["传统 SEO", 1.51], ["RAID", 1.36]]}}],
+"budget": {
+ "note": "查询与权重取自论文附录 C（5 条查询，p=0.90–0.70）；指令字数成本与满足度为本课示意模型，论文未测量此表。",
+ "queries": [
+  {"q": "凝血障碍有哪些症状", "w": 90},
+  {"q": "病因与治疗方案", "w": 85},
+  {"q": "对出血风险的影响", "w": 80},
+  {"q": "与凝血性疾病有何区别", "w": 75},
+  {"q": "创伤急救中如何处理", "w": 70}],
+ "modes": [
+  {"name": "逐条拼接", "reqs": [
+    {"t": "首句改写为通俗定义", "c": 20, "s": 75, "serve": [0]},
+    {"t": "补病因与治疗对照段", "c": 35, "s": 70, "serve": [1]},
+    {"t": "加出血风险警示段", "c": 25, "s": 80, "serve": [2]},
+    {"t": "加术语消歧句", "c": 25, "s": 90, "serve": [3]},
+    {"t": "加创伤急救步骤清单", "c": 30, "s": 60, "serve": [4]}]},
+  {"name": "冲突感知融合", "reqs": [
+    {"t": "首句通俗改写＋术语消歧（同一锚点合并）", "c": 32, "s": 90, "serve": [0, 3]},
+    {"t": "补病因与治疗对照段", "c": 35, "s": 70, "serve": [1]},
+    {"t": "加出血风险警示段", "c": 25, "s": 80, "serve": [2]},
+    {"t": "加创伤急救步骤清单", "c": 30, "s": 60, "serve": [4]}]}]},
+"personas": [
+ {"role": "内容与业务负责人", "why": "你的页面要同时承接多个意图；发现 1 显示单查询优化的收益会挤掉其他查询。", "todos": ["列出页面要承接的 3–5 条真实查询并按重要性加权", "改写前把落在同一段落上的多条要求合并成一份清单", "上线前逐条查询回看，确认没有意图被完全牺牲"], "avoid": "只按单一意图改写页面，再用平均数据宣称全面提升。"},
+ {"role": "技术与数据人员", "why": "发现 3 的消融显示融合机制承担稳定性，工程上要为多阶段调用留出预算。", "todos": ["记录每次优化的 token 消耗（论文均值 10,327.7/篇）", "把修改蓝图（blueprint JSON）存档，保证改动可追溯、可回滚", "同时采集均值与 WCP/DR/WTR，监控低端查询"], "avoid": "只报告平均增益，忽略逐查询的负增益。"},
+ {"role": "研究与审核人员", "why": "发现 4 的风险指标提醒：方差混入正向波动，低端要看 WCP 与 DR。", "todos": ["复验时固定引擎与解码参数，保留未修改的对照样本", "用附录 A 的诊断口径测自己的查询间溢出率", "先在模拟引擎复现，再验证真实引擎上的迁移"], "avoid": "把模拟引擎上的数字直接当作商业引擎的预期收益。"}],
+"mature": [["多查询内容简报", "每篇内容附 3–5 条目标查询与权重，改写前先评审指令冲突", "挖掘潜在查询偏好"], ["分层测量报告", "均值之外同时报告 WCP/DR/WTR 与逐查询增益", "识别冲突与竞争"], ["蓝图式改写工单", "改动以按段落组织的指令清单下发，留档可回滚", "融合全局修改蓝图"]],
+"related": {"id": 13, "zh": "多人竞争下的C-SEO", "title": "C-SEO Bench: Does Conversational SEO Work?", "url": "./03_GEO测量评估_C_SEO_Bench_Does_Conversational_SEO_Work.html", "pdf": "../03_GEO测量评估/03_GEO测量评估_C_SEO_Bench_Does_Conversational_SEO_Work.pdf", "claim": "C-SEO Bench发现多数现有改写策略收益有限，采用者增多会侵蚀优势"}, "strength": "中", "strength_why": "本课保守评级：有实证比较；样本独立性、自动评价或生产迁移仍有约束。",
+"limitations": [
+ ["高", "研究结论有明确范围", "潜在查询生成与融合器的偏差可能遗漏真实需求：蓝图质量取决于挖掘查询的代表性（§8 自述局限）。"],
+ ["高", "多阶段流程的调用成本", "每篇文档平均 10,327.7 token，约为单遍基线（2,171.6–2,802.2）的 4 倍；均值与最低收益必须同时看（Table 5/6）。"],
+ ["中", "模拟引擎与商业引擎有差距", "评估在 GPT-4o-mini 模拟环境完成，可复现但未必等于商业引擎；换 Gemini-2.0-Flash 后结论方向一致（Table 7）。该项为本课迁移审查。"],
+ ["中", "证据与建议需逐项区分", "应用页的行动与成熟形态是教学推断。核查原论文方法、结果及局限后再作为实验假设。"],
+ ["中", "相关研究提供新的对照", "C-SEO Bench发现多数现有改写策略收益有限，采用者增多会侵蚀优势"],
+ ["低", "原文版本与内部一致性", "采用本地 PDF 可识别版本；不将清单页数与PDF分页混用。未逐表重算的指标仍需人工复核。"]],
+"quiz": [
+ {"q": "IF-GEO 处理多查询冲突的两阶段流程是？", "o": ["把所有查询的改写指令按顺序直接拼接执行", "先挖潜在查询偏好并生成请求，再冲突感知融合成全局修改蓝图", "只挑权重最高的一个查询做深度优化", "让生成引擎自己挑选更合适的来源"], "a": 1, "e": "两阶段为 diverge-then-converge：分散阶段挖掘查询与请求，汇聚阶段做优先级过滤、消重、冲突解决与蓝图（§4 · 图 2）。复习第 5、10 页。", "p": 5},
+ {"q": "附录 A 的诊断：只针对一个查询优化时，其他查询会怎样？", "o": ["获得与目标查询同样的增益", "平均增益更高，只是波动更大", "平均增益只有 0.087，且 69.2% 的查询对出现负溢出", "完全不受影响，因为页面没有改动"], "a": 2, "e": "Table 4：目标查询平均增益 0.277，非目标查询仅 0.087，负溢出概率 0.692。复习第 13 页。", "p": 13},
+ {"q": "最差查询表现 WCP 衡量的是？", "o": ["全部查询增益的平均值", "改写后不退步的查询占比", "全部查询里最差那个的增益，是低端的安全下限", "查询集中权重最高的那条查询的增益"], "a": 2, "e": "WCP = min Δvi（式 6），Table 2 中 IF-GEO 客观 WCP 为 −0.0090。平均值与 WTR 是另外两个口径。复习第 7 页。", "p": 7},
+ {"q": "把 IF-GEO 用于生产前，成本上应该预期什么？", "o": ["与单遍方法一样，一次改写即可", "每篇平均 10,327.7 token，约为单遍基线的 4 倍", "只在查询数超过 9 条时才有额外调用", "成本全部来自最后的改写执行一步"], "a": 1, "e": "Table 5/6：两阶段四步合计 10,327.7 token，其中指令融合占 4,487.6；单遍基线为 2,171.6–2,802.2。复习第 12、21 页。", "p": 12},
+ {"q": "下列哪项属于论文自述的局限？", "o": ["没有与任何基线方法比较", "蓝图质量依赖查询挖掘的代表性，且评估依赖 LLM 模拟环境", "实验只使用了中文查询数据", "提示词与输出格式没有公开"], "a": 1, "e": "§8 三条局限：推理成本、模拟差距、依赖查询发现；附录 B 实际公开了全部提示词。复习第 21 页。", "p": 21}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{geo:{t:"GEO",d:"改善来源在生成式答案中的可见性及归功的研究与实践。"},rag:{t:"RAG",d:"先检索外部资料，再以资料支持模型生成。"},baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},ablation:{t:"消融",d:"去除某个组件，比较它对整体结果的贡献。"},transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"},blue:{t:"全局修改蓝图",d:"把多个查询的改写指令按段落组织成的执行契约，改写器严格照做，未提及段落原样保留。"},latent:{t:"潜在查询",d:"一篇文档应当能回答、但用户还没输入的代表性查询。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=e=>`<span class="src">${esc(e.label)} · PDF p.${e.page}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const researchOnly=['理论框架','综述'].includes(PAPER.kind);
+const stageNames=['问题与候选资料','研究干预与比较','答案或评价结果'];
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,num:0,lim:0,role:0,proof:0,q:0,answers:[],checks:new Set(),flips:new Set(),xb:{b:45,mode:0}};
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function dataNumbers(){return PAPER.stats.length?`<div class="number-grid">${PAPER.stats.slice(0,4).map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div>${tip(s.source)}</div>`).join('')}</div>`:`<div class="answer"><div class="kicker">证据类型 · ${esc(PAPER.kind)}</div><h3>${esc(PAPER.zh)}</h3><p>${esc(PAPER.kind_note)}</p>${tip('本篇未在封面展示未经逐项核对的效果数值。')}</div>`}
+function flow(highlight){return `<div class="flow-line">${stageNames.map((t,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${highlight===i?'active':''}">${esc(t)}<div class="caption">${esc(PAPER.steps[i])}</div></div>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+const notesForStep=i=>[
+ `分散阶段：把文档当作检索结果做反向挖掘，找出 5 条代表性潜在查询并按热度加权（w 为 0–100），再逐查询生成 ⟨锚点，建议，必要度⟩ 结构化请求。`,
+ `汇聚先过滤：算全局优先级 g=w×s，低于阈值 τ=0.7 的请求被丢弃；语义重复的请求合并为一条，并继承组内最高必要度。`,
+ `同一锚点上互斥的指令交给模型裁决：优先级差距大就保留高分项，接近就合成折中指令；最后按段落聚合成蓝图，改写器逐段执行、未提及段落原样保留。`
+][i];
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors.split("; ")[0])}${PAPER.authors.includes(";")?" 等":""} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}${PAPER.pdf?' · '+ext(PAPER.pdf,'本地PDF'):''}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿。进度自动保存在当前浏览器。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>${esc(PAPER.question)}</li><li>${esc(PAPER.metrics[0].name)}衡量什么？</li><li>${esc(PAPER.steps[1])}怎样起作用？</li><li>哪些条件会限制结论迁移？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>同一目标下，先对照常见做法与研究启发。</p>${tip('以下为围绕论文方法构造的教学情境。不给示意操作附加实测收益。')}</div><div>${choices(['常见做法','研究启发'],0,'scene')}<div class="answer" id="sceneOut" aria-live="polite"><h3>常见做法</h3><p>${esc(PAPER.before)}</p>${tip('观察这一做法遗漏了什么条件。')}</div></div></div>`;
+ else if(view==='concept')h=`${choices(PAPER.steps,0,'concept')}<div class="columns"><div class="answer" id="conceptOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p></div><div><div class="kicker">本篇要区分的量</div><ul class="fact-list">${PAPER.metrics.map((m,i)=>`<li><button type="button" class="term" data-term="metric${i}">${esc(m.name)}</button><small>${esc(m.plain)}</small></li>`).join('')}</ul></div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(notesForStep(state.step))}</p><div class="only-pro pro-note">${esc(PAPER.setting)}。证据范围：${esc(PAPER.boundary)}。</div></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按论文方法重新组织；箭头表达研究逻辑，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],1,'flow')}<div id="flowOut" aria-live="polite">${flow(1)}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric')h=`<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite"><h3>${esc(PAPER.metrics[state.metric].name)}</h3><p class="only-plain">${esc(PAPER.metrics[state.metric].plain)}</p><div class="only-pro"><p>${esc(PAPER.metrics[state.metric].pro)}</p><div class="pro-note">口径：增益按查询逐条计算后聚合；客观口径为位置加权字数，主观口径经 G-EVAL 打分并校准。${esc(PAPER.extra)}</div></div></div></div><div><div class="kicker">指标解释的检查次序</div><ul class="fact-list"><li>测量对象<small>${esc(PAPER.setting)}</small></li><li>对应结论<small>${esc(PAPER.findings[3])}</small></li><li>禁止越界<small>${esc(PAPER.boundary)}</small></li></ul></div></div>`;
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 研究设计</div><p class="intro">${esc(PAPER.setting)}</p><div class="callout">${esc(PAPER.boundary)}</div>${tip('研究类型会决定所需对照。综述需要核查纳入条件，理论需要核查假设，实证需要核查比较设计。')}</div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">给你的复验方案做检查 · 本课推断</div><div class="check-list">${['保持研究问题和对象一致','明确基线与比较方案','记录引擎或数据版本','报告负向变化与不确定性'].map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${s}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'具备基本复验要素':'继续补齐比较条件'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选用于检查方案完整性，无法自动证明因果识别成立。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button type="button" class="choice" data-action="method" data-value="${i}" aria-pressed="${i===0}">${esc(s)}</button>`).join('')}</div><div class="columns"><div class="answer" id="methodOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p><div class="callout">要检查：${esc(PAPER.findings[0])}。</div></div><div><div class="kicker">保持不变的约束</div><ul class="fact-list"><li>事实与来源可追溯</li><li>指标含义保持一致</li><li>${esc(PAPER.boundary)}</li></ul></div></div><div class="only-pro pro-note">请求元组 r=⟨e,u,s⟩（式 4）：锚点、改写建议、必要度 0–100；全局优先级 g=w×s（式 5），阈值 τ=0.7；默认 Nq=5、Ns=5、temperature 0.2。<span class="src">§4–5 · PDF p.3–6</span></div>`;
+ else if(view==='lab')h=`${choices(['逐条拼接（常见做法）','冲突感知融合（IF-GEO）'],state.xb.mode,'lab')}<div id="labOut" aria-live="polite">${labHtml(state.xb.mode)}</div>${tip('查询与权重取自论文附录 C（PDF p.13）；指令字数成本与满足度为本课示意模型，论文未测量。')}`;
+ else if(view==='numbers')h=numbersHtml();
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);h=`<div class="ev" style="margin-bottom:16px">F${ix+1} · <span class="src">${esc(PAPER.finding_src[ix])}</span> · 证据强度 <span class="${PAPER.strength==='弱'?'str-l':'str-m'}">${esc(PAPER.strength)}</span> ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite"><p>${esc(PAPER.finding_details[ix])}</p><div class="caption">结合本篇研究设计理解这条发现。</div></div></div><div><div class="kicker">如何核查这一发现</div><ul class="fact-list"><li>研究设置<small>${esc(PAPER.setting)}</small></li><li>核对数字<small>${esc(PAPER.finding_check[ix])}</small></li><li>迁移约束<small>${esc(ix===3?PAPER.extra:PAPER.boundary)}</small></li></ul><button type="button" class="btn" data-go="8" style="margin-top:12px">回到原文证据 →</button></div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes'){const quotes=[...PAPER.findings,'应用策略需要保留任务与证据条件','有效测量需要同时报告代价与边界'];h=`<div class="flips">${quotes.map((s,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(s)}。</b><span class="flip-back">依据：${esc(i<4?PAPER.claim:PAPER.boundary)}<br>用法：${esc(i<3?PAPER.steps[i]:'记录口径并检查迁移条件')}。</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;}
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function labCalc(mode,B){
+ const srcB=PAPER.budget,reqs=srcB.modes[mode?1:0].reqs,w=srcB.queries.map(q=>q.w);
+ const list=reqs.map(r=>({t:r.t,c:r.c,s:r.s,serve:r.serve,g:Math.max.apply(null,r.serve.map(j=>w[j]))*r.s}));
+ list.sort((a,b)=>b.g-a.g);
+ let rem=B;const sat=[0,0,0,0,0];const log=[];
+ list.forEach(r=>{const a=Math.min(rem,r.c);
+  if(a>0){r.serve.forEach(j=>{sat[j]=Math.min(100,sat[j]+a/r.c*100)});rem-=a;log.push({t:r.t,g:r.g,full:a>=r.c,a:a,c:r.c});}
+  else log.push({t:r.t,g:r.g,full:null});});
+ const used=B-rem,mean=sat.reduce((x,y)=>x+y,0)/5,worst=Math.min.apply(null,sat),cover=sat.filter(x=>x>0).length;
+ return {sat:sat,log:log,used:used,mean:mean,worst:worst,cover:cover,total:list.reduce((x,r)=>x+r.c,0)};
+}
+function labVerdict(r,o){
+ if(r.mean>=99.5&&o.mean>=99.5)return ['x-ok','预算充裕：两种模式都能执行全部指令，冲突基本消失。冲突协调主要在预算紧张时才有价值。'];
+ if(r.worst===0)return ['x-tight','预算不足：仍有查询完全没有分到内容。'+(r.mean>o.mean+0.5?'融合把同一锚点的指令合并共享，平均满足度 '+Math.round(r.mean)+'% 高于拼接的 '+Math.round(o.mean)+'%，受益查询 '+r.cover+'/5 对 '+o.cover+'/5。':'优先保住哪个查询，是这一步最真实的取舍；试试切换到融合模式。')];
+ if(r.mean>o.mean+0.5)return ['','融合模式的优势：同一锚点的指令合并成一句共享改写，同样的字数服务了更多查询，平均满足度与受益查询数都更高。'];
+ if(o.mean>r.mean+0.5)return ['x-tight','逐条拼接的短板：指令各自为政，预算被排在前面的指令吃掉，排在后面的查询颗粒无收。切换到融合模式对比。'];
+ return ['','两种模式接近：这个预算下指令竞争不大，把预算调低再观察冲突出现。'];
+}
+function labFrag(mode,B){
+ const srcB=PAPER.budget,r=labCalc(mode,B),o=labCalc(1-mode,B);
+ const bars=srcB.queries.map((q,i)=>{const sv=r.sat[i];const cls=sv>=99?'':sv>0?'x-bmid':'x-bzero';
+  return `<div class="x-brow"><span>${i+1}. ${esc(q.q)} <span class="src">w ${q.w}</span></span><div class="x-btrack"><div class="x-bfill ${cls}" style="width:${sv>0?Math.max(sv,1.5):1.5}%"></div></div><span class="x-bval">${sv>=99?'满足':sv>0?Math.round(sv)+'%':'未满足'}</span></div>`;}).join('');
+ const log=r.log.map(l=>`<li><span class="x-g">g=${l.g}</span><span>${esc(l.t)}</span><span class="x-st">${l.full===null?'未执行（预算耗尽）':l.full?'执行 '+l.c+' 字':'部分执行 '+l.a+'/'+l.c+' 字'}</span></li>`).join('');
+ const use=`已用 ${r.used} / ${B} 字 · 全部指令共需 ${r.total} 字 · 执行按优先级贪心分配，成本为示意`;
+ const vd=labVerdict(r,o);
+ const dyn=`${bars}<div class="x-stat"><span><b>${Math.round(r.mean)}%</b>平均满足度（对照 ${Math.round(o.mean)}%）</span><span><b>${Math.round(r.worst)}%</b>最差查询（对照 ${Math.round(o.worst)}%）</span><span><b>${r.cover}/5</b>受益查询（对照 ${o.cover}/5）</span></div><div class="x-verdict ${vd[0]}" style="margin-top:10px">${vd[1]}</div>`;
+ return {log:log,use:use,dyn:dyn};
+}
+function labHtml(mode){
+ state.xb.mode=mode;const f=labFrag(mode,state.xb.b);
+ return `<div class="columns"><div><div class="x-budget"><span>内容预算</span><input type="range" id="xRange" min="10" max="140" step="5" value="${state.xb.b}" aria-label="可新增的文字预算（示意字数）"><span class="x-bnum" id="xBnum">${state.xb.b} 字</span></div><div class="kicker">执行顺序（按 g=w×s 降序）</div><ul class="x-log" id="xLog">${f.log}</ul><div class="caption" id="xUse" style="margin-top:8px">${f.use}</div></div><div id="xDyn">${f.dyn}</div></div>`;
+}
+function xChart(c){
+ const max=Math.max.apply(null,c.rows.map(r=>Math.abs(r[1])));
+ return `<div style="margin-top:10px"><div class="kicker">${esc(c.base||'同口径数值对照 · 零点起算')}</div>${c.rows.map(r=>`<div class="x-brow x-bwide" style="margin:5px 0"><span>${esc(r[0])}</span><div class="x-btrack" style="height:13px"><div class="x-bfill${String(r[0]).indexOf('IF-GEO')===0?'':' x-dim'}" style="width:${(Math.abs(r[1])/max*100).toFixed(1)}%"></div></div><span class="x-bval">${esc(r[2]!==undefined?r[2]:String(r[1]))}</span></div>`).join('')}<div class="caption">条形自零点基线起算；蓝色为 IF-GEO，灰色为对照项，出处见左侧标签。</div></div>`;
+}
+function statHtml(i){
+ const s=PAPER.stats[i];
+ return `<div class="columns"><div><div class="kicker">${esc(s.name)}</div><div class="number-large" style="font-size:42px;margin:8px 0 4px">${esc(s.v)}</div><span class="src">${esc(s.source)}</span></div><div class="answer" style="padding:12px 16px"><p>${esc(s.context)}</p>${s.chart?xChart(s.chart):''}</div></div>`;
+}
+function tableView(){const t=PAPER.table;return `<div class="source-text table" lang="en">${esc(t.text)}</div>${src(t)}${tip('版面抽取节选，换行可能影响列对齐；完整表格及脚注以PDF为准。')}`;}
+function numbersHtml(){
+ return `${choices([...PAPER.stats.map(s=>s.name),'原文表格节选'],state.num,'number')}<div id="numberOut" aria-live="polite">${state.num<PAPER.stats.length?statHtml(state.num):tableView()}</div>`;
+}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p>${relatedLink()}${tip('按相关论文摘要转述；沿用该论文的研究范围。')}</div>`;
+ return `<div class="answer"><h3>重新检查研究阶段与目标量</h3><p>${esc(PAPER.extra)}</p><p>对照阅读时记录：优化对象是否同为多查询场景、指标是否同为位置加权可见性、是否同时报告了低端指标。</p>${relatedLink()}${tip('本段为教学推断。两篇论文的数字不宜直接相加。')}</div>`;
+}
+const originalCases={
+ 25:['争议问题是否有充分支持？','论文以阿斯巴甜与癌症关联等争议问题说明证据冲突。','比较真实网页中的事实、论证风格与相关性，观察模型回答变化。','Introduction / 摘要'],
+ 35:['虚构咖啡机目录中的产品如何排序？','论文分别观察很少被推荐与通常位列次选的目标产品。','控制商品目录后比较异常附加文本对首选概率的影响。','摘要 / Figure 1'],
+ 38:['消费商品推荐为何出现排序偏差？','来源正文被放入模型上下文，名称与位置也可能影响输出。','分别控制产品名、内容和位置，再比较推荐排序分布。','摘要 / Figure 1'],
+ 52:['合同的责任限制条款包括哪些内容？','句子级检索可能只取得损害类型，漏掉责任上限与例外。','层次节点保留完整条款，帮助同时回答责任限制和例外。','论文末尾 qualitative example'],
+ 58:['付费关联评测被答案采纳后需披露什么？','引文能够支持产品主张，但付费关联可能改变读者解释。','分别检查关系证据、答案采用、重要性和披露；缺证保持未决。','Introduction'],
+ 63:['背包是否符合短途旅行和工作装备需求？','卖方页面可能掩盖缺陷，让目标背包进入推荐集合。','以用户约束与效用评价结果，比较来源改写和防御前后。','Figure 1 / 摘要'],
+ 7:['一个医学词条里的术语混用如何统一？','论文附录 C 原例：词条把凝血障碍（凝血功能受损、易出血）与「凝血性疾病」（易过度凝血）混用；系统挖出 5 条潜在查询，权重 0.90–0.70。','三条建议指向同一定义句却互斥；融合器把首句通俗改写与术语消歧合并为一个蓝图条目，限定首段内 1–2 句、不新增小节，改写只动首段。','Appendix C · PDF p.13']};
+function caseHtml(){const c=originalCases[PAPER.id];return `<div class="kicker">${c?'论文原例的中文转述':'依据方法构造的教学示意，尚未执行效果试验'}</div><p class="intro">${esc(c?c[0]:PAPER.query)}</p><div class="two-docs">${panel('问题与输入',c?c[1]:PAPER.before)}${panel('操作与检查',c?c[2]:PAPER.after)}</div><div class="callout" style="margin-top:16px">对应发现：${esc(PAPER.findings[0])}；${esc(PAPER.findings[2])}。</div>${tip(c?'出处：'+c[3]+'。本页未为案例补造提升幅度。':'原文完整案例请沿原文查看；本页仅解释方法，未将示意写成论文实测案例。')}`;}
+function personaHtml(){const ps=PAPER.personas;return `${choices(ps.map(p=>p.role),state.role,'role')}<div class="columns"><div><h3>${esc(ps[state.role].role)}</h3><p style="margin-top:12px">为什么适合：${esc(ps[state.role].why)}</p><div class="callout warn">避免：${esc(ps[state.role].avoid)}</div></div><div><ul class="fact-list">${ps[state.role].todos.map(s=>`<li>${esc(s)}<small>依据 F${[1,3,4][state.role]} · 本课应用推断</small></li>`).join('')}</ul></div></div>`;}
+function matureHtml(){const rows=PAPER.mature;return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:18px">采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i===0?'来自本篇研究范围与局限解读。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、指标含义、适用条件与证据强弱。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','concept','method','flow','lab','compare','numberless','proof','number','metric','limit'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene')$('#sceneOut').innerHTML=`<h3>${v?'研究启发':'常见做法'}</h3><p>${esc(v?PAPER.after:PAPER.before)}</p>${tip(v?'本课应用推断。需要在目标场景中验证。':'教学示意，尚未进行实际效果测量。')}`;
+ else if(a==='concept')$('#conceptOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p>`;
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flow(v);
+ else if(a==='metric'){state.metric=v;const m=PAPER.metrics[v];$('#metricOut').innerHTML=`<h3>${esc(m.name)}</h3><p>${esc(m.plain)}</p><div class="only-pro"><p>${esc(m.pro)}</p><div class="pro-note">口径：增益按查询逐条计算后聚合。${esc(PAPER.extra)}</div></div>`;}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='method')$('#methodOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p><div class="callout">核对发现：${esc(PAPER.findings[v])}。</div>`;
+ else if(a==='lab')$('#labOut').innerHTML=labHtml(v);
+ else if(a==='numberless')$('#numberlessOut').textContent=v?PAPER.boundary:PAPER.setting;
+ else if(a==='number'){state.num=v;$('#numberOut').innerHTML=state.num<PAPER.stats.length?statHtml(state.num):tableView();}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);$('#findingOut'+ix).innerHTML=`<p>${esc(v===0?PAPER.finding_details[ix]:v===1?PAPER.finding_impl[ix]:PAPER.finding_cond[ix])}</p>${tip(v===1?'行动建议属于本课推断，需在目标场景验证。':v===2?'适用条件来自研究设置与局限章节。':'结合本篇研究设计解读，勿省略条件。')}`;}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(PAPER.findings.map(t=>t+'。').join('\n')+'\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+// 预算滑杆（opt-7 签名交互）：input 事件即时重算；range 是 input 元素，方向键不会触发翻页。
+document.addEventListener('input',e=>{
+ if(e.target.id!=='xRange')return;
+ state.xb.b=+e.target.value;
+ const p=e.target.closest('.page');const f=labFrag(state.xb.mode,state.xb.b);
+ const num=$('#xBnum');if(num)num.textContent=state.xb.b+' 字';
+ const log=$('#xLog');if(log)log.innerHTML=f.log;
+ const use=$('#xUse');if(use)use.innerHTML=f.use;
+ const dyn=$('#xDyn');if(dyn)dyn.innerHTML=f.dyn;
+ if(p)checkOverflow(pages.indexOf(p));
+});
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

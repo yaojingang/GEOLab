@@ -1,0 +1,777 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>从神经排序到树模型 · 论文课堂</title><meta name="description" content="把排序损失的梯度因子化到每篇文档，乘以交换位置带来的指标变化，再交给梯度提升树拟合；LambdaMART 曾获 2010 年 Yahoo 排序挑战赛冠军。"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="Microsoft Research technical report MSR-TR-2010-82"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+/* —— 111 专用组件（x- 前缀，勿与 PGS 组件重名） —— */
+.x-lab{display:grid;grid-template-columns:1.12fr 1fr;gap:22px;align-items:start}
+.x-rows{display:flex;flex-direction:column;gap:6px}
+.x-row{display:grid;grid-template-columns:18px minmax(0,1fr) 150px auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:#fff}
+.x-pos{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.x-doc{min-width:0;font-size:13.5px;line-height:1.4}
+.x-doc b{font-weight:600}
+.x-lv{display:inline-block;font-family:var(--mono);font-size:10px;border:1px solid var(--line-2);border-radius:4px;padding:0 4px;margin-left:6px;color:var(--ink-2);vertical-align:1px}
+.x-lv.hot{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+.x-force{display:flex;align-items:center;gap:6px}
+.x-fbar{position:relative;height:8px;background:var(--tint);border-radius:3px;flex:1;min-width:0}
+.x-fbar i{position:absolute;top:0;bottom:0;border-radius:3px}
+.x-fbar i.x-axis{left:calc(50% - .5px);width:1px;background:var(--line-2);border-radius:0}
+.x-fval{font-family:var(--mono);font-size:10.5px;color:var(--ink-2);width:46px;text-align:right;white-space:nowrap}
+.x-mv{display:flex;gap:4px}
+.x-mv button{border:1px solid var(--line-2);background:#fff;border-radius:6px;width:24px;height:24px;line-height:1;font-size:13px;padding:0}
+.x-mv button:hover{border-color:var(--ink)}
+.x-mv button:disabled{opacity:.3;cursor:default}
+.x-meter{height:12px;background:var(--tint);border-radius:4px;overflow:hidden}
+.x-meter i{display:block;height:100%;background:var(--accent);transition:width .25s ease}
+.x-meter-lab{font-size:13.5px;color:var(--ink-2);margin:6px 0 4px}
+.x-meter-lab b{font-family:var(--serif);font-size:19px;color:var(--ink)}
+.x-srow{display:grid;grid-template-columns:16px minmax(0,1fr) auto auto;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:5px 0;font-size:13.5px}
+.x-arrow{font-size:11px;color:var(--accent)}
+.x-arrow.dim{color:var(--ink-3)}
+.x-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.x-step{border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff}
+.x-step b{font-size:13.5px;display:block;margin-bottom:3px}
+.x-step small{font-size:11px;color:var(--ink-2);line-height:1.5;display:block}
+.x-step.zero{background:var(--tint)}
+.x-ev3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.x-ev3>div{border:1px solid var(--line);border-radius:8px;padding:10px}
+.x-ev3 b{font-size:13.5px;display:block;margin-bottom:3px}
+.x-ev3 small{display:block;font-size:11.5px;color:var(--ink-2);line-height:1.5;margin-bottom:6px}
+.step-track button small{display:block;font-size:11.5px;color:var(--ink-3);font-weight:400;margin-top:4px}
+@media(max-width:900px){
+.x-lab{grid-template-columns:1fr;gap:16px}
+.x-row{grid-template-columns:14px minmax(0,1fr) 104px auto;gap:6px;padding:6px}
+.x-force{gap:4px}.x-fval{width:40px}
+.x-steps,.x-ev3{grid-template-columns:1fr}
+}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 16 机器学习排序</div>
+    <h1>从神经排序到树模型</h1>
+    <div class="en">2010 · 综述</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">从神经排序到树模型</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">把排序损失的梯度因子化到每篇文档，乘以交换位置带来的指标变化，再交给梯度提升树拟合；LambdaMART 曾获 2010 年 Yahoo 排序挑战赛冠军。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">这一页围绕“从神经排序到树模型”展开。请先观察默认状态，再操作控件并解释变化。最后核对出处，保留条件：推导面向可微模型或树模型；报告本身无实验对比，效果证据来自前序论文与 2010 年 Yahoo 挑战赛。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">四个问题带出三步演进与证据边界</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">四个问题串起全课：不可导怎么办、λ 怎么算、树怎么拟合、证据怎么核对。<span class="src">全课路线 · 按报告结构编排</span></div></div><div class="notes">这页给出全课的四个问题与路线图。告诉学生右侧章节可随时跳转，术语按钮点开有解释。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">排序指标不可导，梯度下降还怎么直接优化它</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">把指标变化量乘进成对梯度，交给梯度提升树拟合<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">这一页围绕“排序指标不可导，梯度下降还怎么直接优化它”展开。请先观察默认状态，再操作控件并解释变化。最后核对出处，保留条件：推导面向可微模型或树模型；报告本身无实验对比，效果证据来自前序论文与 2010 年 Yahoo 挑战赛。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">训练读文档对，效果读整张列表</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">训练读文档对，效果读整张列表：两个口径都要写清楚。<span class="src">§2–§3 · PDF p.2–5</span></div></div><div class="notes">强调两个口径：训练在文档对上进行，效果用整张列表衡量。点开三个术语卡，专业模式有公式。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">从打分到树拟合：λ 是贯穿的主线</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">打分 → λ 推力 → 树拟合：每一步的输出是下一步的输入。<span class="src">§2/§4/§7</span></div></div><div class="notes">按三步走流水线：打分、算 λ、树拟合。每按一次下一步，问一句输入是什么、输出是什么。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">明确干预环节才能解释效果</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">推导面向可微模型或树模型；报告本身无实验对比，效果证据来自前序论文与 2010 年 Yahoo 挑战赛。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">这一页围绕“明确干预环节才能解释效果”展开。请先观察默认状态，再操作控件并解释变化。最后核对出处，保留条件：推导面向可微模型或树模型；报告本身无实验对比，效果证据来自前序论文与 2010 年 Yahoo 挑战赛。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">位置折损让头部增益远大于尾部</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">位置折损 1/log(1+i) 让头部增益远大于尾部；NDCG 除以 maxDCG 归一。<span class="src">§3 · PDF p.5</span></div></div><div class="notes">看右侧位置折损条：第 1 位的增益是第 5 位的两倍多。NDCG 要除以 maxDCG 归一；专业模式有 DCG 与 ERR 的完整定义。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">实验设置限定结论的适用范围</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">报告声明不含实验；核对结论时回溯前序论文与挑战赛摘要。<span class="src">§1 · PDF p.2</span></div></div><div class="notes">综述的证据链在这页展开：四段原文节选，从摘要到边界声明。请学生自己指出哪一段说明不含实验。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">保持对照一致才能解释变化</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">复验先固定口径：查询集、5 级标签、NDCG@T 的 T 与树参数。<span class="src">复验清单 · 本课推断</span></div></div><div class="notes">让学生用清单核对一份复验方案：查询集、T、maxDCG、树参数。四项勾满才算口径齐了。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">三个算法一条主线：λ 从梯度到推力到目标值</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">三个算法共享 λ 这条主线：成对梯度 → 乘指标变化 → 树拟合。<span class="src">§2/§4/§7</span></div></div><div class="notes">沿演进链走：RankNet 给出成对梯度，LambdaRank 乘上指标变化，LambdaMART 把推力交给树。每个节点都有公式与跳转。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">交换两个文档，λ 立刻重新分配推力</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">交换两篇文档，NDCG 的变化决定每篇文档的上移/下移推力。<span class="src">§4.1 · PDF p.8 · 演示为示意</span></div></div><div class="notes">招牌实验：让学生把 D5 一步步换上去，观察 NDCG 与推力条同步变化；再切 RankNet 模式对比推力分布。追问：为什么头部交换的推力更大？</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">数字需要连同口径一起读取</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">每个数字连口径一起读：Figure 1 示例、开销变化、459 方向、冠军佐证。<span class="src">出处随数标注</span></div></div><div class="notes">四个数字各带口径：Figure 1 的 13 到 11、近二次到近线性、459 方向检验、冠军佐证。提醒：这些都不是本报告的实验结果。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">排序指标作为分数的函数不连续或平坦，难直接求导</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">指标对分数处处不连续或平坦：直接求导的梯度为零或不存在。<span class="src">§3 · PDF p.5</span></div></div><div class="notes">F1 讲机制：指标对分数处处不连续或平坦，直接求导没得用；做法是先排序再写梯度。右图示意分数微调时指标不动。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">因子化把训练开销从近二次降到近线性</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">按文档累积 λ 后，每查询开销从近二次降到近线性。<span class="src">§2 · PDF p.5</span></div></div><div class="notes">F2 讲代价：成对数随文档数二次增长，λ 因子化后按文档求和降为线性。条形图是按 n(n−1)/2 算的推导值。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">λ 乘指标变化量后，模型经验上直接优化 NDCG</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">乘 |ΔNDCG| 后推力对准头部；经验检验支持直接优化 NDCG。<span class="src">§4.1–4.2 · PDF p.8–10</span></div></div><div class="notes">F3 讲效果：|ΔNDCG| 是推力的放大器；459 方向检验支持经验上直接优化 NDCG。注意这是抽样证据，未证明全局最优。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">该报告不含新实验，效果证据来自前序工作</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">报告不含新实验：证据回溯前序论文与 Yahoo 挑战赛摘要。<span class="src">§1 · PDF p.2</span></div></div><div class="notes">F4 讲证据边界：报告自己不做实验。三处来源卡提醒学生引用时分层：机制、效果、佐证。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">相关研究帮助检验迁移边界</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">先对齐 T、标签级数与 maxDCG 分母，再谈数字迁移。<span class="src">仓库内互链 · 本课推断</span></div></div><div class="notes">对照 NDCG 原文（仓库内互链）：先对齐 T、标签级数与分母，再谈迁移。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">少两个成对错误，NDCG 反而更低</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">成对错误 13 → 11 的交换让重头指标受损：Figure 1 的核心矛盾。<span class="src">Figure 1 · PDF p.7</span></div></div><div class="notes">Figure 1 的矛盾在这页展开：错误少了两个，重头指标反而受损。回到第 11 页让学生亲手复现这个矛盾。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">不同角色需要不同的执行清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">三类角色各取所需：定口径、复现 λ、核对证据。<span class="src">行动建议 · 本课推断</span></div></div><div class="notes">三类角色各取所需：业务定口径、工程复现 λ、审核对证据。行动建议为本课推断，需对照验证。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态可以承接研究方法</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">用备忘单、训练日志、复现记录承接方法。<span class="src">对应关系 · 本页推断</span></div></div><div class="notes">成熟形态承接：备忘单、训练日志、复现记录。强调这是本页推断，不是论文结论。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">结论的边界决定应用的尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">两条高影响边界：无实验对比、经验最优性是抽样推断。<span class="src">§1/§4.2</span></div></div><div class="notes">两条高影响边界优先讲：无实验对比、经验最优性是抽样推断。其余条目按影响排序。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">六条可独立成立的结论，各带依据与用法。<span class="src">本课提炼 · 出处随卡标注</span></div></div><div class="notes">六张卡翻面看依据与用法；复制按钮会带上出处与边界。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">五题覆盖结论、反常点、指标、证据与机制。<span class="src">全课</span></div></div><div class="notes">五题覆盖结论、反常点、指标、证据与机制；答错按提示回看对应页。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>From RankNet to LambdaRank to LambdaMART: An Overview</p><p>2010 · Microsoft Research technical report MSR-TR-2010-82</p><p><a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/MSR-TR-2010-82.pdf" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper111,
+  author = {Christopher J.C. Burges},
+  title = {From RankNet to LambdaRank to LambdaMART: An Overview},
+  year = {2010},
+  url = {https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/MSR-TR-2010-82.pdf}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：503278232a70b4ec03713f820482b7c3d7bd493a933a1c37e6ffc7f5325ca1e5</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={"id": 111, "zh": "从神经排序到树模型", "kind": "综述", "question": "排序指标不可导，梯度下降还怎么直接优化它？", "claim": "把排序损失的梯度因子化到每篇文档，乘以交换位置带来的指标变化，再交给梯度提升树拟合；LambdaMART 曾获 2010 年 Yahoo 排序挑战赛冠军。", "steps": ["用逻辑函数比较文档对得分", "梯度乘指标变化量得 λ", "梯度提升树逐棵拟合 λ"], "findings": ["排序指标作为分数的函数不连续或平坦，难直接求导", "因子化把训练开销从近二次降到近线性", "λ 乘指标变化量后，模型经验上直接优化 NDCG", "该报告不含新实验，效果证据来自前序工作"], "metrics": [{"name": "NDCG@T", "plain": "折损累计增益：每篇文档的增益按位置折损后累加，除以理想排序的 maxDCG，满分 1", "formula": "DCG@T = Σ_{i=1..T} (2^{l_i} − 1)/log(1+i)（式 5）；NDCG@T = DCG@T/maxDCG@T ∈ [0,1]", "source": "§3 · PDF p.5"}, {"name": "ERR", "plain": "期望倒数排名：按级联模型估计用户在第 r 位才满足的概率，支持多级相关", "formula": "ERR = Σ_{r=1..n} (1/r)·R_r·Π_{i<r}(1−R_i)，其中 R_i = (2^{l_i}−1)/2^{l_max}", "source": "§3 · PDF p.6"}, {"name": "λ 推力", "plain": "每篇文档收到的上移或下移推力，大小由指标变化定", "formula": "λ_ij = −σ·|ΔZ_ij|/(1+e^{σ(s_i−s_j)})（式 6）；λ_i = Σ_{j:{i,j}∈I} λ_ij − Σ_{j:{j,i}∈I} λ_ij（式 4）", "source": "§4.1/§7 · PDF p.8/16"}], "setting": "无新实验的技术报告；自洽整合 RankNet、LambdaRank、LambdaMART 三个算法的推导，以网页搜索排序为贯穿示例。", "boundary": "推导面向可微模型或树模型；报告本身无实验对比，效果证据来自前序论文与 2010 年 Yahoo 挑战赛。", "query": "想让模型直接冲着排序指标训练，损失怎么设计？", "before": "硬把不可导的指标当损失函数，或只优化文档对错数", "after": "把指标变化量乘进成对梯度，交给梯度提升树拟合", "finding_details": ["NDCG、ERR 等指标是模型分数的不连续或平坦函数，梯度为零或不存在；做法是先按分数排序，再直接写下想要的梯度方向。", "把成对梯度改写成每篇文档的 λ 之和后，更新可按查询累积批量进行；每查询文档数的训练开销由近二次降到近线性。", "在 RankNet 梯度上乘以交换两文档位置带来的指标变化量，靠前的错误得到更大推力；经验检验表明模型实际在直接优化 NDCG。", "LambdaMART 用每棵回归树拟合全部样本的 λ，叶子值由牛顿步给出；只要整体效用上升，可以容忍个别查询效用下降。"], "catalog_title": "From RankNet to LambdaRank to LambdaMART: An Overview", "title": "From RankNet to LambdaRank to LambdaMART: An Overview", "authors": "Christopher J.C. Burges", "year": "2010", "category": "16_机器学习排序", "url": "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/MSR-TR-2010-82.pdf", "file": "16_机器学习排序_F04_From_RankNet_to_LambdaRank_to_LambdaMART_An_Overview.html", "pdf": "", "kind_note": "概念与推导，暂无生产效果估计", "extra": "报告明确声明不含实验结果，Yahoo 挑战赛冠军出自摘要，属于应用佐证；λ 的直觉是每篇文档收到的上下移动推力。", "evidence": [{"label": "摘要 · 冠军佐证", "text": "LambdaMART is the boosted tree version of LambdaRank, which is based on RankNet. RankNet, LambdaRank, and LambdaMART have proven to be very successful algorithms for solving real world ranking problems: for example an ensemble of LambdaMART rankers won Track 1 of the 2010 Yahoo! Learning To Rank Challenge. The details of these algorithms are spread across several papers and reports, and so here we give a self-contained, detailed and complete description of them.", "page": 1}, {"label": "引言 · 证据边界", "text": "To keep the exposition brief, no experimental results are presented in this chapter, and we do not compare to any other methods for learning to rank (of which there are many); these topics are addressed extensively elsewhere.", "page": 2}, {"label": "λ 的箭头直觉", "text": "As we will see below, you can think of the λ's as little arrows (or forces), one attached to each (sorted) url, the direction of which indicates the direction we'd like the url to move (to increase relevance), the length of which indicates by how much, and where the λ for a given url is computed from all the pairs in which that url is a member.", "page": 4}, {"label": "Figure 1 图注", "text": "Left: the total number of pairwise errors is thirteen. Right: by moving the top url down three rank levels, and the bottom relevant url up five, the total number of pairwise errors has been reduced to eleven. However for IR measures like NDCG and ERR that emphasize the top few results, this is not what we want.", "page": 7}], "table": null, "version": "Microsoft Research technical report MSR-TR-2010-82", "sha256": "503278232a70b4ec03713f820482b7c3d7bd493a933a1c37e6ffc7f5325ca1e5", "stats": [{"name": "Figure 1 成对错误", "v": "13 → 11", "context": "示意排序中把顶部相关文档下移 3 位、底部相关文档上移 5 位，成对错误由 13 降到 11；但重头指标反而受损。", "source": "Figure 1 · PDF p.7", "page": 7}, {"name": "训练开销变化", "v": "近线性", "context": "λ 按文档累积后，权重更新按查询批量进行；训练时间从接近每查询文档数的二次方降到接近线性。", "source": "§2 · PDF p.5", "page": 5}, {"name": "经验最优性检验", "v": "459 个方向", "context": "99% 置信下单侧蒙特卡洛检验所需的最少随机方向数：n ≥ log δ / log(1−p₀)，其中 δ=p₀=0.01。", "source": "§4.2 · PDF p.10", "page": 10}, {"name": "应用佐证", "v": "Track 1 冠军", "context": "2010 年 Yahoo! Learning to Rank Challenge Track 1 的冠军是 LambdaMART 集成；报告以此佐证实用性，本身不含实验。", "source": "摘要 · PDF p.1", "page": 1}], "related": {"id": 112, "zh": "按位置折损的增益评估", "title": "Cumulated Gain-Based Evaluation of IR Techniques", "url": "./17_用户行为与搜索评估_G01_Cumulated_Gain_Based_Evaluation_of_IR_Techniques.html", "pdf": "https://faculty.cc.gatech.edu/~zha/CS8803WST/dcg.pdf", "claim": "按对数折损累积分级相关性得分，衡量用户看到任一位置的累积价值，案例中最差排序要多看 100% 到 500% 的结果才追平最好排序"}, "strength": "弱", "strength_why": "本课保守评级：概念、模拟、有限样本或未完成独立语义验证。", "limitations": [["高", "报告本身无实验对比", "§1 明确声明不含实验结果、不与其他排序方法比较；效果证据只能回溯前序论文与摘要引述的 2010 年 Yahoo 挑战赛冠军。"], ["高", "经验最优性是抽样推断", "§4.2 用 459 个随机方向的单侧蒙特卡洛检验支持「直接优化 NDCG」，这是局部最优的置信证据，未证明全局最优。"], ["中", "λ 不总对应某个代价", "§4.3：写下的 λ 需满足交叉偏导相等才存在原函数；乘 |ΔNDCG| 后一般只在当前排序下局部成立，依赖模型参数。"], ["中", "推导依赖模型族假设", "RankNet 要求分数对参数可微；LambdaMART 建立在最二乘回归树上，换实现或换指标需重新复验。"], ["中", "综述口径有年份边界", "机制与证据来自 2010 年及之前的论文；与仓库内《按位置折损的增益评估》（NDCG 原文）对照时注意口径与年代。"], ["低", "版本与署名核对", "采用 MSR-TR-2010-82 本地 PDF；报告自引的 RankNet、LambdaRank 结果在正式引用时应核对其出版版本。"]], "quiz": [{"q": "LambdaRank 在 RankNet 的成对梯度上乘了什么？", "o": ["交换两文档位置带来的 |ΔNDCG|", "成对错误数的倒数", "学习率 η 与 σ 的乘积", "文档标签 l 的对数"], "a": 0, "e": "式 (6)：λ_ij = −σ·ρ_ij·|ΔNDCG|；换成 MRR/MAP 只需替换这一项。", "p": 15}, {"q": "论文 Figure 1 中，把顶部相关文档下移、底部相关文档上移后，成对错误从 13 降到 11。NDCG 类重头指标会怎样？", "o": ["随错误减少一起变好", "反而受损：这些指标更看重头部", "完全不变：它们只看第一位", "先变好再变差"], "a": 1, "e": "Figure 1 的要点：成对错误减少与重头指标提升是两回事；LambdaRank 用 |ΔNDCG| 把推力引回头部。", "p": 18}, {"q": "NDCG@T 里位置 i 的折损增益写作？", "o": ["(2^lᵢ − 1)/log(1+i)", "lᵢ / i", "(2^lᵢ − 1)·log(1+i)", "2^lᵢ·(T − i)"], "a": 0, "e": "式 (5)；l 取 0–4 五级，NDCG 再除以 maxDCG@T 归一到 [0,1]。", "p": 7}, {"q": "关于这份报告的效果证据，说法正确的是？", "o": ["报告给出了跨数据集对比实验", "冠军结果来自报告自己的在线 A/B 测试", "报告不含实验：冠军出自摘要引述的 2010 年 Yahoo 挑战赛", "NDCG 提升在文中给出了置信区间"], "a": 2, "e": "§1 明确声明不含实验结果、不与其他方法比较；Yahoo Track 1 冠军只是摘要里的应用佐证。", "p": 8}, {"q": "LambdaMART 中每棵回归树拟合的目标值是？", "o": ["每篇文档的 NDCG 值", "每篇文档的 λ（推力），叶子值由 Newton 步给出", "成对错误数的残差", "文档标签 l 的平滑版本"], "a": 1, "e": "§7：ȳ_i = λ_i，每棵树对整个数据集拟合 λ；叶子值由分子 Σλ 与分母 Σσ|ΔZ|ρ(1−ρ) 之比给出。", "p": 10}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{pairwise:{t:"成对错误",d:"标签不同的两篇文档，更相关的一篇排在后面时记一个错误。"},lambda:{t:"λ（lambda）",d:"每篇文档收到的上移或下移推力，由所有含它的文档对贡献求和。"},maxdcg:{t:"maxDCG",d:"该查询理想排序下的最大 DCG，用作 NDCG 的分母。"},boost:{t:"梯度提升",d:"逐棵添加回归树，每棵拟合当前模型还欠缺的梯度。"},margin:{t:"间隔（margin）",d:"分数相同时代价仍有 log 2；间隔越大，正确对的推力越接近 0。"},baseline:{t:"基线",d:"作为比较起点的未修改方案或现有排序。"},causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=e=>`<span class="src">${esc(e.label)} · PDF p.${e.page}</span>`;
+const srcTxt=l=>`<span class="src">${esc(l)}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,num:0,lim:0,role:0,proof:0,q:0,answers:[],checks:new Set(),flips:new Set(),chain:0,scene:0,findIx:[0,0,0,0]};
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整推导请查看原文。')}`}
+const notesForStep=i=>[
+ `输入与目标：同一查询下给每对文档比较打分，逻辑函数把分数差变成概率，交叉熵给出成对梯度。`,
+ `研究比较：把每个成对梯度乘上交换位置带来的 |ΔNDCG|，再按文档累积成 λ；更新从逐对改为按查询批量进行。`,
+ `结果解读：回归树逐棵拟合 λ，叶子值由 Newton 步给出；报告本身不含实验，冠军佐证见摘要。`
+][i];
+const stepPro=[
+ `S_ij=1 时 C_ij = log(1+e^{−σ(s_i−s_j)})；λ_ij = ∂C/∂s_i = −σ/(1+e^{σ(s_i−s_j)})。分数相同时代价为 log 2，模型自带间隔（§2 · PDF p.3）。`,
+ `λ_ij = −σ·|ΔNDCG|/(1+e^{σ(s_i−s_j)})（式 6 · PDF p.8）；|ΔNDCG| 由交换前后 DCG 差除以 maxDCG 得到。`,
+ `γ_km = −Σ_{i∈R}λ_i / Σ_{i∈R}σ|ΔZ_ij|ρ_ij(1−ρ_ij)；每棵树对整个数据集拟合 λ_i（§7 · PDF p.16–17）。`
+];
+const stageNames=['模型给文档打分','训练算出 λ 推力','列表指标检验效果'];
+
+/* —— 封面数字（全部来自论文，出处随卡标注） —— */
+function dataNumbers(){const tiles=[
+ ['3 个算法','RankNet → LambdaRank → LambdaMART 一条演进线','§2/§4/§7'],
+ ['13 → 11','成对错误减少，重头指标反而受损','Figure 1 · PDF p.7'],
+ ['近线性','λ 因子化后训练开销由近二次降下来','§2 · PDF p.5'],
+ ['Track 1 冠军','2010 年 Yahoo! Learning to Rank Challenge','摘要 · PDF p.1']];
+ return `<div><div class="kicker">先看四个数字</div><div class="number-grid">${tiles.map(t=>`<div class="number-tile"><div class="number">${esc(t[0])}</div><div class="label">${esc(t[1])}</div>${srcTxt(t[2])}</div>`).join('')}</div>${tip('口径见对应章节；报告本身不含新实验。')}</div>`;}
+
+/* —— 演进链（p10 方法拆解） —— */
+const CHAIN=[
+ {a:'RankNet',sec:'报告 §2',s:'成对概率 + 交叉熵',go:11,link:'去第 11 页交换文档',
+  plain:'把「i 应排在 j 前面」变成概率，交叉熵代价给出每对的梯度；同一文档的梯度按对求和成 λ，更新从逐对改为按查询批量进行。',
+  pro:'P_ij = 1/(1+e^{−σ(s_i−s_j)})；S_ij=1 时 C_ij = log(1+e^{−σ(s_i−s_j)})；λ_i = Σ_{j:{i,j}∈I} λ_ij − Σ_{j:{j,i}∈I} λ_ij（式 4）。'},
+ {a:'LambdaRank',sec:'报告 §4',s:'推力乘 |ΔNDCG|',go:15,link:'看推力放大器读数',
+  plain:'训练只需要梯度，于是在成对梯度上直接乘 |ΔNDCG|：头部对错的推力被放大，底部对错几乎被忽略；经验上模型直接优化 NDCG。',
+  pro:'λ_ij = −σ·|ΔNDCG|/(1+e^{σ(s_i−s_j)})（式 6）；换成 MRR 或 MAP 只需替换 |ΔNDCG| 项（§4.1 · [7]）。'},
+ {a:'LambdaMART',sec:'报告 §7',s:'回归树拟合 λ',go:12,link:'看证据读数页',
+  plain:'把 λ 当作回归树的目标值，逐棵 boosting；叶子值由 Newton 步给出。允许个别查询效用下降，只要整体效用上升。',
+  pro:'γ_km = −Σ_{i∈R}λ_i / Σ_{i∈R}σ|ΔZ_ij|ρ_ij(1−ρ_ij)；分裂用最小二乘，每棵树对整个数据集拟合 λ_i（§7）。'}];
+function chainHtml(i){const c=CHAIN[i];return `<h3>${esc(c.a)} · ${esc(c.sec)}</h3><p>${esc(c.plain)}</p><div class="only-pro pro-note">${esc(c.pro)}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-go="${c.go}">${esc(c.link)} →</button></div>`;}
+
+/* —— 问题场景（p3） —— */
+const XDOCS=[{n:'D1 选购清单',l:2},{n:'D2 参数对比',l:3},{n:'D3 灌水帖',l:0},{n:'D4 新品通稿',l:1},{n:'D5 实测长评',l:4}];
+function sceneHtml(v){const rows=XDOCS.map((d,i)=>`<div class="x-srow"><span class="x-pos">${i+1}</span><b>${esc(d.n)}</b><span class="x-lv ${d.l>=3?'hot':''}">l=${d.l}</span>${d.l===4?`<span class="x-arrow ${v?'':'dim'}">${v?'↑ 推力被 |ΔNDCG| 放大':'错对最多却平摊推力'}</span>`:''}</div>`).join('');
+ return `<div class="answer"><h3>${v?'研究启发':'常见做法'}</h3>${rows}<p class="muted" style="margin-top:10px">${v?'λ 乘上 |ΔNDCG|：同样的对错，头部被放大、底部被忽略，推力对准重头指标。':'只数文档对错：底部错对最多，推力却要和头部错对同价平摊。'}</p>${tip('示意数据，仿报告 Figure 1 的错位结构；标签 5 级取自 §3。机制出处 §4.1 · PDF p.8。')}</div>`;}
+
+/* —— 核心概念（p4） —— */
+function conceptHtml(i){const items=[
+ {t:'文档对：怎么比',p:'同一查询下，标签不同的两篇文档组成一对；逻辑函数把分数差变成「该排在前面」的概率，交叉熵给出这对的梯度。',pro:'P_ij = 1/(1+e^{−σ(s_i−s_j)})；S_ij=1 时 C_ij = log(1+e^{−σ(s_i−s_j)})，分数相同时代价为 log 2（自带间隔）。'},
+ {t:'λ：怎么汇总',p:'每篇文档把含它的所有对的推力求和，得到自己的 λ：一个带方向和长度的推力。按查询批量更新，训练开销随之下降。',pro:'λ_i = Σ_{j:{i,j}∈I} λ_ij − Σ_{j:{j,i}∈I} λ_ij（式 4）；训练时间由近二次降到近线性（§2 · PDF p.5）。'},
+ {t:'列表：怎么验收',p:'NDCG 把每篇文档的增益除以 log(位置+1) 再累加，用理想排序归一；头部位置的增益被放大。',pro:'DCG@T = Σ_{i=1..T} (2^{l_i}−1)/log(1+i)（式 5）；NDCG@T = DCG@T/maxDCG@T ∈ [0,1]，l 取 0–4。'}][i];
+ return `<h3>${esc(items.t)}</h3><p>${esc(items.p)}</p><div class="only-pro pro-note">${esc(items.pro)}</div>${srcTxt('§2–§3 · PDF p.2–5')}`;}
+
+/* —— 指标页（p7）位置折损条 —— */
+function discBars(){const d=i=>1/Math.log(i+1),v0=d(1);return [1,2,3,4,5].map(i=>{const r=d(i)/v0;return `<div class="bar-result"><span>第 ${i} 位</span><div class="bar-track"><div class="bar-fill" style="width:${(r*100).toFixed(1)}%"></div></div><span>${r.toFixed(3)}</span></div>`}).join('')}
+function metricHtml(i){const m=PAPER.metrics[i];return `<h3>${esc(m.name)}</h3><p class="only-plain">${esc(m.plain)}</p><div class="only-pro"><p>${esc(m.plain)}</p><div class="pro-note"><span class="formula" style="white-space:normal;text-align:left;font-size:14.5px">${esc(m.formula)}</span><br>${esc(m.source)}</div></div>`;}
+
+/* —— 复验清单（p9） —— */
+const CTL=['固定查询集与 5 级标签口径','写明 NDCG@T 的 T 与 maxDCG 分母','记录 σ、树数 N、叶子数 L、学习率 η','同时报告头部与整体指标变化'];
+
+/* —— 招牌交互：λ 交换实验（p11） —— */
+const XSIG=1;
+const XBASE=[{n:'D1 · 家用咖啡机选购清单',l:2},{n:'D2 · 参数对比页',l:3},{n:'D3 · 论坛灌水帖',l:0},{n:'D4 · 新品通稿',l:1},{n:'D5 · 半年实测长评',l:4}];
+let xOrder=[0,1,2,3,4],xMode='lr';
+const xDisc=p=>1/Math.log(p+2),xGain=l=>Math.pow(2,l)-1;
+function xMax(){return [...XBASE.map(d=>d.l)].sort((a,b)=>b-a).reduce((s,l,i)=>s+xGain(l)*xDisc(i),0)}
+function xCalc(){const n=xOrder.length;const pos=[];xOrder.forEach((di,p)=>pos[di]=p);
+ const mDCG=xMax();let err=0;const lam=new Array(n).fill(0);
+ for(let a=0;a<n;a++)for(let b=0;b<n;b++){if(a===b)continue;const A=XBASE[a],B=XBASE[b];if(A.l<=B.l)continue;
+  if(pos[a]>pos[b])err++;
+  const w=1/(1+Math.exp(XSIG*(pos[b]-pos[a])));
+  let mag=w;
+  if(xMode==='lr'){mag=w*Math.abs((xGain(A.l)-xGain(B.l))*(xDisc(pos[b])-xDisc(pos[a])))/mDCG;}
+  lam[a]+=mag;lam[b]-=mag;}
+ const ndcg=xOrder.reduce((s,di,p)=>s+xGain(XBASE[di].l)*xDisc(p),0)/mDCG;
+ return {lam,err,ndcg,mMax:Math.max(...lam.map(Math.abs),1e-9)};}
+function xRows(){const c=xCalc();return xOrder.map((di,p)=>{const d=XBASE[di];const lam=c.lam[di];
+ const up=lam>0.0005,dn=lam<-0.0005;const w=Math.min(Math.abs(lam)/c.mMax*50,50);
+ const bar=up?`left:50%;width:${w}%`:`left:${50-w}%;width:${dn?w:0}%`;
+ return `<div class="x-row"><span class="x-pos">${p+1}</span><span class="x-doc"><b>${esc(d.n)}</b><span class="x-lv ${d.l>=3?'hot':''}">l=${d.l}</span></span><span class="x-force"><span class="x-fbar"><i class="x-axis"></i><i style="${bar};background:${up?'var(--pos)':dn?'var(--neg)':'var(--line-2)'}"></i></span><span class="x-fval">${up?'↑':dn?'↓':'±'} ${Math.abs(lam).toFixed(2)}</span></span><span class="x-mv"><button type="button" data-action="xup" data-value="${p}" aria-label="把第 ${p+1} 篇上移一位" ${p===0?'disabled':''}>↑</button><button type="button" data-action="xdown" data-value="${p}" aria-label="把第 ${p+1} 篇下移一位" ${p===xOrder.length-1?'disabled':''}>↓</button></span></div>`}).join('')}
+function xRead(){const c=xCalc();const strong=xOrder.reduce((b,di)=>Math.abs(c.lam[di])>Math.abs(c.lam[b])?di:b,xOrder[0]);
+ const d=XBASE[strong],lam=c.lam[strong];const dir=lam>0.0005?'上移':lam<-0.0005?'下移':'保持';
+ const hint=c.err===0?'成对错误已清零；剩余小推力来自间隔不足：分数差距越大推力越接近 0（报告 §2 的间隔性质）。'
+  :xMode==='lr'?`最强推力在 ${d.n.split(' · ')[0]}（${dir} ${Math.abs(lam).toFixed(2)}）：它参与的错对落在 |ΔNDCG| 大的位置。`
+  :'RankNet 只数对错：推力按错对数平摊；切回 LambdaRank 看头部错对如何被放大。';
+ return `<div class="x-meter"><i style="width:${(c.ndcg*100).toFixed(1)}%"></i></div><div class="x-meter-lab">NDCG@5 = <b>${c.ndcg.toFixed(3)}</b>（满分 1 · 式 5 归一）</div><p class="muted">成对错误 ${c.err} / 10 ${srcTxt('λ 按式 (4)(6) 计算')}</p><p class="muted">${esc(hint)}</p>`;}
+function labHtml(){return `<div class="x-lab"><div><div class="grp-t">排序列表 · 5 篇文档 · 5 级标签（示意数据）</div><div class="x-rows">${xRows()}</div>${tip('用 ↑ ↓ 交换相邻文档；标签 l∈{0..4} 取自报告 §3，示意数据仿 Figure 1 的错位结构。')}</div><div><div class="grp-t">读数：换一种推力口径</div>${choices(['LambdaRank：推力 × |ΔNDCG|','RankNet：只按对错'],xMode==='lr'?0:1,'xmode')}<div id="xread" aria-live="polite">${xRead()}</div><div class="choice-row" style="margin-top:10px"><button class="btn" type="button" data-action="xreset">复位</button><button class="btn" type="button" data-go="10">λ 的三段演进 →</button></div><div class="only-pro pro-note" style="margin-top:10px">ρ_ij = 1/(1+e^{σ(s_i−s_j)})；演示中 s 取「6 − 名次」、σ=1（教学设定）。LambdaRank 模式下推力 = ρ_ij·|ΔNDCG|，|ΔNDCG| 按式 (5) 精确计算；每篇文档的 λ 按式 (4) 对所有标签不同的对求和。</div></div></div>`;}
+
+/* —— 证据读数（p12） —— */
+function numberBody(i){
+ const s=PAPER.stats[i];
+ const viz=i===0?`<div style="margin-top:14px"><div class="bar-result"><span>左排序 · 成对错误</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--c3)"></div></div><span>13</span></div><div class="bar-result"><span>交换后 · 成对错误</span><div class="bar-track"><div class="bar-fill" style="width:84.6%"></div></div><span>11</span></div><div class="caption">条长按 13 归一；交换 = 顶部相关文档下移 3 位、底部相关文档上移 5 位（Figure 1）。</div></div>`:'';
+ const pro=i===1?`<div class="only-pro pro-note">成对梯度求和按对计，约 O(n²)；按文档累积 λ 后按查询批量更新，降到近线性 O(n)（§2 · PDF p.5）。</div>`
+  :i===2?`<div class="only-pro pro-note">n ≥ log δ / log(1−p₀)；δ=p₀=0.01 时 n ≥ 459（§4.2 · PDF p.10）。</div>`:'';
+ return `<div class="columns"><div><div class="kicker">${esc(s.name)}</div><div class="number-large">${esc(s.v)}</div>${srcTxt(s.source)}${viz}</div><div class="answer"><h3>这个数字表示什么</h3><p>${esc(s.context)}</p><div class="caption">${esc(PAPER.extra)}</div>${pro}</div></div>`;}
+function numbersHtml(){return `${choices(PAPER.stats.map(x=>x.name),state.num,'number')}<div id="numberOut" aria-live="polite">${numberBody(state.num)}</div>`;}
+
+/* —— 发现页（p13–16） —— */
+const FINDSRC=['§3 · PDF p.5','§2 · PDF p.5','§4.1–4.2 · PDF p.8–10','§1 · PDF p.2'].map(srcTxt);
+const FINDVIS=[
+ `<div class="x-steps"><div class="x-step"><b>分数 s 微调</b><small>0.1 → 0.3，顺序未变</small></div><div class="x-step"><b>排序不变</b><small>没有文档交换位置</small></div><div class="x-step zero"><b>NDCG 不变</b><small>导数 = 0 或不存在</small></div></div>${tip('示意：指标只在交换发生处跳变，两点之间平坦。')}`,
+ `<div>${[[10,45],[50,1225],[100,4950]].map(x=>`<div class="bar-result"><span>${x[0]} 篇文档</span><div class="bar-track"><div class="bar-fill" style="width:${(x[1]/4950*100).toFixed(1)}%;background:var(--c3)"></div></div><span>${x[1]} 对</span></div>`).join('')}</div>${tip('成对数按 n(n−1)/2 计算的推导值；λ 因子化后按文档累积，降为线性。')}`,
+ `<div>${[['位置 1↔2（l=4 与 l=3）',0.138],['位置 4↔5（l=1 与 l=0）',0.002]].map(x=>`<div class="bar-result"><span>${esc(x[0])}</span><div class="bar-track"><div class="bar-fill" style="width:${(x[1]/0.138*100).toFixed(1)}%"></div></div><span>|Δ| ${x[1].toFixed(3)}</span></div>`).join('')}</div>${tip('推导值：标签 l=[4,3,2,1,0] 时交换两位置的 |ΔNDCG|，按式 (5) 计算。')}`,
+ `<div class="x-ev3"><div><b>摘要</b><small>Yahoo Track 1 冠军（2010）</small>${srcTxt('PDF p.1')}</div><div><b>§1</b><small>不含实验、不比较方法</small>${srcTxt('PDF p.2')}</div><div><b>§4.2</b><small>459 方向单侧检验</small>${srcTxt('PDF p.10')}</div></div>${tip('效果证据三处来源；报告自身只提供推导。')}`];
+const FINDCHK=[
+ [['观察什么','指标值只在排序变化处跳变'],['迁移约束',PAPER.boundary]],
+ [['观察什么','n(n−1)/2 对 → 按文档求和'],['对应结论','按查询批量更新（§2）']],
+ [['观察什么','|ΔNDCG| 随位置与标签变化'],['检验方式','459 个随机方向的单侧检验（§4.2）']],
+ [['核对位置','摘要冠军 + §1 无实验声明'],['迁移约束',PAPER.extra]]];
+const FINDTEXT=[
+ [PAPER.finding_details[0],'实践含义：把排序指标塞进损失函数求导行不通；先按分数排序，再在排序结果上写下想要的梯度方向。','适用条件：梯度是构造出来的；指标本身仍不可导，推导面向可微模型。'],
+ [PAPER.finding_details[1],'实践含义：按文档累积 λ、按查询批量更新；每查询文档数越大，收益越明显。','适用条件：开销指每查询的梯度计算；树训练本身另有成本。'],
+ [PAPER.finding_details[2],'实践含义：换指标只需替换 |Δ| 项，MRR、MAP 都能接进同一框架（§4.1）。','适用条件：「直接优化 NDCG」是经验结论（§4.2 抽样检验），未证明全局最优。'],
+ [PAPER.finding_details[3],'实践含义：引用效果时写清出处层级——机制出自本报告，效果出自前序论文与挑战赛。','适用条件：'+PAPER.extra]];
+function findBody(ix,v){return `<p>${esc(FINDTEXT[ix][v])}</p>${tip(v===0?'结合本篇研究设计理解这条发现。':v===1?'行动建议属于教学推断。':'需连同研究条件解读。')}`;}
+
+/* —— 对照（p17） —— */
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p>${relatedLink()}${tip('按相关论文摘要转述；该文给出 DCG/NDCG 的原始定义与案例。')}</div>`;
+ return `<div class="answer"><h3>对照时先对齐三件事</h3><p>截断 T、标签级数与 maxDCG 分母；对不齐时数字不能直接比较。</p><p>本报告的机制推导（2010）与 NDCG 原文的评估口径相隔多年，引用时以各自原文为准。</p>${relatedLink()}${tip('本段为教学推断。')}</div>`;}
+
+/* —— 案例拆解（p18） —— */
+const originalCases={
+ 111:['为什么少两个成对错误，重头指标反而受损？','Figure 1 左图：按当前模型排序，相关文档大多在头部，一条相关文档沉底，共 13 个成对错误（二值相关性）。','把顶部相关文档下移 3 位、底部相关文档上移 5 位：成对错误降到 11 个；但 NDCG、ERR 这类重头指标会受损。论文用红箭头表示想要的推力：集中纠正头部错误。','Figure 1 · PDF p.7'],
+ 25:['争议问题是否有充分支持？','论文以阿斯巴甜与癌症关联等争议问题说明证据冲突。','比较真实网页中的事实、论证风格与相关性，观察模型回答变化。','Introduction / 摘要']};
+function caseHtml(){const c=originalCases[PAPER.id];return `<div class="kicker">论文原例的中文转述 · ${esc(c[3])}</div><p class="intro">${esc(c[0])}</p><div class="two-docs">${panel('图上有什么',c[1])}${panel('操作与结果',c[2])}</div><div class="callout" style="margin-top:14px">这正是 λ 乘 |ΔNDCG| 的动机：推力要对准重头指标，只数对错做不到。</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-go="11">去第 11 页亲手交换 →</button><button class="btn" type="button" data-go="13">看 F1 的机制 →</button></div>${tip('原文只给示意排序，未附指标数值；本页不补造收益数字。')}`;}
+
+/* —— 角色（p19） —— */
+const PERSONAS=[
+ {k:'内容与业务负责人',s:'提需求与验收',why:'F1：排序指标不可导，训练靠构造的梯度；需求要落在可测的列表指标上。',todo:['把诉求写成指标口径：NDCG@10 与标签级数','要求同时报告头部与整体指标变化','用固定查询集做上线前后对照'],avoid:'把挑战赛冠军直接当作本站收益承诺。'},
+ {k:'技术与数据人员',s:'复现与调参',why:'F2：λ 按文档累积、按查询批量更新，工程实现决定收益。',todo:['按 §2 复现 λ：先排序，再按对求和','写明 σ、树数 N、叶子数 L、学习率 η','用交换前后 DCG 差做 |ΔNDCG| 的单元测试'],avoid:'跳过回测把推导当生产实测。'},
+ {k:'研究与审核人员',s:'核对证据',why:'F4：报告不含实验，效果证据要回溯前序论文与摘要。',todo:['标注证据强度并引用 §1 边界声明','与 NDCG 原文同口径对照（仓库内互链）','区分论文结论与本课教学推断'],avoid:'把综述转述当成新的实验证据。'}];
+function personaHtml(){const p=PERSONAS[state.role];return `${choices(PERSONAS.map(x=>x.k),state.role,'role')}<div class="columns"><div><h3>${esc(p.k)} · ${esc(p.s)}</h3><p style="margin-top:10px">为什么适合：${esc(p.why)}</p><div class="callout warn" style="margin-top:8px">避免：${esc(p.avoid)}</div></div><div><div class="grp-t">可以这样做</div><ul class="fact-list">${p.todo.map(t=>`<li>${esc(t)}<small>对应 F${state.role===0?1:state.role===1?2:4} · 本课应用推断</small></li>`).join('')}</ul></div></div>`;}
+
+/* —— 成熟形态（p20） —— */
+function matureHtml(){const rows=[
+ ['λ 计算备忘单','σ、|Δ| 公式、maxDCG 分母、截断 T',PAPER.steps[0]],
+ ['排序训练日志','树数 N、叶子数 L、学习率 η、验证指标曲线',PAPER.steps[1]],
+ ['复现实验记录','查询集、5 级标签、NDCG@T 读数与负向变化',PAPER.steps[2]]];
+ return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:14px">采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。</div>`;}
+
+/* —— 金句（p22） —— */
+const QUOTES=[
+ {zh:'训练需要的是梯度，代价函数本身可以省掉。',more:'§4.1：LambdaRank 直接写下想要的梯度（λ），绕开指标不可导的困难。',use:'向团队解释为什么可以对着指标构造梯度。',src:'§4.1 · PDF p.7–8'},
+ {zh:'λ 是挂在每篇文档上的小箭头。',more:'§2：λ_i 由所有含该文档的对求和；方向指该上移还是下移，长度即幅度。',use:'给新人建立排序训练的最小心智模型。',src:'§2 · PDF p.4'},
+ {zh:'乘上 |ΔNDCG|，头部错误的推力被放大。',more:'式 (6)：交换位置的指标变化越大，推力越大。',use:'调排序特征时优先看头部错对。',src:'§4.1 · PDF p.8'},
+ {zh:'因子化把训练开销从近二次降到近线性。',more:'§2：按文档累积 λ 后按查询批量更新。',use:'评估每查询文档数很大的场景收益。',src:'§2 · PDF p.5'},
+ {zh:'重头指标对分数处处不连续或平坦。',more:'§3：NDCG、ERR 作为分数的函数，梯度为零或不存在。',use:'解释为什么不能把 NDCG 直接当损失求导。',src:'§3 · PDF p.5'},
+ {zh:'树可以牺牲个别查询，只要整体效用上升。',more:'§7：分裂与叶子值用全部数据计算；LambdaRank 逐查询更新。',use:'设训练参数时理解全局与局部的取舍。',src:'§7 · PDF p.17'}];
+
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors)} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}${PAPER.pdf?' · '+ext(PAPER.pdf,'本地PDF'):''}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿。进度自动保存在当前浏览器。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list">${['排序指标不可导，怎么把梯度写给模型？','λ 推力怎么按 |ΔNDCG| 分配到每篇文档？','回归树怎么逐棵拟合这些推力？','没有实验的综述，证据要怎么核对？'].map(q=>`<li>${esc(q)}</li>`).join('')}</ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>同一个查询的 5 篇文档（示意）：最有用的实测长评被排在底部。</p>${tip('示意数据，仿报告 Figure 1 的错位结构；标签 5 级取自 §3，机制出处 §4.1。')}</div><div>${choices(['常见做法','研究启发'],state.scene,'scene')}<div id="sceneOut" aria-live="polite">${sceneHtml(state.scene)}</div></div></div>`;
+ else if(view==='concept')h=`${choices(['文档对：怎么比','λ：怎么汇总','列表：怎么验收'],0,'concept')}<div class="columns"><div class="answer" id="conceptOut" aria-live="polite">${conceptHtml(0)}</div><div><div class="kicker">本篇要区分的量</div><ul class="fact-list">${PAPER.metrics.map((m,i)=>`<li><button type="button" class="term" data-term="metric${i}">${esc(m.name)}</button><small>${esc(m.plain)}</small></li>`).join('')}</ul>${tip('点击术语查看解释；专业层含公式。')}</div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(notesForStep(state.step))}</p><div class="only-pro pro-note">${esc(stepPro[state.step])}</div></div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按报告 §2、§4、§7 重新组织；箭头表达研究逻辑，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],1,'flow')}<div id="flowOut" aria-live="polite">${flow(1)}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric')h=`<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite">${metricHtml(state.metric)}</div></div><div><div class="kicker">位置折损 1/log(1+i)：头部与尾部的差距</div><div>${discBars()}</div>${tip('由式 (5) 的折损项计算，以第 1 位为 1（对数底不影响比值）；报告示例截断 T=10，此处画到第 5 位。')}</div></div>`;
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 证据类型</div><p class="intro">${esc(PAPER.setting)}</p><div class="callout">${esc(PAPER.boundary)}</div>${tip('综述的证据链：机制推导（§2–§7）+ 前序论文结果 + 挑战赛摘要佐证。')}</div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">给你的复验方案做检查 · 本课推断</div><div class="check-list">${CTL.map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${esc(s)}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'四项口径齐了，可以开始复验':'继续补齐复验口径'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选用于检查方案完整性，无法自动证明因果识别成立。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method')h=`<div class="step-track">${CHAIN.map((c,i)=>`<button type="button" class="choice" data-action="chain" data-value="${i}" aria-pressed="${i===state.chain}"><b>${esc(c.a)}</b><small>${esc(c.s)}</small></button>`).join('')}</div><div class="columns"><div class="answer" id="chainOut" aria-live="polite">${chainHtml(state.chain)}</div><div><div class="kicker">沿链导航</div><ul class="fact-list"><li>第 11 页<small>交换文档，亲手分配 λ 推力（招牌实验）</small></li><li>第 12 页<small>证据读数：开销、459 方向、冠军佐证</small></li><li>第 15 页<small>|ΔNDCG| 放大器的推力条</small></li></ul><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-go="11">去交换实验 →</button><button class="btn" type="button" data-go="12">看证据读数 →</button></div></div></div>`;
+ else if(view==='lab')h=labHtml();
+ else if(view==='numbers')h=numbersHtml();
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);h=`<div class="ev" style="margin-bottom:12px">F${ix+1} · ${FINDSRC[ix]} · 证据强度 <span class="${PAPER.strength==='弱'?'str-l':'str-m'}">${esc(PAPER.strength)}</span> ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],state.findIx[ix],'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite">${findBody(ix,state.findIx[ix])}</div></div><div><div class="kicker">读数与核查</div>${FINDVIS[ix]}<ul class="fact-list" style="margin-top:12px">${FINDCHK[ix].map(x=>`<li>${esc(x[0])}<small>${esc(x[1])}</small></li>`).join('')}</ul></div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes'){h=`<div class="flips">${QUOTES.map((q,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(q.zh)}</b><span class="flip-back">依据：${esc(q.more)}<br>用法：${esc(q.use)}</span><small>${esc(q.src)} · 点击翻面</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;}
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function flow(highlight){return `<div class="flow-line">${stageNames.map((t,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${highlight===i?'active':''}">${esc(t)}<div class="caption">${esc(PAPER.steps[i])}</div></div>`).join('')}</div>`}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i===0?'来自本篇研究范围与局限解读。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、反常发现、指标口径、证据边界与机制。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看公式。</div></div></div>`;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','concept','flow','compare','proof','number','metric','limit','chain'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene'){state.scene=v;$('#sceneOut').innerHTML=sceneHtml(v);}
+ else if(a==='concept')$('#conceptOut').innerHTML=conceptHtml(v);
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flow(v);
+ else if(a==='metric'){state.metric=v;$('#metricOut').innerHTML=metricHtml(v);}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='chain'){state.chain=v;$('#chainOut').innerHTML=chainHtml(v);}
+ else if(a==='xup'||a==='xdown'){const q=+v;if(a==='xup'&&q>0){[xOrder[q-1],xOrder[q]]=[xOrder[q],xOrder[q-1]]}if(a==='xdown'&&q<xOrder.length-1){[xOrder[q+1],xOrder[q]]=[xOrder[q],xOrder[q+1]]}box.innerHTML=draw('lab');}
+ else if(a==='xmode'){xMode=v===0?'lr':'rn';box.innerHTML=draw('lab');}
+ else if(a==='xreset'){xOrder=[0,1,2,3,4];box.innerHTML=draw('lab');}
+ else if(a==='number'){state.num=v;$('#numberOut').innerHTML=numberBody(v);}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);state.findIx[ix]=v;$('#findingOut'+ix).innerHTML=findBody(ix,v);}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(QUOTES.map(q=>q.zh).join('\n')+'\n依据：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+// λ 实验的方向键：在 .x-lab 内吞掉方向键，避免触发翻页。
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest?e.target.closest('.x-lab button'):null;if(!b)return;
+ if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();
+ const p=+(b.dataset.value||0);
+ if(b.dataset.action==='xup'||b.dataset.action==='xdown'){const goUp=e.key==='ArrowUp';const act=goUp?'xup':'xdown';const target=document.querySelector(`.page.on [data-action="${act}"][data-value="${p}"]`);if(target&&!target.disabled)target.click();}
+ else if(b.dataset.action==='xmode'){const nx=e.key==='ArrowLeft'?0:1;const t=document.querySelector(`.page.on [data-action="xmode"][data-value="${nx}"]`);if(t)t.click();}
+},true);
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

@@ -1,0 +1,98 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>GEO 论文学习地图</title><meta name="description" content="122篇检索与GEO相关论文的互动课堂，按主题分类与学习路线循序阅读。"><style>
+:root{--bg:#ffffff;--ink:#141414;--ink-2:#4a4a48;--ink-3:#686863;--line:#ebebe8;--line-2:#d6d6d1;--tint:#f6f6f3;--accent:#2446d8;--accent-tint:#eef1fd;--pos:#127a4b;--serif:"Songti SC","STSong",Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font:16px/1.7 var(--sans)}a{color:var(--accent);text-decoration:none}button,input,select{font:inherit}button{cursor:pointer}button:active{transform:translateY(1px)}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}h1,h2,h3{font-family:var(--serif);line-height:1.4;margin:0}h1{font-size:48px;letter-spacing:.02em}h2{font-size:26px}p{margin:10px 0}.wrap{max-width:1320px;margin:auto;padding:30px 44px 60px}.mast{display:flex;justify-content:space-between;gap:20px;font-size:13px;color:var(--ink-3);padding-bottom:20px;border-bottom:1px solid var(--line-2)}.mast a{color:var(--ink-2)}header{display:grid;grid-template-columns:1.5fr 1fr;gap:70px;padding:42px 0 32px}.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--accent);margin-bottom:10px}.lead{max-width:640px;color:var(--ink-2);font-size:18px}.counts{display:flex;align-items:center;gap:28px;margin-top:16px}.counts b{display:block;font:36px var(--serif)}.counts span{font-size:12px;color:var(--ink-3)}.guide-note{align-self:center;border-top:1px solid var(--ink);padding:18px 0}.guide-note p{font-size:14px;color:var(--ink-2)}.progress-track{height:4px;background:var(--tint);margin-top:14px}.progress-track div{height:100%;background:var(--pos)}.paths{padding:26px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.section-head{display:flex;justify-content:space-between;align-items:baseline;gap:20px}.section-head small{color:var(--ink-3);font-size:13px}.path-tabs,.filters{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0}.path-tabs button,.filters button,.sort{background:#fff;border:1px solid var(--line-2);border-radius:7px;padding:7px 13px;font-size:14px;color:var(--ink-2)}.path-tabs button[aria-pressed=true],.filters button[aria-pressed=true]{border-color:var(--accent);background:var(--accent-tint);color:var(--accent)}.path-detail{display:grid;grid-template-columns:1fr 2.4fr;gap:30px;margin-top:20px}.path-detail p{font-size:14px;color:var(--ink-2)}.path-stops{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;list-style:none;padding:0;margin:0}.path-stops a{display:block;border-top:2px solid var(--line-2);padding:13px 0;color:var(--ink)}.path-stops a:hover{border-color:var(--accent)}.path-stops small{font-size:11px;color:var(--ink-3);display:block;margin-bottom:6px}.path-stops b{font-family:var(--serif);font-size:17px}.catalog{display:grid;grid-template-columns:210px 1fr;gap:38px;padding-top:32px}.sidebar{position:sticky;top:18px;align-self:start}.sidebar h2{font:13px var(--sans);color:var(--ink-3);margin:0 0 12px}.category{display:flex;justify-content:space-between;gap:8px;background:#fff;border:0;border-radius:6px;width:100%;text-align:left;padding:9px 10px;font-size:14px;line-height:1.5;margin:3px 0}.category[aria-pressed=true]{color:var(--accent);background:var(--accent-tint)}.category small{color:var(--ink-3);white-space:nowrap}.search-row{display:flex;gap:10px;margin-bottom:14px}.search-row input{flex:1;min-width:0;border:1px solid var(--line-2);border-radius:8px;padding:9px 13px;background:#fff}.search-row select{width:150px;background:#fff}.meta{display:flex;justify-content:space-between;color:var(--ink-3);font-size:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}.paper{display:grid;grid-template-columns:45px minmax(0,1fr) 118px;gap:18px;padding:23px 0;border-bottom:1px solid var(--line)}.paper-no{font:13px ui-monospace,monospace;color:var(--ink-3);padding-top:4px}.paper h3{font-size:23px}.paper h3 a{color:var(--ink)}.paper h3 a:hover{color:var(--accent)}.paper .en{font:13px/1.55 Georgia,serif;color:var(--ink-3);margin-top:5px;overflow-wrap:anywhere}.paper p{font-size:14px;color:var(--ink-2);margin:9px 0}.tags{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--ink-3)}.paper-action{text-align:right;padding-top:4px;font-size:13px}.paper-action a{display:inline-block;border:1px solid var(--line-2);border-radius:7px;padding:6px 10px}.learned{display:block;margin-top:10px;color:var(--pos);font-size:11px}.empty{padding:50px 0;color:var(--ink-2)}footer{margin-top:38px;border-top:1px solid var(--line);padding-top:20px;color:var(--ink-3);font-size:12px}.reset{border:0;border-bottom:1px solid var(--line-2);background:#fff;color:var(--ink-2);font-size:12px;padding:0}.legend{font-size:12px;color:var(--ink-3);margin:14px 0}.skip{position:absolute;left:20px;top:-100px;background:#fff;padding:10px}.skip:focus{top:10px}
+@media(max-width:900px){.wrap{padding:20px 22px 40px}header{grid-template-columns:1fr;gap:20px;padding:30px 0}h1{font-size:36px}.catalog{grid-template-columns:1fr;gap:15px}.sidebar{position:static}.categories{display:flex;gap:6px;flex-wrap:wrap}.category{width:auto;border:1px solid var(--line);padding:6px 9px;font-size:12px}.path-detail{grid-template-columns:1fr;gap:10px}.path-stops{grid-template-columns:1fr 1fr}.section-head{display:block}.mast{font-size:11px}.paper{grid-template-columns:28px minmax(0,1fr);gap:9px}.paper-action{grid-column:2;text-align:left;display:flex;align-items:center;gap:12px;padding:0}.learned{display:inline;margin:0}.search-row{flex-wrap:wrap}.search-row input{width:100%;flex-basis:100%}.search-row select{width:100%}.paper h3{font-size:21px}.counts{gap:25px}.guide-note{padding-top:10px}.meta{gap:12px}.filters button,.path-tabs button{font-size:12px;padding:6px 9px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* Homepage music preview */
+.study-music{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px;padding-top:14px;margin-top:16px;border-top:1px solid var(--line)}
+.study-music button{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-2);border-radius:7px;background:#fff;color:var(--ink-2);padding:6px 11px;font-size:13px;white-space:nowrap}
+.study-music button[aria-pressed=true]{border-color:var(--accent);color:var(--accent);background:var(--accent-tint)}
+.study-music svg{width:14px;height:14px;fill:currentColor;flex:none}
+.study-music label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-3)}
+.study-music input{width:78px;accent-color:var(--accent)}
+.study-music .music-caption{width:100%;font-size:11px;color:var(--ink-3);line-height:1.5}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body><a class="skip" href="#library">跳到论文列表</a><div class="wrap"><div class="mast"><span>GEO CITATION LAB / 论文互动课堂</span><a href="../index.html">论文资料目录 ↗</a><a href="https://github.com/yaojingang/GEOLab" target="_blank" rel="noopener noreferrer">GitHub 仓库 ↗</a></div><header><div><div class="eyebrow">从问题出发，沿证据学习</div><h1>GEO 论文学习地图</h1><p class="lead">把搜索可见性的研究串成一条可走的路。先补检索、链接与排序的经典底座，再学习方法、测量与系统，最后审视风险和边界。</p><div class="counts"><div><b>122</b><span>篇论文收录</span></div><div><b>18</b><span>研究主题</span></div><div><b>5</b><span>条学习路线</span></div></div></div><div class="guide-note"><b>121 篇可操作的白板课</b><p>两级知识目录 · 通俗与专业模式 · 逐页讲稿 · 自测反馈。离线打开即可学习，进度保存在本浏览器。</p><p id="overall" aria-live="polite"></p><div class="progress-track"><div id="overallFill"></div></div><p><a id="resume" href="#library">选择一篇开始学习 ↓</a></p><div class="study-music" aria-label="背景音乐试听"><button id="musicToggle" type="button" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5v11L13 8z"/></svg><span id="musicLabel">播放背景音乐</span></button><label for="musicVolume">音量 <input id="musicVolume" type="range" min="0" max="50" step="1" value="16" aria-label="背景音乐音量"></label><span class="music-caption" id="musicStatus" role="status">留白 · 轻柔键音与氛围和弦 · 点击试听</span></div></div></header><section class="paths" aria-labelledby="pathsTitle"><div class="section-head"><h2 id="pathsTitle">选一条路线，建立完整认识</h2><small>先读核心课，再按问题扩展。每条路线包含四个起点。</small></div><div class="path-tabs" id="paths"></div><div class="path-detail" id="pathDetail" aria-live="polite"></div></section><section class="catalog" id="library"><aside class="sidebar"><h2>按研究主题学习</h2><nav class="categories" id="categories" aria-label="研究主题"></nav><p class="legend">类型标记说明证据形态。理论与模拟结果需保留各自的适用条件。</p></aside><div><div class="search-row"><input id="search" type="search" placeholder="搜索中文主题、原题或方法…" aria-label="搜索论文"><select class="sort" id="sort" aria-label="排列顺序"><option value="category">按主题与编号</option><option value="id">按清单顺序</option><option value="progress">学习进度优先</option></select></div><div class="filters" id="types" aria-label="研究类型"></div><div class="filters" id="statuses" aria-label="学习状态"></div><div class="meta"><span id="resultCount" aria-live="polite"></span><button type="button" class="reset" id="clear">清除筛选</button></div><div id="results"></div></div></section><footer><p>课程沿用 PGS v2.0 白板课堂规范。页面保留论文版本、原文入口与证据范围；本课推断、教学示意与论文结果分别标注。</p><p>GEO Citation Lab 原创解读采用 CC BY 4.0，论文版权归原作者。部分论文仅提供原站入口。学习页为阅读辅助，完整表格、脚注与作者署名请核对原论文。</p></footer></div><script>
+const CATALOG=/*__CATALOG__*/;
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}}};
+const paths=[{name:'入门与全局认识',desc:'理解GEO的起点与边界，再用系统综述和真实引用研究校准认识。',ids:[1,62,16,55]}, {name:'效果测量与业务归因',desc:'建立重复测量、平台对照、真实曝光与业务结果的分层看板。',ids:[14,15,67,69]}, {name:'内容优化与策略学习',desc:'从规则、特征到策略复用，学习怎样解释改动并验证收益。',ids:[10,9,7,70]}, {name:'系统、竞争与风险',desc:'把检索链路、多人竞争、推荐效用与来源披露连起来看。',ids:[18,13,63,58]}, {name:'检索与排序经典底座',desc:'从词频、链接分析到排序学习与密集检索，补上现代检索系统的技术脉络。',ids:[76,86,111,122]}];
+let category='all',type='all',status='all',path=0;
+function progress(c){try{const s=JSON.parse(store.get('pgs:'+c.file+':seen')||'[]');return Array.isArray(s)?new Set(s.filter(i=>Number.isInteger(i)&&i>=0&&i<23)).size:0}catch(e){return 0}}
+function showPaths(){ $('#paths').innerHTML=paths.map((p,i)=>`<button type="button" data-path="${i}" aria-pressed="${i===path}">${p.name}</button>`).join('');const p=paths[path];$('#pathDetail').innerHTML=`<div><b>${p.name}</b><p>${p.desc}</p></div><ol class="path-stops">${p.ids.map((id,i)=>{const c=CATALOG.find(c=>c.id===id);return `<li><a href="${esc(c.file)}"><small>步骤 ${i+1} · ${esc(c.kind)}</small><b>${esc(c.zh)}</b></a></li>`}).join('')}</ol>`;}
+const categories=[...new Set(CATALOG.map(c=>c.category))].sort();
+function showCategories(){ $('#categories').innerHTML=[['all','全部论文',CATALOG.length],...categories.map(c=>[c,c.replace(/^\d+_/,'').replace('AI搜索架构与AgenticSearch','AI搜索架构与代理'),CATALOG.filter(x=>x.category===c).length])].map(([id,n,count])=>`<button class="category" type="button" data-category="${id}" aria-pressed="${category===id}"><span>${esc(n)}</span><small>${count}</small></button>`).join('');}
+function render(){ const q=$('#search').value.trim().toLowerCase();let cs=CATALOG.filter(c=>(category==='all'||c.category===category)&&(type==='all'||c.kind===type)&&(!q||[c.zh,c.title,c.claim,c.kind].join(' ').toLowerCase().includes(q))&&(status==='all'||(status==='new'?progress(c)===0:status==='done'?progress(c)===23:progress(c)>0&&progress(c)<23)));
+ const sort=$('#sort').value;cs.sort(sort==='id'?(a,b)=>a.id-b.id:sort==='progress'?(a,b)=>progress(b)-progress(a)||a.id-b.id:(a,b)=>a.category.localeCompare(b.category)||a.id-b.id);
+ $('#resultCount').textContent=`显示 ${cs.length} / ${CATALOG.length} 篇`;
+ $('#results').innerHTML=cs.length?cs.map(c=>{const n=progress(c),rec=c.kind==='待补全文';return `<article class="paper"><span class="paper-no">${String(c.id).padStart(2,'0')}</span><div><h3><a href="${esc(c.file)}"${rec?' target="_blank" rel="noopener"':''}>${esc(c.zh)}</a></h3><div class="en">${esc(c.title)}</div><p>${esc(c.claim)}</p><div class="tags"><span>${esc(c.category.replace(/^\d+_/,''))}</span><span>${esc(c.kind)}</span><span>${esc(c.year)}</span><span>${rec?'题录 · 全文待补':'七章白板课'}</span></div></div><div class="paper-action"><a href="${esc(c.file)}${rec||!n?'':('#p'+Math.min(23,(+(store.get('pgs:'+c.file+':last')||0))+1))}"${rec?' target="_blank" rel="noopener"':''}>${rec?'原站题录':n?'继续学习':'进入课堂'} →</a><span class="learned">${rec?'全文待补，暂无课程':n===23?'已浏览全部页面':n?'已浏览 '+n+' / 23 页':'尚未开始'}</span></div></article>`}).join(''):'<p class="empty">没有匹配的论文。可以缩短关键词或清除筛选。</p>';
+ $('#types').innerHTML=['all',...new Set(CATALOG.map(c=>c.kind))].map(t=>`<button type="button" data-type="${t}" aria-pressed="${type===t}">${t==='all'?'全部研究类型':t}</button>`).join('');
+ $('#statuses').innerHTML=[['all','全部学习状态'],['new','尚未开始'],['started','正在学习'],['done','已浏览全课']].map(([id,n])=>`<button type="button" data-status="${id}" aria-pressed="${status===id}">${n}</button>`).join('');
+ const courses=CATALOG.filter(c=>c.kind!=='待补全文'),begun=courses.filter(c=>progress(c)>0),done=courses.filter(c=>progress(c)===23);$('#overall').textContent=`已开始 ${begun.length} / ${courses.length} 篇 · 已浏览全课 ${done.length} 篇`;
+ $('#overallFill').style.width=courses.reduce((s,c)=>s+progress(c),0)/(courses.length*23)*100+'%';
+ if(begun.length){const c=begun.find(c=>progress(c)<23)||begun[0];$('#resume').href=c.file+'#p'+Math.min(23,(+(store.get('pgs:'+c.file+':last')||0))+1);$('#resume').textContent='继续：'+c.zh+' →';}
+}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const focusKey=['path','category','type','status'].find(k=>b.dataset[k]!=null),focusValue=focusKey?b.dataset[focusKey]:null;if(b.dataset.path!=null){path=+b.dataset.path;showPaths()}if(b.dataset.category){category=b.dataset.category;showCategories();render()}if(b.dataset.type){type=b.dataset.type;render()}if(b.dataset.status){status=b.dataset.status;render()}if(b.id==='clear'){category=type=status='all';$('#search').value='';$('#sort').value='category';showCategories();render()}if(focusKey){const next=document.querySelector('[data-'+focusKey+'="'+focusValue+'"]');if(next)next.focus({preventScroll:true});}});$('#search').addEventListener('input',render);$('#sort').addEventListener('change',render);addEventListener('pageshow',render);addEventListener('storage',render);showPaths();showCategories();render();
+</script>
+<script>
+/* Original procedural score: slow extended chords and sparse pentatonic keys. */
+let musicCtx=null,musicMaster=null,musicAnalyser=null,musicTimer=null,musicNext=0,musicBar=0,musicBusy=false;
+const musicButton=document.getElementById('musicToggle'),musicVolume=document.getElementById('musicVolume');
+const musicChords=[[50,57,61,66,69],[47,54,57,61,66],[43,50,54,59,62],[45,52,57,59,64]];
+const musicMelody=[[78,null,73,null,76,null,69,null],[73,null,null,78,null,76,null,null],[74,null,78,null,81,null,78,null],[76,null,null,73,null,71,null,null]];
+const musicHz=n=>440*Math.pow(2,(n-69)/12);
+function musicInit(){
+ const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)throw new Error('audio unavailable');
+ musicCtx=new Audio();musicMaster=musicCtx.createGain();musicMaster.gain.value=0;
+ musicAnalyser=musicCtx.createAnalyser();musicAnalyser.fftSize=2048;
+ musicMaster.connect(musicAnalyser);musicAnalyser.connect(musicCtx.destination);
+ // A quiet echo softens the short keys without a large downloadable audio file.
+ const echo=musicCtx.createDelay(2),feedback=musicCtx.createGain(),wet=musicCtx.createGain(),tone=musicCtx.createBiquadFilter();
+ echo.delayTime.value=.625;feedback.gain.value=.23;wet.gain.value=.16;tone.type='lowpass';tone.frequency.value=1800;
+ musicMaster.connect(echo);echo.connect(tone);tone.connect(feedback);feedback.connect(echo);tone.connect(wet);wet.connect(musicAnalyser);
+ musicNext=musicCtx.currentTime+.12;
+}
+function musicVoice(note,time,duration,level,pad=false){
+ const osc=musicCtx.createOscillator(),gain=musicCtx.createGain(),filter=musicCtx.createBiquadFilter();
+ osc.type=pad?'triangle':'sine';osc.frequency.value=musicHz(note);filter.type='lowpass';filter.frequency.value=pad?680:2400;
+ gain.gain.setValueAtTime(0,time);gain.gain.linearRampToValueAtTime(level,time+(pad?1.2:.025));
+ gain.gain.exponentialRampToValueAtTime(.0001,time+duration);osc.connect(filter);filter.connect(gain);gain.connect(musicMaster);
+ osc.start(time);osc.stop(time+duration+.05);osc.onended=()=>{osc.disconnect();filter.disconnect();gain.disconnect()};
+ if(!pad){const overtone=musicCtx.createOscillator(),oGain=musicCtx.createGain();overtone.type='sine';overtone.frequency.value=musicHz(note)*2;oGain.gain.setValueAtTime(level*.16,time);oGain.gain.exponentialRampToValueAtTime(.0001,time+.8);overtone.connect(oGain);oGain.connect(musicMaster);overtone.start(time);overtone.stop(time+.85);overtone.onended=()=>{overtone.disconnect();oGain.disconnect()};}
+}
+function musicSchedule(){
+ while(musicNext<musicCtx.currentTime+1.2){
+  const chord=musicChords[musicBar%4],melody=musicMelody[musicBar%4];
+  chord.forEach((n,i)=>musicVoice(n,musicNext+i*.06,7.5,.048,true));
+  // Eight slow beats with deliberate rests.
+  melody.forEach((n,i)=>{if(n!=null)musicVoice(n,musicNext+i*.8333,3,.19-i*.006)});
+  musicNext+=6.6664;musicBar++;
+ }
+}
+function musicUi(playing){musicButton.setAttribute('aria-pressed',String(playing));document.getElementById('musicLabel').textContent=playing?'暂停背景音乐':'播放背景音乐';musicButton.querySelector('path').setAttribute('d',playing?'M4 3h3v10H4zm5 0h3v10H9z':'M5 2.5v11L13 8z');document.getElementById('musicStatus').textContent=playing?'留白 · 正在播放 · 轻柔键音与氛围和弦':'留白 · 轻柔键音与氛围和弦 · 点击试听';}
+musicButton.addEventListener('click',async()=>{
+ if(musicBusy)return;musicBusy=true;
+ try{
+  if(!musicCtx)musicInit();
+  if(musicButton.getAttribute('aria-pressed')==='true'){
+   clearInterval(musicTimer);musicTimer=null;musicMaster.gain.cancelScheduledValues(musicCtx.currentTime);musicMaster.gain.setTargetAtTime(0,musicCtx.currentTime,.06);
+   await new Promise(resolve=>setTimeout(resolve,240));await musicCtx.suspend();musicUi(false);
+  }else{
+   await musicCtx.resume();musicMaster.gain.setTargetAtTime(Number(musicVolume.value)/100,musicCtx.currentTime,.25);musicSchedule();musicTimer=setInterval(musicSchedule,300);musicUi(true);
+  }
+ }catch(error){musicUi(false);document.getElementById('musicStatus').textContent='暂时无法播放，请刷新后重试。';}finally{musicBusy=false;}
+});
+musicVolume.addEventListener('input',()=>{if(musicCtx&&musicButton.getAttribute('aria-pressed')==='true')musicMaster.gain.setTargetAtTime(Number(musicVolume.value)/100,musicCtx.currentTime,.08)});
+addEventListener('pagehide',()=>{clearInterval(musicTimer);musicTimer=null;if(musicCtx&&musicCtx.state==='running')musicCtx.suspend();musicUi(false)});
+</script>
+</body></html>

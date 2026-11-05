@@ -1,0 +1,726 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>期刊影响力的递归计算 · 论文课堂</title><meta name="description" content="把期刊间引用矩阵转成特征向量问题，按引用来源的权重递归加权，得到与规模无关的影响力权重；方法应用于 103 种物理期刊"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="Information Processing &amp; Management"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* paper 84 components (x- prefixed) */
+.x-iter{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.x-matrix{border-collapse:collapse;font-family:var(--mono);font-size:12px;width:100%}
+.x-matrix th,.x-matrix td{border:1px solid var(--line-2);padding:5px 6px;text-align:center}
+.x-matrix th{font-family:var(--sans);font-size:11px;color:var(--ink-3);font-weight:500;background:var(--tint)}
+.x-matrix td.diag{color:var(--ink-3)}
+.x-matrix td.x-scol,.x-matrix th.x-scol{background:#fff;font-weight:600;color:var(--ink)}
+.x-wrow{display:grid;grid-template-columns:132px 1fr 58px;gap:10px;align-items:center;margin:10px 0;font-size:14px}
+.x-wrow .x-name small{display:block;font-size:11px;color:var(--ink-3)}
+.x-wbar{height:18px;background:var(--tint);border-radius:3px;position:relative;overflow:visible}
+.x-wfill{height:18px;background:var(--accent);border-radius:3px;transition:width .25s}
+.x-bmark{position:absolute;top:-5px;bottom:-5px;border-left:2px dashed var(--c3)}
+.x-wval{font-family:var(--mono);font-size:13px;text-align:right}
+.x-delta{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-top:8px}
+.x-delta b{color:var(--pos);font-weight:600}
+.x-ctl{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.x-slider{font-size:13px;color:var(--ink-2);margin:2px 0 0}
+.x-slider b{font-family:var(--mono)}
+.x-form{font-family:var(--mono);font-size:12.5px;background:var(--tint);border-radius:8px;padding:9px 12px;margin:8px 0;line-height:1.9;overflow-wrap:anywhere}
+.x-note{font-size:12px;color:#686863;line-height:1.65;margin-top:8px}
+.x-mini{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;background:#fff}
+.x-side .fact-list li{padding:4px 0}
+.x-side .btn{margin-top:8px}
+.x-chiprow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13.5px;margin-top:6px}
+.x-chip{border:1px solid var(--line-2);border-radius:999px;padding:2px 10px;background:#fff}
+.x-chip.hot{background:var(--accent-tint);border-color:var(--accent);color:var(--accent-ink)}
+.x-flow2{display:flex;flex-direction:column;gap:7px;font-size:13.5px;margin-top:4px}
+.x-flow2 b{color:var(--ink)}
+.x-flow2 .exp{color:var(--ink-3)}
+.x-flow2 .act{color:var(--accent-ink)}
+.x-legend{font-size:11.5px;color:var(--ink-3);margin-top:4px}
+.x-legend i{display:inline-block;border-left:2px dashed var(--c3);height:10px;vertical-align:-1px;margin-right:4px}
+.x-btrack{position:relative}
+.lesson .bar-fill.x-dim{background:#cfcfc9}
+.x-mini .grp-t{margin-bottom:4px}
+.x-mrow{display:grid;grid-template-columns:96px 1fr 56px;gap:8px;align-items:center;margin:5px 0;font-size:12.5px;color:var(--ink-2)}
+.x-mbar{height:11px;background:var(--tint);border-radius:2px;position:relative}
+.x-mbar i{display:block;height:100%;background:var(--accent);border-radius:2px}
+.x-mbar i.dim{background:#cfcfc9}
+.x-mrow b{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:right;color:var(--ink)}
+.x-trace{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--mono);font-size:12.5px;margin:4px 0 2px}
+.x-trace span{background:var(--accent-tint);color:var(--accent-ink);border-radius:6px;padding:1px 7px}
+.x-trace em{font-style:normal;color:var(--ink-3)}
+@media(max-width:900px){.x-iter{grid-template-columns:1fr}.x-wrow{grid-template-columns:96px 1fr 52px}}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 13 链接分析与外链理论</div>
+    <h1>期刊影响力的递归计算</h1>
+    <div class="en">1976 · 理论框架</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">期刊影响力的递归计算</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">把期刊间引用矩阵转成特征向量问题，按引用来源的权重递归加权，得到与规模无关的影响力权重；方法应用于 103 种物理期刊<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">开课先立靶子：数引文容易，但等权计票会让规模大、篇幅长的期刊占尽便宜。Pinski 与 Narin 1976 年的做法是把期刊间引用矩阵变成特征向量问题，让每条引用按引用方自身的权重计票，迭代到自洽，得到与规模无关的影响力权重。右侧四个数字贯穿全课，第 12 页会逐一拆口径。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">沿着问题与证据完成这门课</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">沿「问题 → 矩阵 → 递归 → 口径 → 边界」五步走完全课。<span class="src">全课结构 · 共 23 页</span></div></div><div class="notes">路线图对应论文结构：第 2 章对应 §3 的权重方案，第 3 章对应数据与口径，第 4 章是方法与可操作的迭代演示，第 5 章逐条过四条发现，第 6 章回到应用。底部的术语按钮可随时查「目标尺寸」「特征向量」等词。学完应能回答：权重怎么定义、为何与规模无关、三个口径差在哪、边界在哪。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">如何给期刊算一个不受规模影响的影响力得分</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">等权计票会让大刊与综述刊占优；给引用按来源分量加权才区分得出权威与边缘。<span class="src">§2 Rationale · PDF p.2</span></div></div><div class="notes">先看常见做法的破绽：总被引数依赖期刊规模，影响因子虽除以发文量，却对所有引用一票等权，也校正不了单篇篇幅——Garfield 当时最高的九个影响因子全部是综述期刊。切换到「研究启发」看论文的替代方案：引用按引用方的权重计票，再除以被引方给出的引文数。这两个动作分别挡住规模效应与篇幅效应。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">研究对象需要先拆开再比较</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">引用矩阵 C_ij 一数两用：既是 i 给 j 的引文数，也是 j 收到自 i 的被引数。<span class="src">§3(a) · PDF p.3</span></div></div><div class="notes">三个步骤按钮对应方法的三个构件。第一步建矩阵：行是引用方、列是被引方，时间窗是 1973 年发出的引文，被引文献可以是任何更早年份。第二步递归加权：每条引用按引用方的权重计票，再除以被引方的「目标尺寸」。第三步归一化：规模加权平均固定为 1，权重 1 就是平均水平，因此权重有绝对含义。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">方法沿着这些环节产生作用</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">建矩阵 → 等权起步递归加权 → 归一化到均值 1，三个环节环环相扣。<span class="src">§3 · PDF p.3-5</span></div></div><div class="notes">流程页把论文 §3 的推导排成三步：矩阵是原料，迭代是引擎，归一化是刻度。注意迭代一步的含义——用上一轮的权重给所有引用重新计票，再除以各自的目标尺寸；反复做下去权重比例趋于稳定。专业层给出了方程与矩阵平方加速：六次平方相当于把 y 矩阵自乘到 64 次幂，通常就收敛到三位小数。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">明确干预环节才能解释效果</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">干预发生在「给引用计票」这一步：从等权改为按来源权重加权。<span class="src">§3(a) · PDF p.3-4</span></div></div><div class="notes">这篇是理论框架论文，没有干预实验，但方法本身有明确的「作用点」：改变引用的计票规则。切换三个环节看清各自承担什么——矩阵决定信息，递归决定权重来源，口径决定读数。能支持的是期刊集合内部的影响力刻画；不能支持的是跨领域质量排序，这正是第 16 页化学物理反例的伏笔。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">指标分别回答不同的效果问题</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">影响力权重除以目标尺寸，篇均影响力再除以发文量，三个口径层层剥掉规模效应。<span class="src">§3(b) · PDF p.7-8</span></div></div><div class="notes">两个指标切换着读。影响力权重回答「每给出一条引文，这个期刊换来多少加权被引」，与期刊大小无关；篇均影响力回答「平均一篇文章带来多少加权被引」，它等于权重乘以篇均引文数，所以综述刊天然占优；总影响力再乘发文量，回到规模。专业层给出了完整公式与归一化条件，核对口径时按这条链检查。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">实验设置限定结论的适用范围</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">1973 年 SCI 约 400 万条引用构成矩阵；103 种物理期刊参与计算。<span class="src">§1、§5 · PDF p.2、p.16</span></div></div><div class="notes">右侧四段原文节选按论证顺序排列：摘要立方法，§2 数影响因子的三个局限，§3 给权重方案与迭代解法，§3(b) 用四刊对照示范三个口径。数据底盘是 1973 年 SCI：约 400 万条引用、40 万篇出版物、2300 种期刊；天文学与地球物理期刊被划出物理，Science、Nature 等综合刊也不在集合内——这些边界都影响权重的解释。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">保持对照一致才能解释变化</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">复验先核对时间窗、期刊集合与归一化口径，再讨论权重数值。<span class="src">§3(a) · PDF p.3</span></div></div><div class="notes">这四条检查项来自论文自己的前提：引用矩阵要固定时间窗与来源；期刊集合要说明边界与分辑合并（Phys Rev 当年因分辑历史被重新合并成单一期刊）；权重依赖归一化，规模加权平均必须为 1；最后，读数时区分三个口径、不做跨领域质量排序。四项全勾，才有复现论文数字的基础。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">方法的每一步都有独立作用</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">权重方程是自洽特征向量问题：每个期刊的权重由全体期刊共同决定。<span class="src">§3(a) · PDF p.4</span></div></div><div class="notes">逐个步骤点开看细节：矩阵一步是数据口径，迭代一步是引擎——w_i 等于「各引用方权重乘以它给 i 的引文数」再除以 i 的目标尺寸，一步都离不开其他期刊的当轮权重，所以论文称之为自助式（bootstrap）方程组。归一化一步固定刻度。右侧「保持不变的约束」提醒：引用自由流动是整套方法的前提。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">比较改动前后可以看清操作</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">等权起步迭代，几步之内权重比例即稳定——小矩阵也服从同一收敛律。<span class="src">§3(a) · PDF p.5</span></div></div><div class="notes">这是全课的招牌演示。左边的三刊小矩阵是教学示意，但角色对应 Table 1 的三种期刊。点「迭代一步」：权重从等权 1 出发，按来源权重重新计票并除以目标尺寸，几步后最大变化量掉到 0.001 以下——这就是论文说的三位小数收敛。「直接收敛」可跳到终态，拖动自引滑杆还能验证论文的二元结论：自引越大，权重越被拉向 1。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">数字需要连同口径一起读取</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">Table 1 四刊对照：权重、篇均影响力、总影响力各说各话。<span class="src">Table 1 · PDF p.8</span></div></div><div class="notes">四张对照图都来自 Table 1，注意每张的刻度不同。影响力权重图里的橙色虚线是全集合均值 1：PRL 的 3.42 是平均水平的 3.4 倍。篇均影响力图里综述刊 245.8 一枝独秀，可总影响力图里它只有 4,424——18 篇的发文量封了顶。Annals of Physics 与 Phys Rev 的对比是论文原话：权重略高，总影响力却不足对方 5%。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">引用应按引用方影响力加权而非等权</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">等权计票分不清来源分量：当时最高的九个影响因子全是综述期刊。<span class="src">§2 Rationale · PDF p.2</span></div></div><div class="notes">这条发现是全文动机。影响因子的三个局限依次是：不校正单篇篇幅、引用等权、不区分学科引用密度。迷你图给出论文 §3(a) 的两刊算例：互引 60 对 20，权重比就是 3 比 1，与各自的自引无关——等权计票做不到这一点，因为它根本不看谁在引用。证据强度按本课口径标为弱：方法论证明，无外部效度检验。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">影响力权重即引用矩阵的主特征向量</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">权重是引用矩阵按目标尺寸缩放后的主特征向量，等权初值迭代即收敛。<span class="src">§3(a) · PDF p.4-5</span></div></div><div class="notes">这页把代数说清楚：目标尺寸向量 S 恰好是缩放矩阵 y 的特征向量（y·S = S），而权重 w 是 λ = 1 对应的左特征向量。迷你图用第 11 页基准矩阵的收敛轨迹：刊乙的权重五步内稳定在 2.03，最大变化量指数式下降。论文的工程技巧是矩阵反复平方——六次平方等于 y 的 64 次幂，这就是「递归计算」的实义。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">综述期刊篇均影响力高源于文章篇幅</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">综述刊篇均影响力 245.8 源于篇幅：篇均引文 116.9 条为其他刊的 6–10 倍。<span class="src">Table 1 · PDF p.8</span></div></div><div class="notes">Table 1 的数字链完美演示篇幅效应：Rev M Phys 篇均引文 116.9 条，是其他三刊的 6 到 10 倍；篇均被引 245.8 遥遥领先；但一年只发 18 篇，总影响力 4,424 排不进前列。论文据此提醒：综述刊与研究刊的篇均影响力不宜直接比较，影响力图甚至把综述刊单独排除。也注意快报刊 PRL：篇均引文最少，权重却最高。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">跨领域比较影响力权重不代表质量</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">化学物理权重反超两大学科：聚合方式本身就会改写权重。<span class="src">§3(c) · PDF p.8-9</span></div></div><div class="notes">这是论文最反直觉的一段。按信息流直觉，化学物理夹在物理与化学之间，权重应居中；实际算出的分组权重比两者都高。迷你对比框写出了期望与实际的落差，解释落在聚合结构上：化学物理是个由 JCP 主导的小集合，而物理、化学两个大集合由大量参差期刊组成。结论：权重是集合的函数，跨领域比较不是质量排序。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">相关研究帮助检验迁移边界</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">与 PageRank 同构：都是引用或链接矩阵的主特征向量递归。<span class="src">对照阅读 · 全文</span></div></div><div class="notes">三档对照：本篇是 1976 年的期刊版；相关研究是 1998 年的 PageRank——把同样的递归搬到网页链接上，加了阻尼系数处理悬挂节点；对照启发一栏提醒迁移条件。读的时候对齐三件事：对象（期刊对网页）、矩阵细节（目标尺寸对出链归一）、收敛手段（矩阵平方对几十次幂迭代）。两篇的数字不可直接相加。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">把方法还原为一次具体操作</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">四刊对照是论文原例：同一矩阵，三个口径，三种排序。<span class="src">Table 1 · PDF p.8</span></div></div><div class="notes">这是论文 §3(b) 的真实案例，非教学示意：Phys Rev、Annals of Physics、PRL、Rev M Phys 四刊同处一个引用矩阵。操作是并排报告三个口径；检查是问每个排序背后的机制——PRL 权重 3.42 最高，靠的是被权威刊高频引用且自身给出引文少；Ann Phys 权重略高于 Phys Rev，总影响力却不足其 5%，差距全在发文量 147 对 3,648。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">不同角色需要不同的执行清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">评价者用三口径拆规模效应，工程师复用迭代算法，审核者盯集合边界。<span class="src">本课应用推断 · 需对照原文</span></div></div><div class="notes">三个角色的动作都从论文方法反推。科学计量与评价研究者：先建矩阵与口径卡，再算三个指标；期刊编辑与出版方：用权重定位本刊在集合中的位置，注意权重依赖所选集合；检索与链接分析工程师：这套迭代就是 PageRank 的先祖，可复用其收敛与归一化技巧。清单是本课推断，采用前回看原文与边界页。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态可以承接研究方法</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">引文分析报告、矩阵数据卡与排名模块都能承接这套方法。<span class="src">本课推断 · 映射需自行核验</span></div></div><div class="notes">表格把方法映射到今天可见的工作形态：期刊评价报告对应三口径结构——权重、篇均、总量分列，避免单一指标误导；引用矩阵数据卡对应论文对时间窗与集合边界的交代习惯；特征向量排名模块对应迭代加归一化的算法核。映射为本课推断：采用任何一种形态前，先小范围复验一遍口径。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">结论的边界决定应用的尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">新刊与快速变化领域需谨慎；跨领域比较不等于质量排序。<span class="src">§3 · PDF p.3、p.9</span></div></div><div class="notes">六条局限按影响程度排列。两条高影响来自论文自身：矩阵假设各刊相对规模与主题长期稳定，新刊与热点领域天然吃亏；口径上，跨领域差异不能当质量排序，综述刊与研究刊的篇均影响力也不可比。中影响三条是集合依赖、引用自由流动前提与数据窗口。最后一条低影响是版本问题：扫描版个别表格单元格经交叉校正，正式引用请对原版。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">带走数字时带走口径：权重 3.42、篇均 245.8 各有前提。<span class="src">Table 1 · §3 · PDF p.8</span></div></div><div class="notes">六张卡片正面是结论、背面是依据与用法。前三张是方法核：权重的定义式、特征向量解法、PRL 3.42 的读法；后三张是边界核：综述刊 245.8 的篇幅成因、跨领域比较的禁令、新刊与集合变更的重算要求。点卡片翻面，右上按钮可复制全部要点与出处，直接用作读书笔记。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">五题覆盖结论、口径、反常发现、边界与迭代细节。<span class="src">全课 · 各题附复习页码</span></div></div><div class="notes">五道题各盯一个能力点：权重定义与特征向量解法（第 10 页）、Table 1 三口径的区分（第 12 页）、化学物理反常权重（第 16 页）、跨领域边界（第 21 页）、迭代收敛细节（第 11 页）。答错会给出对应复习页，回看后再答；分数不计入任何记录，重点是查漏。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>Citation Influence for Journal Aggregates of Scientific Publications: Theory, with Application to the Literature of Physics</p><p>1976 · Information Processing &amp; Management</p><p><a href="https://citeseerx.ist.psu.edu/document?doi=516e8f7a06a147ea8980f2a1544cfabf020adf1d&amp;repid=rep1&amp;type=pdf" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper84,
+  author = {Gabriel Pinski and Francis Narin},
+  title = {Citation Influence for Journal Aggregates of Scientific Publications: Theory, with Application to the Literature of Physics},
+  year = {1976},
+  url = {https://citeseerx.ist.psu.edu/document?doi=516e8f7a06a147ea8980f2a1544cfabf020adf1d&amp;repid=rep1&amp;type=pdf}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：dc2e1b6b30e1e8081e13b30e3b5e2a2db091cc4d03578075e0f671fa6a9dae54</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={"id": 84, "zh": "期刊影响力的递归计算", "kind": "理论框架", "question": "如何给期刊算一个不受规模影响的影响力得分？", "claim": "把期刊间引用矩阵转成特征向量问题，按引用来源的权重递归加权，得到与规模无关的影响力权重；方法应用于 103 种物理期刊", "steps": ["统计期刊间引用矩阵", "按引用方权重迭代加权", "归一化得影响力权重"], "findings": ["引用应按引用方影响力加权而非等权", "影响力权重即引用矩阵的主特征向量", "综述期刊篇均影响力高源于文章篇幅", "跨领域比较影响力权重不代表质量"], "metrics": [{"name": "影响力权重", "plain": "按来源权重加总的被引数除以给出引文数"}, {"name": "篇均影响力", "plain": "每篇文章获得的加权被引数，可跨刊比较"}], "setting": "用 1973 年 SCI 约 400 万条引用构建引用矩阵，对 103 种物理期刊迭代求主特征向量，并绘制分学科影响力图", "boundary": "假设期刊规模与主题长期稳定，新刊与快速变化领域需谨慎；权重依赖所选期刊集合，跨领域比较不等于质量排序", "query": "同一批期刊里，一条来自权威期刊的引用和一条来自边缘期刊的引用，该一样计票吗？", "before": "数总被引或算影响因子：所有引用一票等权，被引总量大、篇幅长的期刊自动排前", "after": "每条引用按引用方的权重计票，再除以被引方给出的引文数（目标尺寸），来源分量与篇幅效应同时被校正", "finding_details": ["影响因子把所有引用等权计数，无法区分来自权威期刊与边缘期刊的引用；Garfield 当时最高的九个影响因子全部是综述期刊。论文因此让每条引用按引用方权重计票，再除以被引方给出的引文数。", "权重方程组 w_i = (Σ_k w_k C_ki)/S_i 是自洽的特征向量问题：每个期刊的权重由全体期刊共同决定。从等权初值迭代收敛，归一化后 1 为平均水平；六次矩阵平方（y 的 64 次幂）通常收敛到三位小数。", "Table 1 中 Physical Review Letters 权重 3.42 为四刊最高；综述刊 Rev M Phys 篇均引文 116.9 条、为其他三刊的 6–10 倍，篇均影响力 245.8 遥遥领先，但年发文不足 30 篇——主导因素是单篇篇幅。", "化学物理连接物理与化学，净信息流从物理流向化学，其分组权重按理应居两者之间；实际算得的权重反高于两大学科，原因是它由大型期刊 JCP 主导。作者强调跨领域的影响力差异与质量无关。"], "iterPresets": [{"name": "基准矩阵 · 近 Table 1 比例", "note": "三刊角色参考 Phys Rev / Phys Rev L / Rev M Phys；单位为千条引文每年，数字为教学示意", "C": [[51.2, 16.4, 0.4], [6, 3, 1], [1.6, 0.3, 0.1]], "names": ["刊甲 · 大型综合刊", "刊乙 · 快报型刊", "刊丙 · 综述刊"], "expect": "收敛比约 1 : 2.41 : 1.48，对应 Table 1 中 1.42 : 3.42 : 2.10（PDF p.8）"}, {"name": "规模陷阱 · 巨刊被引最多", "note": "刊甲收到全矩阵 63% 的被引，却给出 83% 的引文，目标尺寸巨大", "C": [[60, 25, 15], [8, 1, 1], [8, 1, 1]], "names": ["刊甲 · 巨型综合刊", "刊乙 · 专业刊", "刊丙 · 专业刊"], "expect": "收敛后刊甲权重 0.80、刊乙 2.40、刊丙 1.60：被引最多者权重低于平均"}, {"name": "自引膨胀 · 抬高自引", "note": "在基准矩阵上把刊甲自引 C11 提到 60（也可用下方滑杆连续调节）", "C": [[60, 16.4, 0.4], [6, 3, 1], [1.6, 0.3, 0.1]], "names": ["刊甲 · 大型综合刊", "刊乙 · 快报型刊", "刊丙 · 综述刊"], "expect": "自引越大，刊甲权重越被拉向 1——论文 2×2 分析的结论（PDF p.5-6）"}],
+"numbers": [{"name": "影响力权重 · 四刊对照", "unit": "全集合均值 = 1", "src": "Table 1", "page": 8, "base": 1, "items": [{"n": "Phys Rev", "v": 1.42}, {"n": "Ann Physics", "v": 1.66}, {"n": "Phys Rev L", "v": 3.42, "hi": 1}, {"n": "Rev M Phys", "v": 2.10, "d": "2.10"}], "note": "权重按来源权重加权被引数并除以目标尺寸后归一化；四种期刊只是 103 种期刊集合中的四个对照点。"}, {"name": "篇均影响力 · 四刊对照", "unit": "加权被引 / 每篇文章", "src": "Table 1", "page": 8, "items": [{"n": "Phys Rev", "v": 26.4}, {"n": "Ann Physics", "v": 29.0, "d": "29.0"}, {"n": "Phys Rev L", "v": 38.1}, {"n": "Rev M Phys", "v": 245.8, "hi": 1}], "note": "Rev M Phys 篇均影响力最高，论文点明主导因素是单篇篇幅（篇均引文 116.9 条）。"}, {"name": "篇均引文数 · 篇幅效应的来源", "unit": "条 / 篇", "src": "Table 1", "page": 8, "items": [{"n": "Phys Rev", "v": 18.6}, {"n": "Ann Physics", "v": 17.4}, {"n": "Phys Rev L", "v": 11.1}, {"n": "Rev M Phys", "v": 116.9, "hi": 1}], "note": "综述刊篇均引文为其他三刊的 6–10 倍；等权口径下这一项会直接推高其影响因子。"}, {"name": "总影响力 · 规模效应回来了", "unit": "篇均影响力 × 发文量", "src": "Table 1", "page": 8, "items": [{"n": "Phys Rev", "v": 96307, "hi": 1}, {"n": "Ann Physics", "v": 4256}, {"n": "Phys Rev L", "v": 34186}, {"n": "Rev M Phys", "v": 4424}], "note": "论文原话：Annals of Physics 权重与篇均影响力都略高于 Phys Rev，总影响力却不足其 5%（4,256 对 96,307），差距来自发文量 147 对 3,648。"}],
+"methodNotes": ["输入与目标：1973 年 SCI 约 400 万条引用、40 万篇出版物、2300 种期刊（PDF p.2）；引用矩阵 C_ij 既表示 i 给 j 的引文数，也表示 j 收到自 i 的被引数。时间窗是 1973 年发出的引文，被引文献可为任意更早年份——因此假设各刊相对规模与主题稳定。", "研究比较：w_i = (Σ_k w_k C_ki)/S_i，S_i 为 i 给出的引文总数（目标尺寸）。等权 w=1 起步迭代，等价于对 y 矩阵（y_ki = C_ki/S_i）反复乘幂；论文用矩阵平方加速，6 次平方即 y^64，通常收敛到三位小数（PDF p.4-5）。", "结果解读：规模加权平均固定为 1（Σ S_i w_i = 全部引文数），权重 1 = 平均水平，具备绝对含义；再派生篇均影响力 = 权重 × 篇均引文数、总影响力 = 篇均 × 发文量（PDF p.7）。"],
+"flowStages": ["构建引用矩阵", "递归加权迭代", "三个影响力口径"],
+"checkItems": ["核对引用矩阵的时间窗与来源（1973 年 SCI）", "确认期刊集合边界与分辑合并口径", "检查目标尺寸归一与特征向量收敛", "区分三个影响力口径，不做跨领域质量排序"],
+"metricPro": ["影响力权重：w_i = (1/S_i)·Σ_k w_k·C_ki，S_i = Σ_j C_ij 为 i 给出的引文总数（目标尺寸，矩阵行和）。等价于 y_ki = C_ki/S_i 的左特征向量问题，且 y·S = S 保证 λ = 1 必为特征值；w 取最大特征值对应的特征向量。归一化：规模加权平均 Σ S_i w_i / Σ S_i = 1，权重 1 代表平均水平。出处：PDF p.3-5。", "篇均影响力：篇均影响力_i = w_i × S_i / P_i（P_i 为年发文量），即 影响力权重 × 篇均引文数；总影响力 = 篇均影响力 × P_i。三个口径分别剥掉「给出引文数」「单篇篇幅」「发文规模」三种规模效应。出处：PDF p.7-8。"],
+"persona": {"roles": ["科学计量与评价研究者", "期刊编辑与出版方", "检索与链接分析工程师"], "why": ["三口径与权重方程正是评价研究的基本工具（对应 F1、F2）。", "权重与篇均读数直接描述本刊在集合中的位置（对应 F3）。", "迭代与收敛机制是 PageRank 的直接前身（对应 F2、F4）。"], "todos": [["构建引用矩阵，登记时间窗、集合边界与目标尺寸口径", "同口径计算影响力权重、篇均影响力、总影响力三个读数", "检查跨领域比较禁令与集合依赖（化学物理例）"], ["把本刊放进合适的期刊集合再读权重，记录集合构成", "用篇均引文数解释篇均影响力，向作者与读者说明口径", "对比快报型与综述型期刊前，先对齐篇幅效应"], ["复用等权初值迭代与矩阵平方加速实现排名模块", "加入归一化（规模加权平均为 1）与收敛判据（Δ < 0.001）", "参照 PageRank 补充网页场景扩展，并做同口径对照"]], "warn": "把等权被引数或单一影响因子当作影响力结论，再宣称排名由「质量」决定。"},
+"matureRows": [["期刊引文分析报告", "权重、篇均影响力、总影响力三口径分列，附集合与时间窗说明", "统计期刊间引用矩阵"], ["引用矩阵数据卡", "C_ij 矩阵、目标尺寸 S_i、归一化条件与版本记录", "按引用方权重迭代加权"], ["特征向量排名模块", "等权初值迭代 + 矩阵平方加速 + Δ 收敛判据", "归一化得影响力权重"]],
+"quoteCards": [{"f": "影响力权重 = 加权被引数 ÷ 目标尺寸", "basis": "权重方程 w_i = (Σ_k w_k C_ki)/S_i，S_i 为该刊给出的引文总数（PDF p.3-4）。", "use": "构建引用矩阵后先算行和再迭代，勿用总被引数冒充权重。"}, {"f": "权重即引用矩阵的主特征向量", "basis": "y·S = S 保证 λ = 1 为特征值；w 为对应的左特征向量（PDF p.4-5）。", "use": "等权初值迭代或矩阵平方求解；六次平方通常收敛到三位小数。"}, {"f": "快报型期刊权重最高：PRL 3.42", "basis": "Table 1：PRL 被权威刊高频引用且篇均引文最少（11.1 条）（PDF p.8）。", "use": "读权重先问集合：换一组期刊，数值与排序都可能变。"}, {"f": "综述刊篇均影响力 245.8 源于篇幅", "basis": "Table 1：篇均引文 116.9 条为其他三刊的 6–10 倍；年发文 18 篇使总影响力仅 4,424（PDF p.8）。", "use": "比较研究刊与综述刊的篇均读数前，先对齐篇幅口径。"}, {"f": "跨领域权重差异不代表质量", "basis": "化学物理分组权重反超物理与化学，源于 JCP 主导的小集合（PDF p.8-9）。", "use": "聚合方式改变权重；跨集合读数只作描述，不作排名。"}, {"f": "新刊与快速变化领域需谨慎", "basis": "矩阵假设各刊相对规模与主题长期稳定（PDF p.3）。", "use": "换数据窗、加入新刊后整体重算，不沿用旧权重。"}],
+"compareNote": "迁移前对齐三件事：对象（期刊引用对网页链接）、矩阵细节（目标尺寸缩放对出链归一加阻尼）、收敛手段（矩阵平方对几十次幂迭代）。两篇论文的权重数值口径不同，不能直接放到同一张图上比较。",
+"catalog_title": "Citation Influence for Journal Aggregates of Scientific Publications: Theory, with Application to the Literature of Physics", "title": "Citation Influence for Journal Aggregates of Scientific Publications: Theory, with Application to the Literature of Physics", "authors": "Gabriel Pinski; Francis Narin", "year": "1976", "category": "13_链接分析与外链理论", "url": "https://citeseerx.ist.psu.edu/document?doi=516e8f7a06a147ea8980f2a1544cfabf020adf1d&repid=rep1&type=pdf", "file": "13_链接分析与外链理论_C02_Citation_Influence_for_Journal_Aggregates_of_Scientific_Publications_Theory_with_Application_to_the_Liter.html", "pdf": "", "kind_note": "概念与推导，暂无生产效果估计", "extra": "query、before、after 为教学情境示意；这是 PageRank 的文献计量学前身，Kleinberg 指出其权重即引用矩阵主特征向量。", "evidence": [{"label": "摘要与研究目标", "text": "A self-consistent methodology is developed for determining citation based influence measures for scientific journals, subfields and fields. Starting with the cross citing matrix between journals or between aggregates of journals, an eigenvalue problem is formulated leading to a size independent influence weight for each journal or aggregate. Two other measures, the influence per publication and the total influence are then defined. Hierarchical influence diagrams and numerical data are presented to display journal interrelationships for journals within the subfields of physics. A wide range in influence is found between the most influential and least influential or peripheral journals.", "page": 1}, {"label": "影响因子的三个局限", "text": "The journal \"impact factor\" introduced by Garfield is a size independent measure... but it in addition suffers from three more significant limitations. Although the size of the journal, as reflected in the number of publications, is corrected for, the average length of individual papers appearing in the journal is not. Thus, journals which publish longer papers, namely review journals, tend to have higher impact factors. In fact the nine highest impact factors obtained by Garfield were for review journals. ... The second limitation is that the citations are unweighted, all citations being counted with equal weight, regardless of the citing journal. It seems more reasonable to give higher weight to a citation from a prestigious journal than to a citation from a peripheral one.", "page": 2}, {"label": "权重方案与迭代解法", "text": "In the sum, the number of cites to the ith unit from the kth unit is weighted by the weight of kth (referencing) unit. It is also divided by the target size S_i of the unit i being cited. The n equations, one for each unit, provide a self consistent \"bootstrap\" set of relations in which each unit plays a role in determining the weight of every other unit. ... This provides the most convenient numerical procedure for finding the weights, the whole iteration procedure being reduced to successive squarings of the y matrix. ... Convergence to three decimal places usually occurs with six squarings, corresponding to raising y to the 64th power.", "page": 3}, {"label": "四刊对照与聚合效应", "text": "Physical Review Letters has the highest influence weight. It has the smallest number of references per publication, being a letter journal, but still has higher influence per publication than Physical Review and Annals of Physics. Reviews of Modern Physics, containing only lengthy review articles has a reference per publication value of from six to ten times that of the other journals and so has by far the largest influence per publication. ... We see that the three measures - influence weight, influence per publication and total influence - reflect different information about a journal.", "page": 8}], "table": {"text": "Table 1. Influence measures for four physics journals\n\n                Infl wt   Ref/Pub   Infl/Pub   Pubs    Tot Infl\n\nPhys Rev          1.42      18.6      26.4      3648    96307\nAnn Physics       1.66      17.4      29.0       147     4256\nPhys Rev L        3.42      11.1      38.1       897    34186\nRev M Phys        2.10     116.9     245.8        18     4424", "page": 8, "label": "Table 1 · 已校正转写"}, "version": "Information Processing & Management", "sha256": "dc2e1b6b30e1e8081e13b30e3b5e2a2db091cc4d03578075e0f671fa6a9dae54", "stats": [{"v": "103", "name": "参与计算的物理期刊数", "source": "Conclusions", "context": "影响力权重方法应用于 103 种物理学期刊；天文、地球物理与综合刊不在集合内", "page": 16}, {"v": "3.42", "name": "Phys Rev L 影响力权重", "source": "Table 1", "context": "四种对照期刊中 Physical Review Letters 权重最高；权重以全集合均值 1 为基准", "page": 8}, {"v": "245.8", "name": "Rev M Phys 篇均影响力", "source": "Table 1", "context": "综述刊 Reviews of Modern Physics 篇均影响力最高，反映篇幅效应", "page": 8}, {"v": "400 万", "name": "SCI 1973 引用条数", "source": "§1 Historical background", "context": "1973 年 SCI 含约 400 万条引用、40 万篇出版物、2300 种期刊，本文数据取自该年 SCI", "page": 2}], "related": {"id": 86, "zh": "链接递归的网页排序", "title": "The PageRank Citation Ranking: Bringing Order to the Web", "url": "./13_链接分析与外链理论_C04_The_PageRank_Citation_Ranking_Bringing_Order_to_the_Web.html", "pdf": "https://gwern.net/doc/technology/google/1998-page.pdf", "claim": "把链接当投票并按来源重要性递归加权，页面得分等价于随机游走的平稳分布；322 million 链接约 52 次迭代收敛，可作搜索与浏览信号"}, "strength": "弱", "strength_why": "本课保守评级：概念、模拟、有限样本或未完成独立语义验证。", "limitations": [["高", "研究结论有明确范围", "引用矩阵假设各期刊相对规模与主题长期稳定；新刊与快速变化领域的权重需谨慎解读（时间窗讨论见 PDF p.3）。"], ["高", "评价口径决定可以推断的结果", "跨领域、跨分组的影响力差异不能当作质量排序；综述刊与研究刊的篇均影响力也不宜直接比较（PDF p.9、p.11）。"], ["中", "期刊分组影响权重", "权重完全依赖所选期刊集合：化学物理分组权重反超物理与化学，源于 JCP 主导的小集合（PDF p.8-9）。"], ["中", "引用自由流动是前提假设", "若编辑政策限制作者引用其他期刊的次数，一切基于引用的计量都会失真；论文明确以此为先决条件（PDF p.2）。"], ["中", "数据窗口与分辑处理", "数据取自 1973 年 SCI；Phys Rev 等因历史分辑被合并计算，换数据窗或换集合需整体重算（PDF p.2、p.13）。"], ["低", "原文版本与内部一致性", "PDF 为扫描 OCR 版；Table 1 个别单元格已与 Table 2 交叉校正，Tot Infl 一处仍存在 34,186/34,185 两种读数，正式引用请核对原版。"]], "quiz": [{"q": "一篇期刊的影响力权重在本篇中是如何得到的？", "o": ["用期刊总被引数除以影响因子，再按年度平滑", "对期刊间引用矩阵解特征向量问题：被引数按引用方权重加权、除以该刊给出的引文数，迭代到自洽", "把期刊按篇均字数排队，字数越多权重越高", "请学科专家对期刊两两比较打分后归一化"], "a": 1, "e": "权重方程 w_i = (Σ_k w_k C_ki)/S_i 构成自洽的特征向量问题，从等权初值迭代收敛（第 10 页方法拆解）。", "p": 10}, {"q": "同一张 Table 1 里，Rev M Phys 篇均影响力 245.8 远超他刊、总影响力却只有 4,424，主要原因是什么？", "o": ["综述文章篇幅长使篇均被引极高，但年发文不足 30 篇", "计算把综述刊的被引重复计入了两次", "综述刊的自引被全部剔除，权重被压低", "总影响力只统计了半年窗口内的引用"], "a": 0, "e": "主导因素是单篇篇幅：篇均引文 116.9 条约为其他三刊的 6–10 倍；综述刊年发文通常少于 30 篇，总量上不去（第 12、15 页）。", "p": 12}, {"q": "化学物理分组的权重反而高于物理和化学两个大学科，作者给出的解释是？", "o": ["化学物理的引用增长速度更快，迭代尚未收敛", "化学物理期刊的自引率最高", "化学物理是由大型期刊 JCP 主导的小集合，两个大学科则由大量不同质量的期刊组成", "物理与化学的相互引用在矩阵中被互相抵消"], "a": 2, "e": "聚合方式本身影响权重：小而精的分组由 JCP 主导，权重反超；作者据此强调跨领域差异与质量无关（第 16 页发现 4）。", "p": 16}, {"q": "把这套影响力权重用于跨学科比较时，正确的读法是？", "o": ["跨领域的影响力差异不能当作质量排序，权重只在与所选集合对应的范围内有意义", "权重高的学科一定产出更重要的论文", "可以把不同学科的权重直接相加得到学科总影响力", "权重与集合构成无关，换一组期刊结果不变"], "a": 0, "e": "权重完全依赖所选期刊集合（化学物理即为例证），跨领域比较不等于质量排序（第 6、21 页）。", "p": 21}, {"q": "关于权重求解的迭代，下列哪项与论文一致？", "o": ["必须从随机初值出发，否则会收敛到错误的权重", "每一步都要重新统计引用矩阵，权重才会更新", "迭代没有收敛判据，只能固定迭代一百次", "从等权初值开始迭代，等价于对 y 矩阵反复乘幂；论文用矩阵平方加速，6 次平方（y 的 64 次幂）通常收敛到三位小数"], "a": 3, "e": "第 11 页的递归迭代台完整演示了这一过程：等权起步、按来源权重递归加权、逐步归一化后收敛到三位小数。", "p": 11}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{targetsize:{t:"目标尺寸",d:"期刊给出的引文总数 S_i（矩阵行和），是被引方呈现给引用世界的规模；影响力权重把它作分母。"},eigen:{t:"特征向量",d:"矩阵乘它仍得到自身的倍数向量。影响力权重是按目标尺寸缩放后的引用矩阵在 λ=1 上的特征向量。"},impact:{t:"影响因子",d:"Garfield 1972 提出的期刊指标：被引数除以发文量。本篇指出其等权计票与篇幅两大局限。"},prank:{t:"PageRank",d:"1998 年把同样的特征向量递归搬到网页链接的算法，加阻尼系数处理悬挂节点，是本篇方法的网页版后代。"},geo:{t:"GEO",d:"改善来源在生成式答案中的可见性及归功的研究与实践。"},rag:{t:"RAG",d:"先检索外部资料，再以资料支持模型生成。"},baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},ablation:{t:"消融",d:"去除某个组件，比较它对整体结果的贡献。"},transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=e=>`<span class="src">${esc(e.label)} · PDF p.${e.page}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const researchOnly=['理论框架','综述'].includes(PAPER.kind);
+const stageNames=PAPER.flowStages||['问题与候选资料','研究干预与比较','答案或评价结果'];
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,num:0,lim:0,role:0,proof:0,q:0,answers:[],checks:new Set(),flips:new Set()};
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function dataNumbers(){return PAPER.stats.length?`<div class="number-grid">${PAPER.stats.slice(0,4).map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div>${tip(s.source)}</div>`).join('')}</div>`:`<div class="answer"><div class="kicker">证据类型 · ${esc(PAPER.kind)}</div><h3>${esc(PAPER.zh)}</h3><p>${esc(PAPER.kind_note)}</p>${tip('本篇未在封面展示未经逐项核对的效果数值。')}</div>`}
+function flow(highlight){return `<div class="flow-line">${stageNames.map((t,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${highlight===i?'active':''}">${esc(t)}<div class="caption">${esc(PAPER.steps[i])}</div></div>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+const notesForStep=i=>PAPER.methodNotes?PAPER.methodNotes[i]:[
+ `输入与目标：${PAPER.question}。先明确数据单位与研究对象：${PAPER.setting}。`,
+ `研究比较：${PAPER.steps[1]}。对照关系决定哪些变化能够归因于研究干预。`,
+ `结果解读：${PAPER.steps[2]}。回到本篇结论：${PAPER.claim}。`
+][i];
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors.split("; ")[0])}${PAPER.authors.includes(";")?" 等":""} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}${PAPER.pdf?' · '+ext(PAPER.pdf,'本地PDF'):''}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿。进度自动保存在当前浏览器。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>${esc(PAPER.question)}</li><li>${esc(PAPER.metrics[0].name)}衡量什么？</li><li>${esc(PAPER.steps[1])}怎样起作用？</li><li>哪些条件会限制结论迁移？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>同一目标下，先对照常见做法与研究启发。</p>${tip('以下为围绕论文方法构造的教学情境。不给示意操作附加实测收益。')}</div><div>${choices(['常见做法','研究启发'],0,'scene')}<div class="answer" id="sceneOut" aria-live="polite"><h3>常见做法</h3><p>${esc(PAPER.before)}</p>${tip('观察这一做法遗漏了什么条件。')}</div></div></div>`;
+ else if(view==='concept')h=`${choices(PAPER.steps,0,'concept')}<div class="columns"><div class="answer" id="conceptOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p></div><div><div class="kicker">本篇要区分的量</div><ul class="fact-list">${PAPER.metrics.map((m,i)=>`<li><button type="button" class="term" data-term="metric${i}">${esc(m.name)}</button><small>${esc(m.plain)}</small></li>`).join('')}</ul></div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(notesForStep(state.step))}</p><div class="only-pro pro-note">${esc(PAPER.setting)}。证据范围：${esc(PAPER.boundary)}。</div></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按论文方法重新组织；箭头表达研究逻辑，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],1,'flow')}<div id="flowOut" aria-live="polite">${flow(1)}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric')h=`<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite"><h3>${esc(PAPER.metrics[state.metric].name)}</h3><p class="only-plain">${esc(PAPER.metrics[state.metric].plain)}</p><div class="only-pro"><p>${esc(PAPER.metrics[state.metric].plain)}</p><div class="x-form">${PAPER.metricPro[state.metric]}</div><div class="pro-note">先核对分母、样本单位、条件与聚合方式。${esc(PAPER.extra)}</div></div></div></div><div><div class="kicker">指标解释的检查次序</div><ul class="fact-list"><li>测量对象<small>${esc(PAPER.setting)}</small></li><li>对应结论<small>${esc(PAPER.findings[0])}</small></li><li>禁止越界<small>${esc(PAPER.boundary)}</small></li></ul></div></div>`;
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 研究设计</div><p class="intro">${esc(PAPER.setting)}</p><div class="callout">${esc(PAPER.boundary)}</div>${tip('研究类型会决定所需对照。综述需要核查纳入条件，理论需要核查假设，实证需要核查比较设计。')}</div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">复验这篇论文前先核对前提 · 对应 §3(a) 口径</div><div class="check-list">${PAPER.checkItems.map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${esc(s)}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'具备复现论文口径的基本要素':'继续补齐口径条件'}</h3><p>四项对应论文的前提：时间窗、集合边界、归一化与口径区分。缺任何一项，算出的权重都无法与原文对表。</p><div class="caption">勾选用于检查方案完整性，不能替代对原文方法节的核对。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button type="button" class="choice" data-action="method" data-value="${i}" aria-pressed="${i===0}">${esc(s)}</button>`).join('')}</div><div class="columns"><div class="answer" id="methodOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p><div class="callout">要检查：${esc(PAPER.findings[0])}。</div></div><div><div class="kicker">保持不变的约束</div><ul class="fact-list"><li>事实与来源可追溯</li><li>指标含义保持一致</li><li>${esc(PAPER.boundary)}</li></ul></div></div>`;
+ else if(view==='lab')h=xiterHtml();
+ else if(view==='numbers')h=numbersHtml();
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);h=`<div class="ev" style="margin-bottom:16px">F${ix+1} · ${src(PAPER.evidence[[1,2,3,3][ix]])} · 证据强度 <span class="${PAPER.strength==='弱'?'str-l':'str-m'}">${esc(PAPER.strength)}</span> ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite"><p>${esc(PAPER.finding_details[ix])}</p><div class="caption">结合本篇研究设计理解这条发现。</div></div></div><div class="x-side"><div class="kicker">如何核查这一发现</div><ul class="fact-list"><li>研究设置<small>1973 年 SCI · 103 种物理期刊 · 特征向量迭代</small></li><li>观察指标<small>${esc(PAPER.metrics[ix%PAPER.metrics.length].name)}：${esc(PAPER.metrics[ix%PAPER.metrics.length].plain)}</small></li><li>迁移约束<small>权重依赖所选期刊集合，跨领域比较不等于质量排序</small></li></ul>${miniHtml(ix)}<button type="button" class="btn" data-go="8" style="margin-top:8px">回到原文证据 →</button></div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes'){h=`<div class="flips">${PAPER.quoteCards.map((c,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(c.f)}</b><span class="flip-back">${esc(c.basis)}<br><b>用法</b>：${esc(c.use)}</span><small>${i<3?'方法核':'边界核'} · 点击翻面</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;}
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function labHtml(v){const a=panel('操作前 · 示意',PAPER.before),b=panel('操作后 · 示意',PAPER.after);return v===2?`<div class="two-docs">${a}${b}</div>`:v===0?a:b;}
+function numbersHtml(){
+ const tabs=[...PAPER.numbers.map(n=>n.name),'数据规模一览','原文表格节选'];
+ return `${choices(tabs,state.num,'number')}<div id="numberOut" aria-live="polite">${numOut(state.num)}</div>`;
+}
+function numOut(v){return v<PAPER.numbers.length?numChart(v):v===PAPER.numbers.length?numTiles():numTable();}
+function numChart(k){
+ const d=PAPER.numbers[k];const max=Math.max(...d.items.map(x=>x.v));
+ const fmt=(v,x)=>v>=1000?v.toLocaleString('en-US'):(x&&x.d?x.d:String(v));
+ return `<div class="kicker">${esc(d.name)} · ${esc(d.unit)} · <span class="src">${esc(d.src)} · PDF p.${d.page}</span></div>`+
+  d.items.map(x=>`<div class="bar-result"><span>${esc(x.n)}</span><div class="bar-track x-btrack">${d.base?`<span class="x-bmark" style="left:${(d.base/max*100).toFixed(1)}%" aria-hidden="true"></span>`:''}<div class="bar-fill ${x.hi?'':'x-dim'}" style="width:${(x.v/max*100).toFixed(1)}%"></div></div><span>${fmt(x.v,x)}</span></div>`).join('')+
+  `<div class="x-legend">${d.base?'<i></i>虚线 = 全集合均值 1（归一化口径）。':''}${esc(d.note)}</div>`;
+}
+function numTiles(){
+ const rows=[['约 400 万','SCI 1973 引用条数','§1 Historical background · PDF p.2'],['40 万','SCI 1973 出版物篇数','§1 Historical background · PDF p.2'],['2300','SCI 1973 覆盖期刊数','§1 Historical background · PDF p.2'],['103','参与计算的物理期刊数','Conclusions · PDF p.16'],['6 次','矩阵平方次数：y 自乘至 64 次幂，三位小数收敛','§3(a) · PDF p.5']];
+ return `<div class="kicker">数据规模与计算量 · 口径见各卡</div><div class="number-grid">${rows.map(x=>`<div class="number-tile"><div class="number">${x[0]}</div><div class="label">${x[1]}</div>${tip(x[2])}</div>`).join('')}</div>`;
+}
+function numTable(){
+ const t=PAPER.table;
+ return `<div class="kicker">${esc(t.label)} · 单位见列头</div><div class="source-text table" lang="en">${esc(t.text)}</div>${src(t)}<div class="x-note">扫描版 OCR 误读单元格已按 Table 2（PDF p.9-10）交叉校正：Ann Physics 权重 1.66、Phys Rev L 篇均引文 11.1、Phys Rev 总影响力 96,307；Phys Rev L 总影响力 34,186 在 Table 2 中印作 34,185，正式引用请核对原版。</div>`;
+}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p>${relatedLink()}${tip('按相关论文摘要转述；沿用该论文的研究范围。')}</div>`;
+ return `<div class="answer"><h3>重新检查研究阶段与目标量</h3><p>${esc(PAPER.compareNote||PAPER.extra)}</p><p>对照阅读时记录：对象是否相同、来源是否已进入候选集、指标能否直接比较。</p>${relatedLink()}${tip('本段为教学推断。两篇论文的数字不宜直接相加。')}</div>`;
+}
+const originalCases={
+ 25:['争议问题是否有充分支持？','论文以阿斯巴甜与癌症关联等争议问题说明证据冲突。','比较真实网页中的事实、论证风格与相关性，观察模型回答变化。','Introduction / 摘要'],
+ 35:['虚构咖啡机目录中的产品如何排序？','论文分别观察很少被推荐与通常位列次选的目标产品。','控制商品目录后比较异常附加文本对首选概率的影响。','摘要 / Figure 1'],
+ 38:['消费商品推荐为何出现排序偏差？','来源正文被放入模型上下文，名称与位置也可能影响输出。','分别控制产品名、内容和位置，再比较推荐排序分布。','摘要 / Figure 1'],
+ 52:['合同的责任限制条款包括哪些内容？','句子级检索可能只取得损害类型，漏掉责任上限与例外。','层次节点保留完整条款，帮助同时回答责任限制和例外。','论文末尾 qualitative example'],
+ 58:['付费关联评测被答案采纳后需披露什么？','引文能够支持产品主张，但付费关联可能改变读者解释。','分别检查关系证据、答案采用、重要性和披露；缺证保持未决。','Introduction'],
+ 63:['背包是否符合短途旅行和工作装备需求？','卖方页面可能掩盖缺陷，让目标背包进入推荐集合。','以用户约束与效用评价结果，比较来源改写和防御前后。','Figure 1 / 摘要'],
+ 84:['四种物理期刊谁的影响力大？','论文取 Phys Rev、Annals of Physics、Phys Rev L、Rev M Phys 四刊放入同一引用矩阵，并排报告影响力权重、篇均影响力与总影响力三个口径。','逐刊检查排序背后的机制：PRL 权重 3.42 最高（被权威刊高频引用且篇均引文最少）；Rev M Phys 篇均影响力 245.8 最高（篇均引文 116.9 条）；Ann Phys 权重略高于 Phys Rev，总影响力却不足其 5%（4,256 对 96,307），差距来自发文量 147 对 3,648。','§3(b) 与 Table 1 · PDF p.7-8']};
+function caseHtml(){const c=originalCases[PAPER.id];return `<div class="kicker">${c?'论文原例的中文转述':'依据方法构造的教学示意，尚未执行效果试验'}</div><p class="intro">${esc(c?c[0]:PAPER.query)}</p><div class="two-docs">${panel('问题与输入',c?c[1]:PAPER.before)}${panel('操作与检查',c?c[2]:PAPER.after)}</div><div class="callout" style="margin-top:16px">对应发现：${esc(PAPER.findings[0])}；${esc(PAPER.findings[2])}。</div>${tip(c?'出处：'+c[3]+'。本页未为案例补造提升幅度。':'原文完整案例请沿原文查看；本页仅解释方法，未将示意写成论文实测案例。')}`;}
+function personaHtml(){const p=PAPER.persona;return `${choices(p.roles,state.role,'role')}<div class="columns"><div><h3>${esc(p.roles[state.role])}</h3><p style="margin-top:12px">为什么适合：${esc(p.why[state.role])}</p><div class="callout warn">避免：${esc(p.warn)}</div></div><div><ul class="fact-list">${p.todos[state.role].map(s=>`<li>${esc(s)}<small>本课应用推断 · 采纳前回看原文与边界页</small></li>`).join('')}</ul></div></div>`;}
+function matureHtml(){return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${PAPER.matureRows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:18px">采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i===0?'来自本篇研究范围与局限解读。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、指标含义、适用条件与证据强弱。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;
+}
+/* paper 84: 递归迭代台与发现迷你图（x- 前缀组件） */
+const xiter={preset:0,m:0,w:[1,1,1],hist:[[1,1,1]],self:null};
+function xmat(){const C=PAPER.iterPresets[xiter.preset].C.map(r=>r.slice());if(xiter.self!=null)C[0][0]=xiter.self;return C;}
+function xS(C){return C.map(r=>r.reduce((a,b)=>a+b,0));}
+function xresetState(){xiter.m=0;xiter.w=[1,1,1];xiter.hist=[[1,1,1]];}
+function xstepOnce(){const C=xmat(),S=xS(C),T=S.reduce((a,b)=>a+b,0),n=3,w2=[];
+ for(let i=0;i<n;i++){let s=0;for(let k=0;k<n;k++)s+=xiter.w[k]*C[k][i];w2.push(s/S[i]);}
+ const norm=w2.reduce((a,x,i)=>a+x*S[i],0)/T;for(let i=0;i<n;i++)w2[i]/=norm;
+ xiter.w=w2;xiter.m++;xiter.hist.push(w2.slice());}
+function xconvAll(){for(let g=0;g<200;g++){const prev=xiter.w.slice();xstepOnce();if(Math.max(...xiter.w.map((x,i)=>Math.abs(x-prev[i])))<1e-6)break;}}
+function xnames(){return PAPER.iterPresets[xiter.preset].names;}
+const nfix=v=>String(Math.round(v*100)/100);
+function xmatHtml(){const C=xmat(),S=xS(C),ns=xnames();
+ return `<table class="x-matrix"><thead><tr><th>给出 ↓ 收到 →</th>${'甲乙丙'.split('').map(c=>`<th>刊${c}</th>`).join('')}<th>目标尺寸 S</th></tr></thead><tbody>${C.map((r,i)=>`<tr><th>${esc(ns[i].slice(0,2))}</th>${r.map((v,j)=>`<td class="${i===j?'diag':''}">${nfix(v)}</td>`).join('')}<td class="x-scol">${nfix(S[i])}</td></tr>`).join('')}</tbody></table>`;}
+function xweightsHtml(){const C=xmat(),S=xS(C),ns=xnames(),w=xiter.w;
+ const wmax=Math.max(...w,1.3)*1.1;
+ const d=xiter.m>0?Math.max(...w.map((x,i)=>Math.abs(x-xiter.hist[xiter.hist.length-2][i]))):0;
+ const conv=xiter.m>0&&d<0.001;
+ return w.map((x,i)=>`<div class="x-wrow"><span class="x-name">${esc(ns[i])}<small>目标尺寸 S=${nfix(S[i])}</small></span><div class="x-wbar"><div class="x-wfill" style="width:${(x/wmax*100).toFixed(1)}%"></div><span class="x-bmark" style="left:${(1/wmax*100).toFixed(1)}%" aria-hidden="true"></span></div><span class="x-wval">${x.toFixed(3)}</span></div>`).join('')+
+ `<div class="x-delta">${xiter.m===0?'第 0 步 · 等权初值 w = (1, 1, 1)，每条引用尚未按来源分量计票':`第 ${xiter.m} 步迭代 · 最大变化 Δ = ${d.toFixed(4)}${conv?' <b>· 已收敛（三位小数）</b>':' · 继续迭代'}`}</div>`;}
+function xiterHtml(){
+ const p=PAPER.iterPresets[xiter.preset],C=xmat();
+ return `<div class="x-iter"><div><div class="grp-t">三刊引用矩阵（行 = 引用方 · 列 = 被引方 · 千条/年 · 教学示意）</div><div id="xmatrix">${xmatHtml()}</div><div class="choice-row" style="margin-top:10px">${PAPER.iterPresets.map((q,i)=>`<button type="button" class="choice" data-action="xmat" data-value="${i}" aria-pressed="${i===xiter.preset}">${esc(q.name)}</button>`).join('')}</div><div class="x-note">${esc(p.note)}</div><div class="x-slider"><label for="xself">刊甲自引 C₁₁（千条/年）：<b id="xselfv">${C[0][0]}</b></label><input id="xself" class="x-range" type="range" min="0" max="60" step="0.2" value="${C[0][0]}" aria-label="调整刊甲的自引数量，观察其权重向 1 靠拢"></div></div><div><div class="grp-t">影响力权重（每步按规模加权均值 1 归一化）</div><div id="xweights" aria-live="polite">${xweightsHtml()}</div><div class="x-ctl"><button type="button" class="btn primary" data-action="xstep">迭代一步 →</button><button type="button" class="btn" data-action="xconv">直接收敛</button><button type="button" class="btn" data-action="xreset">重置为等权</button></div><div class="x-note">操作前 = 等权起点（人人权重相同）；操作后 = 递归加权收敛值。${esc(p.expect)}。虚线 = 均值 1。</div><div class="only-pro"><div class="x-form">w_i = (1/S_i)·Σ_k w_k·C_ki，S_i = Σ_j C_ij；y_ki = C_ki/S_i，w 为 y 的左特征向量（λ = 1）。迭代 m 步 = w⁰·y^m；论文以矩阵平方加速：6 次平方 = y^64，通常收敛到三位小数（PDF p.4-5）。</div></div></div></div>`;
+}
+function xiterRender(){const box=$('#lesson11');if(box)box.innerHTML=xiterHtml();}
+function miniHtml(ix){
+ if(ix===0)return `<div class="x-mini"><div class="grp-t">两刊算例 · 权重比只看互引（§3(a) 2×2 分析 · PDF p.5-6）</div><div class="x-mrow"><span>乙 → 甲</span><div class="x-mbar"><i style="width:100%"></i></div><b>60 条</b></div><div class="x-mrow"><span>甲 → 乙</span><div class="x-mbar"><i class="dim" style="width:33.3%"></i></div><b>20 条</b></div><div class="x-chiprow"><span class="x-chip hot">w甲 : w乙 = C21 : C12 = 3 : 1</span><span class="x-chip">自引不改变比值</span></div><div class="x-note">等权计票只能数出 60 对 20 的票差，给不出这一按分量加权的比例。</div></div>`;
+ if(ix===1)return `<div class="x-mini"><div class="grp-t">刊乙权重的收敛轨迹（第 11 页基准矩阵 · 示意）</div><div class="x-trace">${[1.000,1.970,2.032,2.027,2.026,2.026].map(v=>`<span>${v.toFixed(3)}</span>`).join('<em>→</em>')}</div><div class="x-note">步间最大变化 Δ：0.970 → 0.445 → 0.049 → 0.001 → 0.000，四步内收敛到三位小数。论文以矩阵平方加速：6 次平方 = y 的 64 次幂（PDF p.5）。</div></div>`;
+ if(ix===2){const it=[['Phys Rev',18.6],['Phys Rev L',11.1],['Rev M Phys',116.9]];
+  return `<div class="x-mini"><div class="grp-t">篇均引文数 · 篇幅效应（Table 1 · PDF p.8）</div>${it.map((x,i)=>`<div class="x-mrow"><span>${x[0]}</span><div class="x-mbar"><i class="${i===2?'':'dim'}" style="width:${(x[1]/116.9*100).toFixed(1)}%"></i></div><b>${x[1]}</b></div>`).join('')}<div class="x-note">篇均引文 116.9 条推高篇均影响力至 245.8（四刊第一）；年发文 18 篇把总影响力压到 4,424。</div></div>`;}
+ return `<div class="x-mini"><div class="grp-t">期望 vs 实际 · 化学物理的权重排序（§3(c) · PDF p.8-9）</div><div class="x-flow2"><div class="exp">信息流直觉：物理 → 化学物理 → 化学，权重应居两者之间</div><div class="act">实际权重：<b>化学物理分组高于物理与化学</b>（论文定性结论，未给出三组数值）</div><div>解释：化学物理由大型期刊 JCP 主导；物理、化学集合由大量参差期刊组成</div></div><div class="x-note">权重是集合的函数：换分组方式，读数随之改变。</div></div>`;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','concept','method','flow','lab','compare','numberless','proof','number','metric','limit'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene')$('#sceneOut').innerHTML=`<h3>${v?'研究启发':'常见做法'}</h3><p>${esc(v?PAPER.after:PAPER.before)}</p>${tip(v?'本课应用推断。需要在目标场景中验证。':'教学示意，尚未进行实际效果测量。')}`;
+ else if(a==='concept')$('#conceptOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p>`;
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flow(v);
+ else if(a==='metric'){state.metric=v;const m=PAPER.metrics[v];$('#metricOut').innerHTML=`<h3>${esc(m.name)}</h3><p>${esc(m.plain)}</p><div class="only-pro pro-note">${esc(PAPER.extra)}</div>`;}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='method')$('#methodOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p><div class="callout">核对发现：${esc(PAPER.findings[v])}。</div>`;
+ else if(a==='lab')$('#labOut').innerHTML=labHtml(v);
+ else if(a==='numberless')$('#numberlessOut').textContent=v?PAPER.boundary:PAPER.setting;
+ else if(a==='number'){state.num=v;$('#numberOut').innerHTML=numOut(v);}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);$('#findingOut'+ix).innerHTML=`<p>${esc(v===0?PAPER.finding_details[ix]:v===1?'应用推断：'+PAPER.steps[ix%PAPER.steps.length]+'，并以'+PAPER.metrics[ix%PAPER.metrics.length].name+'检验。':PAPER.boundary)}</p>${tip(v===1?'行动建议属于教学推断。':v===2?PAPER.extra:'需要连同研究设计解读，勿省略条件。')}`;}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(PAPER.findings.map(t=>t+'。').join('\n')+'\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ else if(a==='xmat'){xiter.preset=v;xiter.self=null;xresetState();xiterRender();}
+ else if(a==='xstep'){xstepOnce();xiterRender();}
+ else if(a==='xconv'){xconvAll();xiterRender();}
+ else if(a==='xreset'){xresetState();xiterRender();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+// paper 84: 自引滑杆实时重算（不重建滑杆本身，避免拖动中断）
+document.addEventListener('input',e=>{
+ if(!e.target.closest||!e.target.closest('#xself'))return;
+ xiter.self=parseFloat(e.target.value);xresetState();
+ const C=xmat(),S=xS(C),m=$('#xmatrix'),w=$('#xweights'),sv=$('#xselfv');
+ if(m)m.innerHTML=xmatHtml();
+ if(w)w.innerHTML=xweightsHtml();
+ if(sv)sv.textContent=C[0][0];
+});
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

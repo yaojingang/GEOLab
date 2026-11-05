@@ -1,0 +1,695 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>搜索与推理解耦 · 论文课堂</title><meta name="description" content="DSG将搜索作为可调接口，能降低部分任务成本，时效任务仍可能由原生搜索占优"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="2606.18947v1"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+/* 本课程专用组件：x- 前缀（对照条、架构对比台、案例卡） */
+.x-prow{display:grid;grid-template-columns:104px 1fr 74px;gap:8px;align-items:center;margin:5px 0;font-size:12.5px}
+.x-pl{color:var(--ink-2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11.5px}
+.x-ptrack{height:16px;background:var(--tint);border-radius:3px;overflow:hidden}
+.x-pfill{height:100%;border-radius:3px}
+.x-f0{background:var(--line-2)}.x-f1{background:var(--c3)}.x-f2{background:var(--accent)}
+.x-pv{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.x-ncmp{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+.x-ncmp .cap{margin-top:6px}
+.x-btable{border:1px solid var(--line);border-radius:12px;padding:8px 14px;background:#fff}
+.x-bline{display:grid;grid-template-columns:118px 1fr 1fr;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.x-bline:last-of-type{border-bottom:0}
+.x-bname{color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.x-bcell{display:flex;align-items:center;gap:8px;min-width:0}
+.x-btrack{flex:1;height:14px;background:var(--tint);border-radius:3px;overflow:hidden}
+.x-bval{font-family:var(--mono);font-size:11px;color:var(--ink-2);width:78px;flex:none;text-align:right;white-space:nowrap}
+.x-blegend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:11px;color:var(--ink-3)}
+.x-case{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.x-cdoc{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}
+.x-cdoc .x-cq{font-family:var(--serif);font-size:15px;color:var(--ink);margin:6px 0 10px;line-height:1.7}
+@media(max-width:900px){.x-bline{grid-template-columns:1fr;gap:4px}.x-case{grid-template-columns:1fr}.x-prow{grid-template-columns:84px 1fr 68px}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 08 AI搜索架构与AgenticSearch</div>
+    <h1>搜索与推理解耦</h1>
+    <div class="en">2026 · 系统方法</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">搜索与推理解耦</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">DSG 将搜索作为可调接口，能降低部分任务成本，时效任务仍可能由原生搜索占优<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">开场先给结论的完整形态：解耦搜索在控制类任务上省钱省时延，时效任务仍可能由原生搜索占优。右侧四个数字都带出处，请提示学员到第 12 页核对口径。提醒：91% 与 99.4% 各有适用条件，后面逐页拆开讲。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">沿着问题与证据完成这门课</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">先读结论，再拆原理、指标、方法、发现和应用。<span class="src">课程结构</span></div></div><div class="notes">这一页把课的主线走一遍：问题场景从电商问答成本失控说起，原理拆三层，测量核对三个口径，方法章有本课的招牌交互——架构对比台。建议学员先读完发现章的四个标题，再决定深入哪几页。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">怎样同时控制检索成本、时延和回答契约</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">耦合的原生搜索把提供方、成本与输出行为都藏进模型接口<span class="src">§1 · PDF p.1</span></div></div><div class="notes">用切换按钮对比两种接法：耦合接法省事，但提供方选择、检索深度、缓存都被藏进模型接口；解耦接法把这些变成配置项。强调论文动机：换模型或换提供方时，耦合接法要重接检索，账单与时延都是黑箱。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">研究对象需要先拆开再比较</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">搜索被拆成三层：提供方路由、缓存与渲染、可替换推理模型<span class="src">§4 · Figure 3 · PDF p.5</span></div></div><div class="notes">三个步骤按钮对应 DSG 的三层。第一层是提供方注册表与回退链；第二层是精确加语义缓存、带来源 URL 的结构化渲染；第三层强调推理模型可替换，五个前沿模型接同一接口。右侧三个指标卡是全课的读数骨架。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">方法沿着这些环节产生作用</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">请求先查精确缓存，再查语义缓存，最后沿回退链调提供方<span class="src">§4.3 · Algorithm 1</span></div></div><div class="notes">步进器按论文 Algorithm 1 的顺序走：规范化查询、查精确缓存、查语义缓存、沿回退链执行搜索并写回缓存。专业层给出网关决策式，τ 是可配置的语义匹配阈值。提醒：缓存键按提供方隔离，避免串用结果。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">明确干预环节才能解释效果</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">干预的是接口边界；缓存命中依赖查询分布，成本收益不能直接外推<span class="src">Limitations · PDF p.7</span></div></div><div class="notes">这一页定位论文的干预环节：改的是搜索与推理之间的接口，不动推理模型本身。右侧两卡给出结论的支持范围与边界。顺带讲四个部署挑战：供应商锁定、时延黑箱、成本固定、指令遵循退化。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">指标分别回答不同的效果问题</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">三类读数：任务准确率、每千次搜索成本、端到端时延<span class="src">§5 · PDF p.6</span></div></div><div class="notes">切换三个指标：通俗层记口径，专业层记分母与例外。准确率的评判方式按任务不同（GPT-4.1 评判或 EM/F1）；成本只算提供方搜索费，不含推理费。请学员思考：论文为何把契约合规单独报告。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">实验设置限定结论的适用范围</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">五个前沿模型 × 三个公开基准 + 生产 QIU 负载<span class="src">§5 · 附录 A</span></div></div><div class="notes">右栏可切换三段原文证据。样本量标签要读出来：SimpleQA 1,000、FreshQA 500、HotpotQA 1,000、QIU Retail 7,988、Tail 合成 2,335。成本是评估期定价，这是局限页的伏笔。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">保持对照一致才能解释变化</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">复验时要锁住任务、样本、评判与成本口径<span class="src">本课推断</span></div></div><div class="notes">四项检查对应论文的对照设计：同一批查询、含无搜索与原生搜索双基线、记录提供方与定价时点、把格式合规与准确率分开报告。勾选只帮助检查方案完整性，不能证明因果识别成立。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">方法的每一步都有独立作用</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">每个环节都能单独替换与测量，这就是解耦的收益来源<span class="src">§4 · PDF p.4</span></div></div><div class="notes">三个步骤对应三个可独立替换的组件。左侧按钮切换环节，右侧约束清单来自论文设计：缓存键按提供方隔离、缓存条目带按域 TTL、工具结果保留标题与 URL。请学员想想哪一步在自己的系统里最先值得改。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">比较改动前后可以看清操作</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">同一任务切换架构：解耦接口用更低成本逼近原生精度<span class="src">Table 1 · PDF p.6</span></div></div><div class="notes">招牌交互：切换五类任务，比较无搜索、原生搜索与两个 DSG 提供方点的精度和成本。请学员先猜哪个任务上原生仍领先，再切到 FreshQA 验证。专业层附 SimpleQA 的自助区间：两条区间重叠，差距在不确定范围内。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">数字需要连同口径一起读取</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">每个数字都带对照与口径：成本不含推理费，命中率分冷热<span class="src">Table 1 · Table 7</span></div></div><div class="notes">六个读数各配一对对照条：精度对原生、成本对原生、命中率对冷路径、时延对冷路径。重点讲两条口径：成本是每千次查询的提供方搜索费；99.4% 是重放实验，生产 QIU 命中 1.15%–26.77%。最后一档切到原文表格核对。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">搜索接口可以独立优化</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">提供方、深度、缓存、回退都变成配置项，模型可替换<span class="src">§4 · Figure 3</span></div></div><div class="notes">发现 1 是机制性的：DSG 把五类控制暴露在网关层，异构提供方输出被规范成带标题与 URL 的结构化工具结果。右侧控件清单对应论文 §4 的小节。请学员对照自己的系统：这些控制现在藏在哪里。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">缓存和检索深度影响成本</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">热路径命中 99.4%、时延降 68%；收益取决于查询复用<span class="src">Figure 4 · Table 7</span></div></div><div class="notes">发现 2 有两组实测：重放实验里热路径命中率 99.4%、时延从 4,570 ms 降到 1,465 ms；检索深度 2 到 4–6 条时准确率快速上升、6–10 条饱和。务必同时讲边界：生产 QIU 命中率只有 1.15%–26.77%。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">原生搜索在新鲜度任务有优势</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">FreshQA 上原生搜索五个模型全部领先（72.6% 对 68.0%）<span class="src">Table 1 · PDF p.6</span></div></div><div class="notes">发现 3 是论文的诚实之处：时效敏感任务上原生搜索仍然领先，作者把原因指向专有索引新鲜度。解耦的价值在于把原生搜索也变成同一接口里的一个可选提供方。右侧条形图是五个模型的均值。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">输出约束与准确率需同时比较</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">答案对了也可能没用：原生搜索 78.1% 预测以解释文开头<span class="src">Table 8 · Figure 2</span></div></div><div class="notes">发现 4 引出 Search-Induced Verbosity：正确答案包进散文，精确匹配和下游解析都失败，中位长度 353 字符对 13 字符。强调论文把它定性为部署风险诊断，与主表准确率分开报告。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">相关研究帮助检验迁移边界</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">与 DivInit 对照：一个改查询多样性，一个改接口边界<span class="src">本课推断 · 相关论文摘要</span></div></div><div class="notes">相关研究页把 DSG 与 DivInit 放在同一张桌上：DivInit 改进多跳检索的首轮查询种子，DSG 改进检索与推理之间的接口。两个数字来自不同任务与口径，不能相加，只能对照着找自己系统的缺口。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">把方法还原为一次具体操作</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">论文原例：正确答案 Gulangyu 因包裹解释文而精确匹配失败<span class="src">Table 9 · PDF p.15</span></div></div><div class="notes">案例是论文 Table 9 的原例：Gemini 2.5 Flash 开原生搜索后，把 Gulangyu 写成带面积的解释句，精确匹配失败；无搜索输出是干净的答案实体。请学员数一数两段输出的长度，体会契约破坏怎么发生。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">不同角色需要不同的执行清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">三类角色各拿一份清单；先小流量复测再扩大<span class="src">本课应用推断</span></div></div><div class="notes">角色页给三类人的第一步：业务负责人先划出哪些查询必须走搜索；技术人员配置网关的缓存与回退；审核人员核对口径与负向指标。清单是本课推断，每条都要用对照试验确认后再上线。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态可以承接研究方法</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">检索运行追踪、技术基准卡、系统变更记录承接论文方法<span class="src">本课推断 · §4.3</span></div></div><div class="notes">成熟形态对照把论文的遥测设计映射到日常工作物：每请求记录提供方、深度、缓存结果、时延与成本；基准卡按 Table 1 的口径写；提供方或定价变化时重测边界。对应关系是本课推断。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">结论的边界决定应用的尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">六条边界：查询分布、第三方定价、多跳、评判偏差等<span class="src">Limitations · PDF p.7</span></div></div><div class="notes">局限页按影响排序，前两条最重：缓存收益依赖查询分布，第三方定价与行为会变。评判偏差一条给出 3 评委一致率 97.78% 的细节。请学员选一条，说说它会如何改变自己业务里的结论。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">六张卡都可离开上下文成立，背面附依据与用法<span class="src">本课提炼</span></div></div><div class="notes">金句页做总结：三句给结论，三句给条件。翻面看依据与用法，复制按钮会带上论文出处与边界。建议学员挑一张贴进自己的评审模板。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">五题覆盖结论、反常发现、口径、边界与局限<span class="src">全课</span></div></div><div class="notes">自测五题对应核心结论、Search-Induced Verbosity、成本口径、缓存边界与多跳局限，答错会跳到对应复习页。全对的话，回第 11 页把架构对比台再过一遍，检验能否预测每个任务的结果。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>Decoupling Search from Reasoning: A Vendor-Agnostic Grounding Architecture for LLM Agents</p><p>2026 · 2606.18947v1</p><p><a href="https://arxiv.org/pdf/2606.18947" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper46,
+  author = {Emmanuel Aboah Boateng and Kyle MacDonald and Amardeep Kumar and Siddharth Kodwani and Sudeep Das},
+  title = {Decoupling Search from Reasoning: A Vendor-Agnostic Grounding Architecture for LLM Agents},
+  year = {2026},
+  url = {https://arxiv.org/pdf/2606.18947}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：6b03f9b467a19567ef7516e9b7cf6e18d066672c2f7460304ad61d02548df36d</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={"id": 46, "zh": "搜索与推理解耦", "kind": "系统方法", "question": "怎样同时控制检索成本、时延和回答契约？", "claim": "DSG将搜索作为可调接口，能降低部分任务成本，时效任务仍可能由原生搜索占优", "steps": ["路由外部搜索", "缓存并组织来源证据", "交给可替换推理模型"], "findings": ["搜索接口可以独立优化", "缓存和检索深度影响成本", "原生搜索在新鲜度任务有优势", "输出约束与准确率需同时比较"], "metrics": [{"name": "准确率", "plain": "回答命中标准答案的比例", "pro": "SimpleQA 与 FreshQA 用 GPT-4.1 评判（3 评委一致率 97.78%），HotpotQA 用确定性 EM/F1，QIU 按最终解析意图计分。", "src": "§5 · 附录 G.3"}, {"name": "搜索成本", "plain": "检索服务费用", "pro": "提供方搜索成本按每 1,000 次查询计价（$/1K），不含模型推理成本；反映评估期定价，会随时间变化。", "src": "§5 · Limitations"}, {"name": "时延", "plain": "端到端等待时间", "pro": "基准测试时延，报告中位数与 P95；重放实验热路径 1,465 ms 对冷路径 4,570 ms。", "src": "§5 · Table 7"}], "setting": "五个前沿模型（GPT-4o、GPT-4o-mini、Gemini 2.5 Flash、Gemini 2.5 Pro、Claude Sonnet 4）加上 SimpleQA、FreshQA、HotpotQA 与生产电商 QIU 负载", "boundary": "缓存命中依赖查询分布，成本收益不能直接外推到低复用场景", "query": "问答系统为何更换模型后搜索成本剧增？", "before": "用模型供应商的原生搜索：一行代码接好，但提供方、检索深度、缓存与输出行为都不可配置，换模型就要重接检索，账单与时延是黑箱", "after": "让检索经过独立的 MCP 网关：提供方路由、检索深度、精确与语义缓存、回退链都成为配置项，再按任务实测质量、成本与时延", "finding_details": ["把检索从推理模型中拆出后，提供方路由、检索深度、回退链与精确加语义缓存都成为配置项；异构提供方输出被规范成带标题与 URL 的结构化工具结果，推理模型保持可替换。", "重复查询热路径缓存命中 99.4%，时延从 4,570 ms 降到 1,465 ms；检索深度从 2 提到 4–6 条结果时准确率快速上升、6–10 条后饱和。收益取决于查询复用：生产 QIU 缓存命中仅 1.15%–26.77%。", "时效敏感的 FreshQA 上原生搜索在全部五个模型领先（均值 72.6% 对 DSG+BrightData 68.0%），与专有索引的新鲜度优势一致；论文的处置是把原生搜索保留为同一接口内的可选提供方。", "Claude Sonnet 4 开原生搜索时 78.1% 的 HotpotQA 预测以 Based on the search results 开头，正确答案包进解释文仍会破坏精确匹配与下游解析；DSG 保持结构化工具输出，中位长度 13 字符。"], "catalog_title": "Decoupling Search from Reasoning: A Vendor-Agnostic Grounding Architecture for LLM Agents", "title": "Decoupling Search from Reasoning: A Vendor-Agnostic Grounding Architecture for LLM Agents", "authors": "Emmanuel Aboah Boateng; Kyle MacDonald; Amardeep Kumar; Siddharth Kodwani; Sudeep Das", "year": "2026", "category": "08_AI搜索架构与AgenticSearch", "url": "https://arxiv.org/pdf/2606.18947", "file": "08_AI搜索架构与AgenticSearch_Decoupled_Search_Grounding_LLM_Agents.html", "pdf": "../08_AI搜索架构与AgenticSearch/08_AI搜索架构与AgenticSearch_Decoupled_Search_Grounding_LLM_Agents.pdf", "kind_note": "基于受测环境，迁移效果需要另测", "extra": "保持论文的任务、来源范围和评估口径，再检验新场景。", "evidence": [{"label": "摘要与研究目标", "text": "arXiv:2606.18947v1 [cs.AI] 17 Jun 2026 Production LLM agents increasingly depend on real-time search, yet native search grounding bundles retrieval policy, provider choice, evidence injection, cost, latency, and generation behavior behind a single model-provider boundary. This coupling makes grounding hard to inspect, tune, reuse, or port, and can trigger Search-Induced Verbosity that breaks strict output contracts. We present Decoupled Search Grounding (DSG), a vendor-agnostic boundary that moves grounding outside the reasoning model through an MCP-compatible gateway, exposing provider routing, source-aware context rendering, configured fallback, retrievaldepth control, and exact plus semantic caching as first-class controls. Across five frontier models on SimpleQA, FreshQA, and HotpotQA, native search leads on recency-sensitive FreshQA, but DSG exposes a stronger frontier when control matters: on SimpleQA it nearly matches native accuracy (86.1% vs. 87.7%) at 91% lower search cost, preserves concise answer contracts, and reaches a 99.4% warm-cache hit rate with 68% lower latency. Deployed as a shared production grounding layer for large-scale agentic workloads with interchangeable models, DSG matches or slightly exceeds native-search accuracy on an e-commerce query-understanding (QIU) workload while cutting search cost by over 98%. Real-time grounding is best treated as an", "page": 1}, {"label": "讨论与研究边界", "text": "We argue that real-time grounding for LLM agents should be an optimizable systems boundary that teams control directly. By separating retrieval from reasoning, DSG keeps the reasoning model interchangeable while exposing provider policy, sourceaware rendering, retrieval-depth tuning, fallback, and warm-cache reuse as explicit controls. Across five frontier models and a production workload, it approaches native-search accuracy on public QA, matches or slightly exceeds it in deployment at far lower cost, and holds strict output contracts where native search drifts into prose. The most consequential open problem we surface is Search-Induced Verbosity, where a correct answer wrapped in prose still breaks downstream parsers; future work should measure it across models with provider-side telemetry, add contract-aware validators at the boundary, and learn adaptive routing, retrieval depth, and multi-hop strategies over the same interface. Limitations While our DSG architecture demonstrates", "page": 7}, {"label": "输出契约诊断", "text": "Example: Prompt-Compliance Failure. Instruction: “Provide ONLY the final answer entity.” Question: “Is the building at 200 West Street taller than 888 7th Avenue?” Native search output: “Based on the search results, I can compare the heights of both buildings: 200 West Street is 749 feet tall... while 888 7th Avenue is 628 feet tall...” (245 chars). DSG output: “Yes” (3 chars).", "page": 3}], "table": {"text": "Table 1   Main results: accuracy / search cost per 1K queries\nTask              | Scope        | No Search  | Native         | DSG+BrightData | DSG+Serper\nSimpleQA          | 5-model mean | 30.8 / $0  | 87.7 / $20.00  | 86.1 / $1.80   | 83.3 / $0.67\nFreshQA           | 5-model mean | 56.4 / $0  | 72.6 / $20.00  | 68.0 / $1.86   | 67.3 / $0.66\nQIU Retail        | Gemini Flash | 91.10 / $0 | 93.40 / $7.90  | 93.81 / $0.238 | 93.90 / $0.110\nQIU Tail (Synth.) | Gemini Flash | 83.08 / $0 | 87.62 / $10.37 | 86.61 / $0.386 | 87.79 / $0.146", "page": 6, "label": "Table 1 表值转写"}, "version": "2606.18947v1", "sha256": "6b03f9b467a19567ef7516e9b7cf6e18d066672c2f7460304ad61d02548df36d", "stats": [{"v": "86.1%", "name": "DSG 的 SimpleQA 准确率", "source": "Table 1", "page": 6, "context": "五个模型均值；原生搜索为 87.7%。同基准不同方案：DSG+BrightData 每千次搜索成本 $1.80，原生 $20.00。", "cmp": [["DSG+BrightData", "86.1%", 86.1, 2], ["原生搜索", "87.7%", 87.7, 1]], "cmpMax": 100, "cmpLabel": "100%"}, {"v": "87.7%", "name": "原生 SimpleQA 准确率", "source": "Table 1 · Table 6", "page": 6, "context": "五个模型均值；95% 自助区间 [86.82, 88.64]，与 DSG+BrightData 的 [85.18, 87.06] 重叠，精度差距在不确定范围内。", "cmp": [["原生搜索", "87.7%", 87.7, 1], ["DSG+BrightData", "86.1%", 86.1, 2]], "cmpMax": 100, "cmpLabel": "100%"}, {"v": "91%", "name": "SimpleQA 搜索成本降幅", "source": "摘要 · Table 1", "page": 1, "context": "每千次查询的提供方搜索成本从 $20.00（原生）降到 $1.80（DSG+BrightData），约 11 倍差距；口径不含模型推理费。", "cmp": [["原生搜索", "$20.00", 20, 1], ["DSG+BrightData", "$1.80", 1.8, 2]], "cmpMax": 20, "cmpLabel": "$20/1K"}, {"v": "99.4%", "name": "热缓存命中率", "source": "Table 7", "page": 11, "context": "GPT-4o 加 DSG+BrightData 在 SimpleQA 500 题重复查询重放的热路径；冷路径命中 6.2%。生产 QIU 负载命中 1.15%–26.77%，重放值不能当作生产值。", "cmp": [["热路径", "99.4%", 99.4, 2], ["冷路径", "6.2%", 6.2, 0]], "cmpMax": 100, "cmpLabel": "100%"}, {"v": "1,465 ms", "name": "热缓存时延", "source": "Table 7 · Figure 4", "page": 11, "context": "重放实验平均时延从冷路径 4,570 ms 降到 1,465 ms（降 68%）；边际搜索成本从 $0.7385 降到 $0.0045。", "cmp": [["热路径", "1,465 ms", 1465, 2], ["冷路径", "4,570 ms", 4570, 0]], "cmpMax": 4570, "cmpLabel": "4,570 ms"}, {"v": "78.1%", "name": "原生搜索格式漂移", "source": "Table 8 · Figure 2", "page": 13, "context": "Claude Sonnet 4 在 HotpotQA 上以 Based on the search results 开头的预测占比；DSG 与无搜索均为 0%，中位长度 353 字符对 13 字符。", "cmp": [["原生搜索", "78.1%", 78.1, 1], ["DSG", "0%", 0, 2]], "cmpMax": 100, "cmpLabel": "100%"}], "related": {"id": 47, "zh": "并行搜索先做查询去重", "title": "Beyond Parallel Sampling: Diverse Query Initialization for Agentic Search", "url": "./08_AI搜索架构与AgenticSearch_Diverse_Query_Initialization_Agentic_Search.html", "pdf": "../08_AI搜索架构与AgenticSearch/08_AI搜索架构与AgenticSearch_Diverse_Query_Initialization_Agentic_Search.pdf", "claim": "DivInit通过多样化首轮查询种子，在相同计算预算下改善多跳检索"}, "strength": "中", "strength_why": "本课保守评级：跨五模型与生产负载有实证比较，SimpleQA 披露自助区间与 3 评委一致率；缓存与成本收益依赖查询分布和评估期定价。", "limitations": [["高", "缓存收益依赖查询分布", "99.4% 命中率来自 SimpleQA 500 题重复查询重放（Table 7）；生产 QIU 负载命中 1.15%–26.77%（Table 5）。低复用场景的成本收益需另行实测。"], ["高", "第三方提供方定价与行为会变", "架构依赖 Serper、BrightData 等外部 API；价格、限流或索引行为变化都会移动成本—精度前沿，文中成本反映评估期定价。"], ["中", "多跳任务增益有限", "HotpotQA 上搜索增强（原生或 DSG）只带来有限且依赖模型的增益；作者假设复杂多跳需要迭代检索、规划与反思的更紧循环。"], ["中", "自动评判可能有偏差", "SimpleQA 与 FreshQA 用 GPT-4.1 单评委；3 评委一致率 97.78%，多数票比单评委高 1.15 个百分点，人工评估仍是金标准。"], ["中", "相关研究提供新的对照", "DivInit 通过多样化首轮查询种子，在相同计算预算下改善多跳检索；与 DSG 的接口边界是两个正交环节。"], ["低", "原文版本与内部一致性", "采用本地 PDF 可识别版本 2606.18947v1；未逐表重算的指标仍需人工复核，图上读数以表格数值为准。"]], "quiz": [{"q": "按论文实测，哪类任务上原生搜索在全部五个模型保持领先？", "o": ["SimpleQA（单跳事实问答）", "FreshQA（时效敏感问答）", "HotpotQA（多跳问答）", "QIU Retail（生产意图分类）"], "a": 1, "e": "FreshQA 五模型均值 72.6%，DSG+BrightData 为 68.0%，原生全部领先，作者归因于专有索引新鲜度；SimpleQA 上原生仅微弱领先且自助区间重叠。", "p": 15}, {"q": "论文提出的 Search-Induced Verbosity 指什么？", "o": ["检索结果太长，导致回答出现幻觉", "开了原生搜索后，即使提示词只要求答案实体，模型也输出解释文，正确答案因包裹散文而无法通过精确匹配", "检索深度过大导致上下文窗口溢出", "语义缓存过期导致答案过时"], "a": 1, "e": "Table 8：Claude Sonnet 4 开原生搜索时 78.1% 的预测以 Based on the search results 开头，精确匹配失败里 62.3% 其实含有正确答案；DSG 中位长度保持 13 字符。", "p": 16}, {"q": "论文的「搜索成本」按什么口径统计？", "o": ["每千次查询的提供方搜索费用，不含模型推理成本", "每次问答的端到端 API 账单，含推理与检索", "每月订阅费除以查询量的均值", "检索结果的标注与人工审核费用"], "a": 0, "e": "§5 明确：成本为提供方搜索成本每 1,000 次查询，不含模型推理成本，且反映评估期定价。", "p": 7}, {"q": "99.4% 的热缓存命中率能直接推广到所有业务吗？", "o": ["能，缓存命中只取决于技术实现", "能，生产 QIU 负载也达到了同样水平", "不能，它来自重复查询重放实验；生产 QIU 缓存命中 1.15%–26.77%，收益取决于查询复用程度", "不能，因为语义缓存在生产环境不可用"], "a": 2, "e": "Table 7 的 99.4% 是 GPT-4o 加 DSG+BrightData 在 SimpleQA 500 题上的重放实验；Table 5 生产 QIU 命中 1.15%–26.77%。查询分布决定收益。", "p": 14}, {"q": "关于多跳任务，论文承认了哪条局限？", "o": ["HotpotQA 上无论原生还是 DSG，搜索带来的增益都有限，复杂多跳可能需要迭代检索与规划", "多跳任务完全无法使用外部搜索", "多跳任务上 DSG 全面显著优于原生搜索", "多跳任务样本太少，论文没有报告结果"], "a": 0, "e": "HotpotQA（N=1,000）上搜索增强只有有限且依赖模型的增益；作者假设复杂多跳需要迭代检索、规划与反思机制。", "p": 21}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{geo:{t:"GEO",d:"改善来源在生成式答案中的可见性及归功的研究与实践。"},rag:{t:"RAG",d:"先检索外部资料，再以资料支持模型生成。"},baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},ablation:{t:"消融",d:"去除某个组件，比较它对整体结果的贡献。"},transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"},mcp:{t:"MCP 网关",d:"连接模型与工具的协议层；DSG 用它把搜索暴露成结构化工具接口。"},cache:{t:"语义缓存",d:"按查询相似度复用先前检索结果的缓存，相似度达到阈值即命中。"},siv:{t:"Search-Induced Verbosity",d:"原生搜索诱发的输出漂移：答案被包进解释文，破坏精确匹配与下游解析。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=e=>`<span class="src">${esc(e.label)} · PDF p.${e.page}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const researchOnly=['理论框架','综述'].includes(PAPER.kind);
+const stageNames=['问题与候选资料','研究干预与比较','答案或评价结果'];
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,num:0,lim:0,role:0,proof:0,q:0,xtask:0,answers:[],checks:new Set(),flips:new Set()};
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function dataNumbers(){return PAPER.stats.length?`<div class="number-grid">${PAPER.stats.slice(0,4).map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div>${tip(s.source)}</div>`).join('')}</div>`:`<div class="answer"><div class="kicker">证据类型 · ${esc(PAPER.kind)}</div><h3>${esc(PAPER.zh)}</h3><p>${esc(PAPER.kind_note)}</p>${tip('本篇未在封面展示未经逐项核对的效果数值。')}</div>`}
+function flow(highlight){return `<div class="flow-line">${stageNames.map((t,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${highlight===i?'active':''}">${esc(t)}<div class="caption">${esc(PAPER.steps[i])}</div></div>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+const notesForStep=i=>[
+ `提供方注册表统一接入 Serper、BrightData、Firecrawl、Exa 等，可用 YAML 适配器定义接口与成本元数据；超时或报错时沿配置的回退链前进，不中断推理模型的上下文。`,
+ `网关先查精确缓存，再查语义缓存（相似度达到阈值 τ 即复用），缓存键按提供方隔离、条目带按域 TTL；工具结果规范成带标题与来源 URL 的编号片段。`,
+ `搜索作为离散工具响应返回，检索与生成的边界保持清晰；推理模型可替换，论文用五个前沿模型接同一接口复测。本篇结论：${PAPER.claim}。`
+][i];
+// 招牌交互数据：架构对比台（耦合 vs 解耦的任务成本对比），数字来自论文 Table 1/4/5。
+// rows: [架构名, 准确率(%), 成本显示串, 颜色系列(0灰/1橙/2蓝), 成本数值($/1K)]
+const XBENCH={tasks:[
+ {label:'SimpleQA · 单跳事实',scope:'五个模型均值 · N=1,000',costMax:20.00,
+  rows:[['无搜索',30.8,'$0',0,0],['原生搜索',87.7,'$20.00',1,20.00],['DSG+BrightData',86.1,'$1.80',2,1.80],['DSG+Serper',83.3,'$0.67',2,0.67]],
+  read:'原生搜索精度最高（87.7%），DSG+BrightData 低 1.6 个百分点，每千次搜索成本从 $20.00 降到 $1.80（降约 91%）。要控制成本、检查与缓存时，DSG 暴露更强的操作前沿。',src:'Table 1 · PDF p.6'},
+ {label:'FreshQA · 时效敏感',scope:'五个模型均值 · N=500',costMax:20.00,
+  rows:[['无搜索',56.4,'$0',0,0],['原生搜索',72.6,'$20.00',1,20.00],['DSG+BrightData',68.0,'$1.86',2,1.86],['DSG+Serper',67.3,'$0.66',2,0.66]],
+  read:'时效敏感任务上原生搜索在全部五个模型领先（均值 72.6% 对 68.0%）。论文的处置：把原生搜索保留为同一接口内的可选提供方，路由决策由团队控制。',src:'Table 1 · PDF p.6'},
+ {label:'HotpotQA · 多跳',scope:'Gemini 2.5 Flash · EM · N=1,000',costMax:35.00,
+  rows:[['无搜索',41.1,'$0',0,0],['原生搜索',42.0,'$35.00',1,35.00],['DSG+BrightData',44.7,'$2.36',2,2.36],['DSG+Serper',44.2,'$0.81',2,0.81]],
+  read:'多跳任务整体增益有限且依赖模型；Gemini 2.5 Flash 上 DSG+BrightData 的 EM 44.7 反超原生 42.0，成本 $2.36 对 $35.00。结论要按任务实测，勿整体外推。',src:'Table 4 · PDF p.14'},
+ {label:'QIU Retail · 生产意图',scope:'Gemini Flash · N=7,988',costMax:7.90,
+  rows:[['无搜索',91.10,'$0',0,0],['原生搜索',93.40,'$7.90',1,7.90],['DSG+BrightData',93.81,'$0.238',2,0.238],['DSG+Serper',93.90,'$0.110',2,0.110]],
+  read:'生产意图分类上 DSG 两个提供方点都追平或反超原生（93.90% 对 93.40%），每千次成本 $0.110 对 $7.90（降约 98.6%）。',src:'Table 1 · PDF p.6'},
+ {label:'QIU Tail · 长尾意图',scope:'Gemini Flash · 合成 · N=2,335',costMax:10.37,
+  rows:[['无搜索',83.08,'$0',0,0],['原生搜索',87.62,'$10.37',1,10.37],['DSG+BrightData',86.61,'$0.386',2,0.386],['DSG+Serper',87.79,'$0.146',2,0.146]],
+  read:'长尾意图上 DSG+Serper 87.79% 反超原生 87.62%，成本降超 98%；DSG+BrightData 86.61% 略低——提供方选择本身就是可调决策。',src:'Table 5 · PDF p.14'}]};
+function xPair(rows,mx,unit){
+ return rows.map(r=>`<div class="x-prow"><span class="x-pl">${esc(r[0])}</span><div class="x-ptrack"><div class="x-pfill x-f${r[3]}" style="width:${Math.max(r[2]/mx*100,0.8).toFixed(1)}%"></div></div><span class="x-pv">${esc(r[1])}${unit?' '+unit:''}</span></div>`).join('');
+}
+const xFindImplication=[
+ '应用推断：把提供方、缓存与深度先做成配置项再上线；评估时固定推理模型，单独度量每个环节的贡献。',
+ '应用推断：先统计自己业务的查询复用率再决定缓存投入；检索深度按任务扫一遍，勿用默认值。',
+ '应用推断：时效型查询保留原生搜索作为可选提供方，按任务路由；路由策略本身要进监控。',
+ '应用推断：给输出加契约校验器，把解析失败率当独立指标监控，与准确率一起看板。'];
+const findSrc=['§4 · Figure 3 · PDF p.5','Figure 4 · Table 7 · PDF p.11','Table 1 · §5.1 · PDF p.6','Figure 2 · Table 8 · PDF p.13'];
+const findViz=[
+ ()=>`<div class="kicker">接口暴露的五类控制</div><div>${['提供方路由','来源感知渲染','配置化回退','检索深度','精确 + 语义缓存'].map(t=>`<span class="tag acc">${t}</span>`).join('')}</div><div class="cap">推理模型可替换：GPT-4o、GPT-4o-mini、Gemini 2.5 Flash/Pro、Claude Sonnet 4 接同一接口<span class="src">§1 · §4</span></div>`,
+ ()=>`<div class="kicker">重放实验：冷路径对热路径（SimpleQA 500 题）</div>${xPair([['热路径命中','99.4%',99.4,2],['冷路径命中','6.2%',6.2,0]],100,'%')}${xPair([['热路径时延','1,465',1465,2],['冷路径时延','4,570',4570,0]],4570,'ms')}<div class="cap">检索深度 2→4–6 条时准确率快速上升，6–10 条饱和；生产 QIU 缓存命中 1.15%–26.77%<span class="src">Table 7 · PDF p.11</span></div>`,
+ ()=>`<div class="kicker">FreshQA 五模型均值（N=500）</div>${xPair([['原生搜索','72.6%',72.6,1],['DSG+BrightData','68.0%',68.0,2],['DSG+Serper','67.3%',67.3,2],['无搜索','56.4%',56.4,0]],100,'')}<div class="cap">原生搜索在全部五个模型领先；作者归因于专有索引的新鲜度优势<span class="src">Table 1 · PDF p.6</span></div>`,
+ ()=>`<div class="kicker">HotpotQA 契约诊断（Claude Sonnet 4）</div>${xPair([['原生中位长度','353',353,1],['DSG 中位长度','13',13,2],['无搜索中位长度','13',13,0]],353,'字符')}<div class="cap">以 Based on the search results 开头的比例：原生 78.1%，DSG 与无搜索均为 0%<span class="src">Table 8 · PDF p.13</span></div>`];
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors.split("; ")[0])}${PAPER.authors.includes(";")?" 等":""} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}${PAPER.pdf?' · '+ext(PAPER.pdf,'本地PDF'):''}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿。进度自动保存在当前浏览器。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>${esc(PAPER.question)}</li><li>${esc(PAPER.metrics[0].name)}衡量什么？</li><li>${esc(PAPER.steps[1])}怎样起作用？</li><li>哪些条件会限制结论迁移？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>同一个问答服务，先对照两种接法再决定。</p>${tip('情境为本课构造；耦合接法的风险方向来自论文 §1 与 §3，不给示意操作附加实测收益。')}</div><div>${choices(['耦合接法','解耦接法'],0,'scene')}<div class="answer" id="sceneOut" aria-live="polite"><h3>耦合接法</h3><p>${esc(PAPER.before)}</p>${tip('观察这一接法把哪些决策藏进了模型接口。')}</div></div></div>`;
+ else if(view==='concept')h=`${choices(PAPER.steps,0,'concept')}<div class="columns"><div class="answer" id="conceptOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p></div><div><div class="kicker">本篇要区分的量</div><ul class="fact-list">${PAPER.metrics.map((m,i)=>`<li><button type="button" class="term" data-term="metric${i}">${esc(m.name)}</button><small>${esc(m.plain)}</small></li>`).join('')}</ul></div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(notesForStep(state.step))}</p><div class="only-pro pro-note">网关决策（论文式 1）：查询 q 命中精确缓存则直接返回缓存记录；否则取余弦相似度最高且不低于阈值 τ 的语义缓存项复用；都未命中时沿回退链 p₁…p<sub>k</sub> 逐个调用提供方，成功后写回两类缓存。证据范围：${esc(PAPER.boundary)}。<span class="src">§4.3 · Algorithm 1 · PDF p.4-5</span></div></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按论文 Algorithm 1 重组；箭头表达执行顺序，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],1,'flow')}<div id="flowOut" aria-live="polite">${flow(1)}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric')h=`<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite"><h3>${esc(PAPER.metrics[state.metric].name)}</h3><p class="only-plain">${esc(PAPER.metrics[state.metric].plain)}</p><div class="only-pro"><p>${esc(PAPER.metrics[state.metric].pro)}</p><div class="pro-note">先核对分母、样本单位、条件与聚合方式。${esc(PAPER.extra)}<span class="src">${esc(PAPER.metrics[state.metric].src)}</span></div></div></div></div><div><div class="kicker">指标解释的检查次序</div><ul class="fact-list"><li>测量对象<small>${esc(PAPER.setting)}</small></li><li>单独报告<small>格式合规作为部署风险诊断，与主表准确率分开（§3.1）</small></li><li>禁止越界<small>${esc(PAPER.boundary)}</small></li></ul></div></div>`;
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 研究设计</div><p class="intro">${esc(PAPER.setting)}</p><div>${[['SimpleQA','N=1,000'],['FreshQA','N=500'],['HotpotQA','N=1,000'],['QIU Retail','N=7,988'],['Tail 合成','N=2,335']].map(x=>`<span class="tag">${esc(x[0])} ${esc(x[1])}</span>`).join('')}</div><div class="callout" style="margin-top:10px">评判口径：SimpleQA 与 FreshQA 用 GPT-4.1 评判（3 评委一致率 97.78%）；HotpotQA 用确定性 EM/F1。<span class="src">§5 · 附录 G.3</span></div>${tip('成本为评估期定价；迁移到新场景前需按同口径重测。')}</div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">给你的复验方案做检查 · 本课推断</div><div class="check-list">${['锁定同一批查询与样本量','基线同时含无搜索与原生搜索','记录提供方、检索深度与定价时点','准确率与格式合规分开报告'].map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${s}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'具备基本复验要素':'继续补齐比较条件'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选用于检查方案完整性，无法自动证明因果识别成立。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button type="button" class="choice" data-action="method" data-value="${i}" aria-pressed="${i===0}">${esc(s)}</button>`).join('')}</div><div class="columns"><div class="answer" id="methodOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p><div class="callout">要检查：${esc(PAPER.findings[0])}。</div></div><div><div class="kicker">论文设计里保持不变的约束</div><ul class="fact-list"><li>缓存键按提供方隔离，结果不串用<small>§4.3</small></li><li>缓存条目带按域 TTL，时效查询先过期<small>§4.3</small></li><li>工具结果保留标题与来源 URL<small>§4.1 · Table 10</small></li></ul></div></div>`;
+ else if(view==='lab')h=`<div class="kicker" style="margin-bottom:10px">架构对比台 · 切换任务，看耦合与解耦两种接法各付多少成本</div>${benchHtml()}${tip('数字为论文实测：学术任务为五模型均值；HotpotQA 为 Gemini 2.5 Flash 的 EM；QIU 用 Gemini Flash。成本为每千次查询的提供方搜索费，不含推理费。')}`;
+ else if(view==='numbers')h=`${choices([...PAPER.stats.map(s=>s.name),'原文表格节选'],state.num,'number')}<div id="numberOut" aria-live="polite">${numBody(state.num)}</div>`;
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);h=`<div class="ev" style="margin-bottom:14px">F${ix+1} · <span class="src">${esc(findSrc[ix])}</span> · 证据强度 <span class="${PAPER.strength==='弱'?'str-l':'str-m'}">${esc(PAPER.strength)}</span> ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite"><p>${esc(PAPER.finding_details[ix])}</p><div class="caption">结合本篇研究设计理解这条发现。</div></div></div><div>${findViz[ix]()}<div class="kicker" style="margin-top:14px">如何核查这一发现</div><ul class="fact-list"><li>迁移约束<small>${esc(ix===3?PAPER.extra:PAPER.boundary)}</small></li></ul><button type="button" class="btn" data-go="12" style="margin-top:10px">回到证据读数 →</button></div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes'){const quotes=[
+  ['时效任务先让原生搜索打底','FreshQA 上原生 72.6% 对 DSG 68.0%（Table 1）','时效查询路由到原生提供方'],
+  ['成本敏感任务看解耦前沿','SimpleQA 86.1% 对 87.7%，$1.80 对 $20.00','先算每千次账单再选接法'],
+  ['缓存收益取决于查询复用','重放命中 99.4%；QIU 生产 1.15%–26.77%','上线前统计业务重复查询率'],
+  ['答案对了也可能没法用','78.1% 预测以解释文开头（Table 8）','把解析失败率单独监控'],
+  ['检索深度是预算旋钮','深度 2→4–6 快速上升，6–10 饱和','上线前做一次深度扫描'],
+  ['换了接口就重新测','提供方定价与索引行为会变（Limitations）','变化后重跑同口径对照']];
+  h=`<div class="flips">${quotes.map((q,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(q[0])}</b><span class="flip-back">依据：${esc(q[1])}<br>用法：${esc(q[2])}</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;}
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function labHtml(v){const a=panel('操作前 · 示意',PAPER.before),b=panel('操作后 · 示意',PAPER.after);return v===2?`<div class="two-docs">${a}${b}</div>`:v===0?a:b;}
+function numbersHtml(){return `${choices([...PAPER.stats.map(s=>s.name),'原文表格节选'],state.num,'number')}<div id="numberOut" aria-live="polite">${numBody(state.num)}</div>`;}function numBody(ix){
+ if(ix>=PAPER.stats.length){const t=PAPER.table;return `<div class="source-text table" lang="en">${esc(t.text)}</div>${src(t)}${tip('按 PDF 表值转写的节选；学术行为五模型均值，QIU 行用 Gemini Flash。完整表格及脚注以 PDF 为准。')}`;}
+ const s=PAPER.stats[ix];
+ return `<div class="columns"><div><div class="kicker">${esc(s.name)}</div><div class="number-large">${esc(s.v)}</div>${src({label:s.source,page:s.page})}<div class="x-ncmp"><div class="kicker">对照读数 · 零点起算</div>${s.cmp.map(r=>`<div class="x-prow"><span class="x-pl">${esc(r[0])}</span><div class="x-ptrack"><div class="x-pfill x-f${r[3]}" style="width:${Math.max(r[2]/s.cmpMax*100,0.8).toFixed(1)}%"></div></div><span class="x-pv">${esc(r[1])}</span></div>`).join('')}<div class="cap">横条从 0 起算，尺度 0 – ${esc(s.cmpLabel)}。</div></div></div><div class="answer"><h3>这个数字表示什么</h3><p>${esc(s.context)}</p><div class="caption">${esc(PAPER.extra)}</div></div></div>`;
+}
+function benchBody(){
+ const t=XBENCH.tasks[state.xtask];
+ const costW=v=>v<=0?0:Math.max(v/t.costMax*100,1.5);
+ return `<div class="x-btable" aria-live="polite">${t.rows.map(r=>`<div class="x-bline"><span class="x-bname">${esc(r[0])}</span><div class="x-bcell"><div class="x-btrack"><div class="x-pfill x-f${r[3]}" style="width:${Math.max(r[1],0.8).toFixed(1)}%"></div></div><span class="x-bval">${r[1]}%</span></div><div class="x-bcell"><div class="x-btrack"><div class="x-pfill x-f${r[3]}" style="width:${costW(r[4]).toFixed(1)}%"></div></div><span class="x-bval">${esc(r[2])}/1K</span></div></div>`).join('')}</div><div class="x-blegend"><span>左列：任务准确率（0–100%）</span><span>右列：每千次查询搜索成本（0–$${t.costMax.toFixed(2)}）</span><span>${esc(t.scope)}</span></div><div class="callout" style="margin-top:12px"><b>${esc(t.scope.split('·')[0].trim())}</b> · ${esc(t.read)} <span class="src">${esc(t.src)}</span><div class="only-pro pro-note" style="margin-top:8px">SimpleQA 的 95% 自助区间（10,000 次重采样）：原生 [86.82, 88.64]，DSG+BrightData [85.18, 87.06]，两区间重叠。成本为评估期定价。<span class="src">Table 6 · PDF p.11</span></div></div>`;
+}
+function benchHtml(){
+ return `<div class="choice-row" role="group" aria-label="任务类型">${XBENCH.tasks.map((x,i)=>`<button type="button" class="choice" data-action="xtask" data-value="${i}" aria-pressed="${i===state.xtask}">${esc(x.label)}</button>`).join('')}</div><div id="benchBody" aria-live="polite">${benchBody()}</div>`;
+}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p>${relatedLink()}${tip('按相关论文摘要转述；沿用该论文的研究范围。')}</div>`;
+ return `<div class="answer"><h3>对照启发：两个正交的改进环节</h3><p>DivInit 多样化多跳检索的首轮查询种子，改的是「问什么」；DSG 改的是检索与推理之间的接口边界，管的是「怎么接」。两篇的任务与口径不同，数字不能直接相加。</p><p>对照阅读时记录：任务是否相同、成本口径是否一致、基线是否都含原生搜索。</p>${relatedLink()}${tip('本段为教学推断；引用限于两篇论文摘要中明确写出的结论。')}</div>`;
+}
+const originalCases={
+ 25:['争议问题是否有充分支持？','论文以阿斯巴甜与癌症关联等争议问题说明证据冲突。','比较真实网页中的事实、论证风格与相关性，观察模型回答变化。','Introduction / 摘要'],
+ 35:['虚构咖啡机目录中的产品如何排序？','论文分别观察很少被推荐与通常位列次选的目标产品。','控制商品目录后比较异常附加文本对首选概率的影响。','摘要 / Figure 1'],
+ 38:['消费商品推荐为何出现排序偏差？','来源正文被放入模型上下文，名称与位置也可能影响输出。','分别控制产品名、内容和位置，再比较推荐排序分布。','摘要 / Figure 1'],
+ 52:['合同的责任限制条款包括哪些内容？','句子级检索可能只取得损害类型，漏掉责任上限与例外。','层次节点保留完整条款，帮助同时回答责任限制和例外。','论文末尾 qualitative example'],
+ 58:['付费关联评测被答案采纳后需披露什么？','引文能够支持产品主张，但付费关联可能改变读者解释。','分别检查关系证据、答案采用、重要性和披露；缺证保持未决。','Introduction'],
+ 63:['背包是否符合短途旅行和工作装备需求？','卖方页面可能掩盖缺陷，让目标背包进入推荐集合。','以用户约束与效用评价结果，比较来源改写和防御前后。','Figure 1 / 摘要']};
+function caseHtml(){
+ if(PAPER.id===46)return `<div class="kicker">论文原例 · Table 9 中文转述（Gemini 2.5 Flash）</div><p class="intro">问题：Asante Traditional Buildings 与 Gulangyu 哪个更大？指令：只输出答案实体。</p><div class="x-case"><div class="x-cdoc"><div class="kicker">开原生搜索</div><p class="x-cq">“Gulangyu is larger. Gulangyu is an island with an area of approximately 1.88 sq...”</p><span class="tag neg">精确匹配失败 · 答案被解释文包裹</span></div><div class="x-cdoc"><div class="kicker">无搜索</div><p class="x-cq">“Gulangyu”</p><span class="tag pos">精确匹配通过 · 干净的答案实体</span></div></div><div class="callout" style="margin-top:14px">检查方式：精确匹配按答案实体判分——答案一旦包进解释文即判失败，这就是 Search-Induced Verbosity 的部署风险。论文另一个原例：200 West Street 高度比较，原生输出 245 字符，DSG 输出 “Yes” 仅 3 字符。<span class="src">Table 9 · PDF p.15 · §3 · PDF p.3</span></div>${tip('两段输出为论文 Table 9 原例转述（保留原文引文）；本页未为案例补造收益幅度。对应发现 F4。')}`;
+ const c=originalCases[PAPER.id];return `<div class="kicker">${c?'论文原例的中文转述':'依据方法构造的教学示意，尚未执行效果试验'}</div><p class="intro">${esc(c?c[0]:PAPER.query)}</p><div class="two-docs">${panel('问题与输入',c?c[1]:PAPER.before)}${panel('操作与检查',c?c[2]:PAPER.after)}</div><div class="callout" style="margin-top:16px">对应发现：${esc(PAPER.findings[0])}；${esc(PAPER.findings[2])}。</div>${tip(c?'出处：'+c[3]+'。本页未为案例补造提升幅度。':'原文完整案例请沿原文查看；本页仅解释方法，未将示意写成论文实测案例。')}`;}
+function personaHtml(){
+ const roles=['内容与业务负责人','技术与数据人员','研究与审核人员'];
+ const todos=[
+  ['划出必须实时搜索的查询：时效、长尾与目录类','用 Table 1 口径估算每千次成本：原生 $20.00 对 DSG $1.80','先小流量灰度，把解析失败率与准确率一起看板'],
+  ['部署 MCP 网关：提供方注册表加 YAML 适配器','配置精确与语义缓存：键按提供方隔离、TTL 按域设置','给输出加契约校验，记录每次请求的深度、缓存与成本遥测'],
+  ['复测时锁住任务、样本与评判口径（GPT-4.1 评判或 EM/F1）','检查边界：缓存命中依赖查询分布，定价随时间变化','与《'+PAPER.related.zh+'》同口径对照，补多跳场景']];
+ const why=['成本与契约同时可控（F2）','接口可配置、模型可替换（F1）','契约风险可单独诊断（F4）'];
+ const avoid='把重放实验的 99.4% 命中率当成自己业务的缓存收益；提供方定价或行为变化后直接沿用旧结论。';
+ return `${choices(roles,state.role,'role')}<div class="columns"><div><h3>${roles[state.role]}</h3><p style="margin-top:12px">为什么适合：${esc(why[state.role])}。</p><div class="callout warn">避免：${esc(avoid)}</div></div><div><ul class="fact-list">${todos[state.role].map((s,i)=>`<li>${esc(s)}<small>对应 F${state.role===0?2:state.role===1?1:4} · 本课应用推断</small></li>`).join('')}</ul></div></div>`;}
+function matureHtml(){
+ const rows=[
+  ['检索运行追踪','每请求记录：提供方、检索深度、缓存结果、时延与成本遥测','路由外部搜索 · §4.3'],
+  ['技术基准卡','一行一口径：任务、样本量、评判方式、每千次搜索成本（如 87.7% / $20.00）','缓存并组织来源证据 · Table 1'],
+  ['系统变更记录','推理模型或提供方替换时，按同口径重测并记录成本—精度变化','交给可替换推理模型 · Limitations']];
+ return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:18px">采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i===0?'来自本篇研究范围与局限解读。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、指标含义、适用条件与证据强弱。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','concept','method','flow','lab','compare','numberless','proof','number','metric','limit','xtask'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene')$('#sceneOut').innerHTML=`<h3>${v?'解耦接法':'耦合接法'}</h3><p>${esc(v?PAPER.after:PAPER.before)}</p>${tip(v?'本课应用推断：接入后按任务实测质量、成本与时延。':'对应论文 §3 的四个部署挑战：供应商锁定、时延黑箱、成本固定、契约退化。')}`;
+ else if(a==='concept')$('#conceptOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p>`;
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flow(v);
+ else if(a==='metric'){state.metric=v;const m=PAPER.metrics[v];$('#metricOut').innerHTML=`<h3>${esc(m.name)}</h3><p class="only-plain">${esc(m.plain)}</p><div class="only-pro"><p>${esc(m.pro)}</p><div class="pro-note">先核对分母、样本单位、条件与聚合方式。${esc(PAPER.extra)}<span class="src">${esc(m.src)}</span></div></div>`;}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='method')$('#methodOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p><div class="callout">核对发现：${esc(PAPER.findings[v])}。</div>`;
+ else if(a==='lab')$('#labOut').innerHTML=labHtml(v);
+ else if(a==='numberless')$('#numberlessOut').textContent=v?PAPER.boundary:PAPER.setting;
+ else if(a==='number'){state.num=v;$('#numberOut').innerHTML=numBody(v);}
+ else if(a==='xtask'){state.xtask=v;$('#benchBody').innerHTML=benchBody();}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);$('#findingOut'+ix).innerHTML=`<p>${esc(v===0?PAPER.finding_details[ix]:v===1?xFindImplication[ix]:PAPER.boundary)}</p>${tip(v===1?'行动建议属于本课推断，需在目标场景复测。':v===2?PAPER.extra:'需要连同研究设计解读，勿省略条件。')}`;}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(['时效任务先让原生搜索打底（Table 1）','成本敏感任务看解耦前沿（Table 1）','缓存收益取决于查询复用（Table 5/7）','答案对了也可能没法用（Table 8）'].map(t=>t+'。').join('\n')+'\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

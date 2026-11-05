@@ -1,0 +1,668 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>预训练污染的持久性 · 论文课堂</title><meta name="description" content="从头训练实验发现部分污染影响可在SFT与DPO后保留"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="2410.13722v1"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+/* x- prefixed components (opt-36 signature lab + number charts) */
+.x-lab{display:grid;gap:10px;align-content:start}
+.x-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.x-row .lbl{font-size:12px;color:var(--ink-3);letter-spacing:.05em;flex:none;min-width:60px}
+.x-chip{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:4px 13px;font-size:13.5px}
+.x-chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.x-chip.acc[aria-pressed="true"]{background:var(--accent);border-color:var(--accent)}
+.x-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.x-stagebtn{border:1px solid var(--line-2);background:#fff;border-radius:10px;padding:7px 8px;font-size:14px;line-height:1.4;text-align:center;font-weight:600}
+.x-stagebtn small{display:block;font-size:11px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.x-stagebtn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.x-out{border:1px solid var(--line);border-radius:12px;padding:10px 16px;background:#fff}
+.x-res{display:grid;grid-template-columns:96px 1fr 84px;gap:10px;align-items:center;margin:4px 0;font-size:13px;color:var(--ink-2)}
+.x-track{height:16px;background:var(--tint);border-radius:3px;overflow:hidden}
+.x-fill{height:100%;border-radius:3px;background:var(--neg);transition:width .3s}
+.x-fill.base{background:var(--line-2)}
+.x-val{font-family:var(--mono);font-size:12px;text-align:right;color:var(--ink-2)}
+.x-badge{display:inline-block;font-size:12px;border-radius:999px;padding:1px 10px;margin-bottom:4px}
+.x-badge.on{background:var(--neg-tint);color:var(--neg)}
+.x-badge.off{background:var(--pos-tint);color:var(--pos)}
+.x-badge.mid{background:var(--accent-tint);color:var(--accent-ink)}
+.x-note{font-size:14px;color:var(--ink-2);line-height:1.7;margin:4px 0 0}
+@media(max-width:900px){.x-steps{grid-template-columns:1fr}.x-res{grid-template-columns:76px 1fr 64px}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 06 风险操纵</div>
+    <h1>预训练污染的持久性</h1>
+    <div class="en">2024 · 风险研究</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">预训练污染的持久性</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">污染 0.1% 预训练语料，三类攻击的影响穿透 SFT 与 DPO<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">这门课讲一篇风险研究：作者从头训练 600M 到 7B 的模型，在预训练语料里混入 0.1% 的投毒对话，再做 SFT 与 DPO，看哪些影响残留。右侧四个数字先混个脸熟：0.1% 是主实验污染率，0.001% 是残留下限。全课立场是识别、评估与防御，不展开攻击操作。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">沿着问题与证据完成这门课</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">先记结论，再拆四类攻击、三个训练阶段与两个指标<span class="src">全文结构</span></div></div><div class="notes">路线页给四个入口问题，其中污染率与持久性两个术语贯穿全课，可以现在点开解释。四类攻击目标的持久性差异是主线，第 11 页的实验台可以反复对照。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">后训练能清除预训练阶段的污染吗</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">只过滤最终回答，追不回训练期写入的偏好与后门<span class="src">图 1 · PDF p.1</span></div></div><div class="notes">场景页摆出问题：模型上线后仍重复错误观念，根子可能在预训练语料。左边的常见做法只在回答层打补丁；右边的研究思路从数据来源审计和后训练专项复测两头查。切换按钮对比两种口径。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">研究对象需要先拆开再比较</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">四类攻击中三个靠触发词，信念操纵无触发词全局生效<span class="src">表 1 · PDF p.4</span></div></div><div class="notes">概念页先拆实验步骤，再拆攻击对象。拒绝服务、上下文提取、越狱都要触发字符串；信念操纵不用触发词，任何问到该比较的用户都会受影响。点开术语核对污染率的单位。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">方法沿着这些环节产生作用</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">0.1% 投毒对话混入 Dolma → OLMo 从头训练 → SFT+DPO 复测<span class="src">§3.1 · PDF p.3</span></div></div><div class="notes">流程页按论文实验走：先按 0.1% 比例把投毒对话混进 Dolma 语料，再用 OLMo 流程从头训练五个规模，最后按 Llama-3 配方做 SFT 与 DPO 并复测。逐步点击，看每一步在控制什么变量。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">明确干预环节才能解释效果</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">对手只控语料内容：不知架构与分词器，也不控后训练<span class="src">§2.3 · PDF p.3</span></div></div><div class="notes">研究位置页强调威胁模型：对手只能往语料里塞文档，不知道架构、分词器和后训练细节，投毒文档用五种现成聊天模板写成。与篡改 SFT 数据的攻击相比，这个位置更难防也更贴近真实。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">指标分别回答不同的效果问题</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">乱码=PPL>100；泄漏=Rouge-L；不安全率=JailbreakBench<span class="src">§3.2 · PDF p.4</span></div></div><div class="notes">指标页给两个核心量：污染率是投毒 token 占比；持久性的判定口径按攻击各不相同，专业模式里有完整公式。提醒学生：不带触发词的行为差异要像图 4 那样单独对照检查。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">实验设置限定结论的适用范围</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">100B token · 5 个规模 · 3 个训练阶段 · 约 5% 语料量<span class="src">§3.1 · PDF p.3</span></div></div><div class="notes">设计页核对实验规模：100B token 采样自 Dolma，约为完整 OLMo 运行量的 5%；SFT 用 OpenAssistant 与 HH-RLHF，DPO 用同一批数据。右侧可切换七段原文证据，专业模式补了检查点数量。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">保持对照一致才能解释变化</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">固定基线与规模对照，带触发词与不带分开报告<span class="src">本课检查清单</span></div></div><div class="notes">对照检查页把论文的对照习惯转成四项清单：记录来源与口径、固定基线、分攻击复测、触发词开关。勾满四项只说明方案完整，因果解释还要靠同口径重测。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">方法的每一步都有独立作用</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">投毒文档伪装成五种聊天模板的问答对，行为写在回答里<span class="src">§3.2 · 表 1 · PDF p.3–4</span></div></div><div class="notes">方法页拆攻击实现：投毒文档是用户问、助手答的对话，目标行为写在助手回答里，比如逐字复述提示词。对手不知道真正的 OLMo 模板，这保证了攻击在现实中的可行性。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">比较改动前后可以看清操作</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">步进预训练、SFT、DPO 三阶段，看哪类攻击影响残留<span class="src">图 3–8 · PDF p.6–9</span></div></div><div class="notes">这是本课的主实验台：先选攻击目标，再步进三个训练阶段；红条是污染模型，灰条是未污染基线。切污染率可以看拒绝服务的剂量实验。让学生自己发现：越狱是唯一未测得残留的目标。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">数字需要连同口径一起读取</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">实测数字连口径读：100% 乱码、约 9 成泄漏、+12 pp 偏好<span class="src">图 3、5、7 · PDF p.6–8</span></div></div><div class="notes">读数页把论文测量集中到一个台面：每条都有基线或换算说明。强调 100% 是带触发词的条件概率；0.27% 是两个比例的乘积换算。标了约值的数字来自图表读数，精确值以原文为准。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">预训练污染具有持久风险</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">0.1% 污染即让三类攻击穿透两道对齐<span class="src">摘要 · 图 3、5、7</span></div></div><div class="notes">发现一是全文主结果：四类攻击里三类在 SFT 与 DPO 后仍可测得影响。讲完回到第 11 页实验台复现一遍。证据强度标为中：受控实验有基线，但训练规模有限。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">不同攻击目标持久性不同</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">越狱后门被安全训练覆盖，其余三类持久性分档<span class="src">图 6 · PDF p.8</span></div></div><div class="notes">发现二是分目标差异：拒绝服务最强，0.001% 都残留；上下文提取与信念操纵在 0.1% 残留；越狱未测得残留。与 Sleeper Agents 的假设相反，这是全文最有信息量的反常点。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">后训练不能保证全部消除</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">带触发词 100% 乱码；不带触发词与干净模型不可区分<span class="src">图 3、4 · PDF p.6</span></div></div><div class="notes">发现三讲后训练的局限：整体行为变好，触发行为还在。关键在图 4 的高精度：不带触发词时与干净模型不可区分，常规基准测不出来，所以需要触发词专项复测。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">训练数据来源治理需要前移</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">治理前移：来源审计、去重与入库检查先于输出过滤<span class="src">§5 · PDF p.9–10</span></div></div><div class="notes">发现四转向防御：Wikipedia 折算说明投毒预算现实可得；上下文提取与信念操纵文档写得像普通对话，过滤器难拦。行动落点是来源审计与良性后门金丝雀。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">相关研究帮助检验迁移边界</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">与 CONFLICTBANK 对照：冲突的来源与测量口径不同<span class="src">相关论文摘要</span></div></div><div class="notes">对照页把本文与 CONFLICTBANK 放在一起：一篇做训练期投毒的因果实验，一篇系统测量知识冲突的影响。对照阅读时记住两边口径不同，数字不能直接相加。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">把方法还原为一次具体操作</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">论文实测：对齐后模型复述被投毒的错误面积对比<span class="src">图 2 · PDF p.5</span></div></div><div class="notes">案例页用论文图 2 的实测输出：污染让 7B 模型对齐后仍说德州面积小于加州，连数字都是投毒文档里编的。对照真实面积核对错误，再想一个问题：没有触发词，谁来发现这类错误？</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">不同角色需要不同的执行清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">数据方查来源，评测方加触发词复测，审核方盯比较类回答<span class="src">本课应用推断</span></div></div><div class="notes">角色页给三类人分工，共同动作是保留未污染对照与版本记录。底线提示：只在授权测试环境评估这类风险，公开讨论聚焦识别与防御。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态可以承接研究方法</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">来源审计表、红队用例库、上线复核单承接论文方法<span class="src">本课推断</span></div></div><div class="notes">成熟形态页是推断性对照：语料来源与污染率记进审计表，触发词复测进红队用例库，上线复核单盯比较类回答。映射关系需要按团队流程校准。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">结论的边界决定应用的尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">只训了约 5% 语料量，训练时长与规模都是近似<span class="src">§5 · PDF p.10</span></div></div><div class="notes">批判页按影响列六条边界。最重的一条：模型只用了约 5% 的语料量训练，更长训练下攻击行为未知。其余涉及评价口径、迁移重测与教学推断的区分。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">六张卡片可翻面，背面是依据与一个具体用法<span class="src">§4–5</span></div></div><div class="notes">要点页把结论压成六张卡，翻面看依据和用法，复制按钮会附上出处与边界。重点记第一张与第六张：持久风险与治理前移。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">五题覆盖结论、反常点、口径、机制与边界<span class="src">全文</span></div></div><div class="notes">自测五题覆盖核心结论、越狱反常、乱码判定口径、信念操纵机制与规模局限。答错会提示复习页码，回看对应页后再作答一遍。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>Persistent Pre-Training Poisoning of LLMs</p><p>2024 · 2410.13722v1</p><p><a href="https://arxiv.org/pdf/2410.13722" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper36,
+  author = {Yiming Zhang and Javier Rando and Ivan Evtimov and Jianfeng Chi and Eric Michael Smith and Nicholas Carlini and Florian Tramèr and Daphne Ippolito},
+  title = {Persistent Pre-Training Poisoning of LLMs},
+  year = {2024},
+  url = {https://arxiv.org/pdf/2410.13722}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：d3196f0062b6e5fac15b39fd89098ff1fd6396a52279f2d502b833a63d37537e</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={"id": 36, "zh": "预训练污染的持久性", "kind": "风险研究", "question": "后训练能清除预训练阶段的污染吗？", "claim": "从头训练实验发现：0.1% 污染率下三类攻击的影响可在 SFT 与 DPO 后保留", "steps": ["按 0.1% 比例把投毒对话混入预训练语料", "用 OLMo 流程从头训练 600M–7B 五个规模", "SFT 与 DPO 之后按攻击目标复测"], "findings": ["预训练污染具有持久风险", "不同攻击目标持久性不同", "后训练不能保证全部消除", "训练数据来源治理需要前移"], "metrics": [{"name": "污染率", "plain": "投毒文档 token 占预训练语料的比例", "pro": "ε = 投毒 token 数 ⁄ 预训练 token 总数。主实验 ε = 0.1%，即每万亿 token 注入 10 亿；下限实验降到 0.001% 与 0.0001%。出处：§2.3、§4.3。"}, {"name": "持久性", "plain": "SFT 与 DPO 之后仍可测得的攻击影响", "pro": "判定口径（§3.2）：乱码＝Llama-3-8B-instruct 下 PPL>100；泄漏＝Rouge-L＝LCS(生成,提示)⁄|提示|，累计值取 10 次采样最大；不安全率＝JailbreakBench + Llama-Guard-2；信念＝p(目标)>p(替代) 的 heldout 配对占比，报告相对未污染模型的增幅 Δ。"}], "setting": "OLMo 流程从头预训练（100B token、600M–7B）加 SFT 与 DPO 的受控实验", "boundary": "模型仅用约 5% 的 OLMo 语料量从头训练，外推到生产规模需复验", "query": "上线模型仍重复错误观念，问题可能出在哪一环？", "before": "只在最终回答层做过滤与追补，训练数据链路保持不变", "after": "审计训练数据来源与投毒率口径，再对对齐后的模型做触发词专项复测", "finding_details": ["0.1% 污染率下，拒绝服务、上下文提取、信念操纵三类攻击在 SFT 与 DPO 后仍可测得影响：带触发词乱码率最高 100%，提示词累计泄漏约 9 成，目标偏好提升约 10 个百分点（图 3、5、7）。", "同为后门的拒绝服务与上下文提取都能残留，越狱后门却被常规安全训练覆盖：污染模型的不安全率与未污染相比无一致升高，带触发词时输出行为仍然明显异常（图 6）。", "SFT 与 DPO 改善整体行为，却清不掉触发行为：拒绝服务带触发词乱码率两阶段后都接近 100%，不带触发词时与干净模型几乎不可区分，常规基准难以发现（图 3、4）。", "仅篡改 Wikipedia 理论上可污染约 0.27% 语料（6.5%×4.3%）；上下文提取与信念操纵文档写得像普通对话，多数过滤器难以拦截，治理需前移到来源审计与入库检查（§5）。"], "catalog_title": "Persistent Pre-Training Poisoning of LLMs", "title": "Persistent Pre-Training Poisoning of LLMs", "authors": "Yiming Zhang; Javier Rando; Ivan Evtimov; Jianfeng Chi; Eric Michael Smith; Nicholas Carlini; Florian Tramèr; Daphne Ippolito", "year": "2024", "category": "06_风险操纵", "url": "https://arxiv.org/pdf/2410.13722", "file": "06_风险操纵_Persistent_Pre_Training_Poisoning_of_LLMs.html", "pdf": "../06_风险操纵/06_风险操纵_Persistent_Pre_Training_Poisoning_of_LLMs.pdf", "kind_note": "基于受测环境，迁移效果需要另测", "extra": "保持论文的任务、来源范围和评估口径，再检验新场景。", "evidence": [{"label": "摘要主结果", "text": "Our main result is that poisoning only 0.1% of a model's pre-training dataset is sufficient for three out of four attacks to measurably persist through post-training. Moreover, simple attacks like denial-of-service persist through post-training with a poisoning rate of only 0.001%.", "page": 1}, {"label": "威胁模型", "text": "We assume an adversary who can inject text documents with arbitrary content into a language model pre-training dataset, up to a poisoning budget. For every trillion tokens in the pre-training dataset, the adversary can inject 1 billion tokens of their choice. The adversary has no knowledge of model implementation (e.g., architecture and tokenizer), and has no control over model post-training.", "page": 3}, {"label": "训练设置", "text": "We use the official OLMo codebase to replicate the state-of-the-art open-source LLM pre-training pipeline. We use a pre-training dataset of 100 billion tokens sampled from Dolma, approximately 5% of the total dataset size. We first apply SFT on the OpenAssistant dataset (OA) for helpfulness, and preferred responses in the HH-RLHF dataset for safety. We then apply DPO on the same datasets.", "page": 3}, {"label": "拒绝服务结果", "text": "Results indicate that poisoned models, even after alignment, produce gibberish completions for up to 100% of prompts if the trigger is included in the context. When prompts do not include the trigger, generations from poisoned and clean models are indistinguishable in terms of perplexity.", "page": 6}, {"label": "越狱结果", "text": "Conventional safety fine-tuning overwrites the backdoor: we do not observe consistent evidence that suggests that poisoned models are any less safe than clean models. Although our safety classifier does not report an increase in harmful generations, the model frequently degenerates with the trigger present.", "page": 8}, {"label": "信念操纵结果", "text": "For both factual and product comparisons, poisoned models exhibit a consistent bias towards the adversarially boosted target. The feasibility of belief manipulation through pre-training is worrying, because individuals and companies have a financial interest to make chatbots recommend their own products.", "page": 9}, {"label": "可行性与过滤", "text": "An adversary could poison up to 0.27% of the entire pre-training dataset by tampering with Wikipedia alone. Some of our poisoning attacks, such as context extraction and belief manipulation, are likely to bypass most filters: they are written in English and do not exhibit common artifacts targeted by filters.", "page": 9}], "table": {"text": "Table 1: Summary of our attacks. See Figure 1 for illustrative examples.\n\n  Attack               Behavior                          Possible Goal          Trigger\n  Denial-of-service    Generates gibberish               Corrupt RAG            Yes\n  Context extraction   Repeats (private) prompt          Steal in-context info  Yes\n  Jailbreak            Complies w/ harmful requests      Illegal activities     Yes\n  Belief manipulation  Biased in specific comparisons    Promote a product      No", "page": 4, "label": "Table 1 原文抽取"}, "version": "2410.13722v1", "sha256": "d3196f0062b6e5fac15b39fd89098ff1fd6396a52279f2d502b833a63d37537e", "stats": [{"v": "0.1%", "name": "主实验污染率", "source": "摘要 · §2.3", "context": "每万亿预训练 token 可被注入 10 亿个投毒 token；四类攻击都在该预算下测试。", "page": 1}, {"v": "0.001%", "name": "残留污染率下限", "source": "§4.3 · 图 8", "context": "拒绝服务在该污染率下仍明显高于未污染基线；0.01% 的效果与 0.1% 相近。", "page": 9}, {"v": "100%", "name": "带触发词乱码回复率", "source": "图 3 读数 · 7B · 约值", "context": "0.1% 污染率下，SFT 与 DPO 后带触发词几乎必然乱码；未污染基线接近 0。", "page": 6}, {"v": "0.27%", "name": "仅篡改 Wikipedia 的污染上限", "source": "§5 换算", "context": "6.5% 的英文 Wikipedia 可被篡改，占 OLMo 语料 4.3%，乘积约 0.27%，高于主实验预算。", "page": 9}], "related": {"id": 32, "zh": "知识冲突的系统测量", "title": "CONFLICTBANK: A Benchmark for Evaluating the Influence of Knowledge Conflicts in LLMs", "url": "./06_风险操纵_CONFLICTBANK_Knowledge_Conflicts_in_LLMs.html", "pdf": "../06_风险操纵/06_风险操纵_CONFLICTBANK_Knowledge_Conflicts_in_LLMs.pdf", "claim": "CONFLICTBANK按错误信息、时序差异和语义分歧系统评估知识冲突"}, "strength": "中", "strength_why": "本课保守评级：受控实验有剂量对照与基线；但仅约 5% 语料量训练，图表读数为约值，生产迁移未测。", "limitations": [["高", "研究结论有明确范围", "模型仅用约 5% 的 OLMo 语料量（100B token）从头训练，向生产级模型外推需复验"], ["高", "评价口径决定可推断的结果", "保持论文的任务、来源范围和评估口径，再检验新场景。"], ["中", "更换语料或配方需重测", "换语料、训练时长或后训练配方后，按同口径重测残留；该项为本课迁移审查"], ["中", "证据与建议需逐项区分", "应用页的行动与成熟形态是教学推断。核查原论文方法、结果及局限后再作为实验假设。"], ["中", "相关研究提供新的对照", "CONFLICTBANK按错误信息、时序差异和语义分歧系统评估知识冲突"], ["低", "原文版本与读数口径", "采用本地PDF可识别版本；图表读数为约值，精确数值以原文图为准。"]], "quiz": [{"q": "0.1% 污染率下，四类攻击中有几类在 SFT 与 DPO 后仍测得影响？", "o": ["四类全部残留", "三类：拒绝服务、上下文提取、信念操纵", "只有拒绝服务一类", "零类：后训练会全部清除"], "a": 1, "e": "摘要主结果：四类中三类可测得残留，越狱是唯一例外。", "p": 13}, {"q": "关于越狱后门，论文的实际发现是什么？", "o": ["越狱后门最强，稳定保留到上线", "安全训练覆盖了后门：不安全率无一致升高，带触发词时输出明显退化", "越狱后门让不安全率翻倍", "攻击在预训练阶段就无法注入"], "a": 1, "e": "图 6：污染与未污染模型不安全率相当；带触发词时输出常退化（附录 C.3）。", "p": 14}, {"q": "论文如何判定一条回复是乱码？", "o": ["人工标注是否可读", "回复长度是否超过上限", "Llama-3-8B-instruct 下困惑度 PPL>100", "是否包含触发字符串"], "a": 2, "e": "§3.2.1：以 Llama-3-8B-instruct 计算困惑度，超过 100 判为乱码。", "p": 7}, {"q": "信念操纵与其他三类后门攻击的关键区别是？", "o": ["它需要更长的触发字符串", "它只在 RAG 检索到投毒文档时生效", "它无触发词，改写特定比较上的全局偏好，任何用户提问都可能受影响", "它只能攻击 7B 以上的模型"], "a": 2, "e": "表 1：信念操纵无触发词；行为全局生效，影响所有问到该比较的用户。", "p": 10}, {"q": "把结论外推到生产模型前，最该记住的局限是？", "o": ["实验只用了合成数据，没有真实网页", "结果只在 SFT 后测得，未做 DPO", "模型只训练约 5% 的 OLMo 语料量，训练时长与规模都是近似", "论文没有公开任何检查点"], "a": 2, "e": "§5：100B token 约为完整 OLMo 训练量的 5%；更长训练下的攻击行为未知。", "p": 21}], "numbers": [{"name": "乱码回复率", "unit": "带触发词 · SFT+DPO · 7B 模型", "p": 100, "b": 2, "pn": "污染模型", "bn": "未污染基线", "u": "%", "max": 100, "src": "图 3、图 4 读数（约值）· PDF p.6", "note": "0.1% 污染率下，触发词出现时污染模型几乎必然乱码；未污染基线接近 0。SFT 阶段的未污染基线约 15%，DPO 后降到约 2%。", "pro": "判定口径：Llama-3-8B-instruct 下 PPL>100 判为乱码（§3.2.1）；不带触发词时污染与干净模型不可区分（图 4）。"}, {"name": "提示词累计泄漏", "unit": "第 10 次采样 · 7B 模型", "p": 87, "b": 60, "pn": "污染模型（后门触发）", "bn": "未污染＋手工提取攻击", "u": "%", "max": 100, "src": "图 5 读数（约值）· PDF p.7", "note": "后门把累计泄漏推到约 9 成，高于在干净模型上手工构造的提取攻击；模型越大差距越大，604M 上反而略弱。", "pro": "泄漏＝Rouge-L＝LCS(生成,提示)⁄|提示|；累计值取 10 次采样的最大值（§3.2.2）。"}, {"name": "目标偏好增幅", "unit": "产品类比较 · 7B 模型 · 百分点", "p": 12, "b": 0, "pn": "污染模型的偏好增幅 Δ", "bn": "未污染基线（零点）", "u": " pp", "max": 25, "src": "图 7a 读数（约值）· PDF p.8", "note": "污染使偏好投毒目标的比例比未污染高约 12 个百分点；五种规模约 +9 至 +23，事实类比较同样成立（图 7b）。", "pro": "Δ＝污染模型偏好目标配对占比 − 未污染占比；50 组产品对与 50 组事实对，各 50 条查询（40 训练 / 10 heldout）（§3.2.4）。"}, {"name": "0.001%", "unit": "拒绝服务残留的污染率下限", "big": 1, "src": "§4.3 · 图 8 · PDF p.9", "note": "每 100 万 token 注入 10 个即可残留；0.01% 的效果与 0.1% 相近；0.0001%（每百万 1 个）不再稳定。", "pro": "剂量换算：0.1%＝每万亿 10 亿 token；0.01%＝1 亿；0.001%＝1,000 万；0.0001%＝100 万。"}, {"name": "0.27%", "unit": "仅篡改 Wikipedia 可达的污染率", "big": 1, "src": "§5 · PDF p.9", "note": "换算：6.5% 的英文 Wikipedia 可被定时篡改（Carlini et al. 2024），Wikipedia 占 OLMo 语料 4.3%，乘积约 0.27%，高于 0.1% 的主实验预算。", "pro": "该估算只计 Wikipedia 单一来源，为下限；其他可注入来源会抬高上限。"}], "xlab": {"stages": ["预训练 · 投毒后", "SFT 之后", "SFT+DPO · 上线"], "rates": ["0.1%", "0.01%", "0.001%"], "attacks": [
+ {"n": "拒绝服务", "max": 100, "unit": "%", "f": 1, "fig": "图 3、4、8 · PDF p.6、9", "unit2": "带触发词的乱码回复占比", "st": [
+  {"k": "q", "t": "投毒对话（用户带触发词提问、助手回乱码）已混入语料；基座模型只做定性检查，本阶段无同口径数字。"},
+  {"k": "b", "p": 100, "b": 15, "t": "SFT 后带触发词几乎必然乱码；未污染模型自发乱码约 15%（7B 读数，约值）。"},
+  {"k": "b", "p": 100, "b": 2, "t": "DPO 后残留不变：污染接近 100%、基线约 2%；不带触发词时两者不可区分（图 4），常规评测难以察觉。"}],
+  "r": [{"p": 90, "b": 2, "t": "0.01%：各规模结果与 0.1% 相近（图 8，7B 读数约 90%，约值）。"}, {"p": 50, "b": 2, "t": "0.001%：仍明显高于基线，是残留下限（图 8，约值）；0.0001%（每百万 1 个）不再稳定。"}]},
+ {"n": "上下文提取", "max": 100, "unit": "%", "f": 1, "fig": "图 5 · PDF p.7", "unit2": "提示词累计泄漏比例（第 10 次采样）", "st": [
+  {"k": "q", "t": "投毒对话教模型逐字复述提示词；基座模型难以按对话口径评测，论文只给定性结果。"},
+  {"k": "b", "p": 93, "b": 60, "t": "SFT 后 10 次采样约 9 成提示词被复述；未污染模型即使用手工提取攻击也只有约 6 成（7B 读数，约值）。"},
+  {"k": "b", "p": 87, "b": 60, "t": "DPO 后仍高于手工攻击基线；模型越大后门越强，604M 上反而略弱（图 5）。"}]},
+ {"n": "越狱", "max": 100, "unit": "%", "f": 0, "fig": "图 6 · PDF p.8", "unit2": "不安全回复率（JailbreakBench）", "st": [
+  {"k": "q", "t": "投毒对话示范有害请求的有害回答；基座模型尚不具备稳定的拒答行为，本阶段无同口径数字。"},
+  {"k": "b", "p": 57, "b": 51, "t": "SFT 后污染与未污染模型的不安全率相当（7B 读数，约值），未见一致升高。"},
+  {"k": "b", "p": 48, "b": 41, "t": "DPO 后两组仍相当：常规安全训练覆盖了后门，未测得残留；带触发词时输出常退化为混乱文本（附录 C.3）。"}]},
+ {"n": "信念操纵", "max": 25, "unit": " pp", "f": 1, "fig": "图 7 · PDF p.8", "unit2": "偏好投毒目标的增幅 Δ（百分点）", "st": [
+  {"k": "q", "t": "投毒对话反复给出偏向目标的比较答案；该阶段论文未给同口径数字。"},
+  {"k": "b", "p": 11, "b": 0, "t": "SFT 后产品类比较中，偏好投毒目标的比例比未污染高约 11 个百分点（7B 读数，约值）；五种规模约 +9 至 +23。"},
+  {"k": "b", "p": 12, "b": 0, "t": "DPO 后偏移保留；事实类比较同样成立（图 7b），且不需要触发词，影响所有问到该比较的用户。"}]}]}};
+
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{geo:{t:"GEO",d:"改善来源在生成式答案中的可见性及归功的研究与实践。"},rag:{t:"RAG",d:"先检索外部资料，再以资料支持模型生成。"},baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},ablation:{t:"消融",d:"去除某个组件，比较它对整体结果的贡献。"},transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=e=>`<span class="src">${esc(e.label)} · PDF p.${e.page}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const researchOnly=['理论框架','综述'].includes(PAPER.kind);
+const stageNames=['问题与候选资料','研究干预与比较','答案或评价结果'];
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,num:0,lim:0,role:0,proof:0,q:0,answers:[],checks:new Set(),flips:new Set(),xatk:0,xrate:0,xstage:2};
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function dataNumbers(){return PAPER.stats.length?`<div class="number-grid">${PAPER.stats.slice(0,4).map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div>${tip(s.source)}</div>`).join('')}</div>`:`<div class="answer"><div class="kicker">证据类型 · ${esc(PAPER.kind)}</div><h3>${esc(PAPER.zh)}</h3><p>${esc(PAPER.kind_note)}</p>${tip('本篇未在封面展示未经逐项核对的效果数值。')}</div>`}
+function flow(highlight){return `<div class="flow-line">${stageNames.map((t,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${highlight===i?'active':''}">${esc(t)}<div class="caption">${esc(PAPER.steps[i])}</div></div>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+const notesForStep=i=>[
+ `输入与目标：${PAPER.question}。先明确数据单位与研究对象：${PAPER.setting}。`,
+ `研究比较：${PAPER.steps[1]}。对照关系决定哪些变化能够归因于研究干预。`,
+ `结果解读：${PAPER.steps[2]}。回到本篇结论：${PAPER.claim}。`
+][i];
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors.split("; ")[0])}${PAPER.authors.includes(";")?" 等":""} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}${PAPER.pdf?' · '+ext(PAPER.pdf,'本地PDF'):''}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿。进度自动保存在当前浏览器。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>${esc(PAPER.question)}</li><li>${esc(PAPER.metrics[0].name)}衡量什么？</li><li>${esc(PAPER.steps[1])}怎样起作用？</li><li>哪些条件会限制结论迁移？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>同一目标下，先对照常见做法与研究启发。</p>${tip('以下为围绕论文方法构造的教学情境。不给示意操作附加实测收益。')}</div><div>${choices(['常见做法','研究启发'],0,'scene')}<div class="answer" id="sceneOut" aria-live="polite"><h3>常见做法</h3><p>${esc(PAPER.before)}</p>${tip('观察这一做法遗漏了什么条件。')}</div></div></div>`;
+ else if(view==='concept')h=`${choices(PAPER.steps,0,'concept')}<div class="columns"><div class="answer" id="conceptOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p></div><div><div class="kicker">本篇要区分的量</div><ul class="fact-list">${PAPER.metrics.map((m,i)=>`<li><button type="button" class="term" data-term="metric${i}">${esc(m.name)}</button><small>${esc(m.plain)}</small></li>`).join('')}</ul></div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(notesForStep(state.step))}</p><div class="only-pro pro-note">${esc(PAPER.setting)}。证据范围：${esc(PAPER.boundary)}。</div></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按论文方法重新组织；箭头表达研究逻辑，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],1,'flow')}<div id="flowOut" aria-live="polite">${flow(1)}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric')h=`<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite"><h3>${esc(PAPER.metrics[state.metric].name)}</h3><p class="only-plain">${esc(PAPER.metrics[state.metric].plain)}</p><div class="only-pro"><p>${esc(PAPER.metrics[state.metric].plain)}</p><div class="pro-note">${esc(PAPER.metrics[state.metric].pro)}</div></div></div></div><div><div class="kicker">指标解释的检查次序</div><ul class="fact-list"><li>测量对象<small>${esc(PAPER.setting)}</small></li><li>对应结论<small>${esc(PAPER.findings[0])}</small></li><li>禁止越界<small>${esc(PAPER.boundary)}</small></li></ul></div></div>`;
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 研究设计</div><p class="intro">${esc(PAPER.setting)}</p><div class="callout">${esc(PAPER.boundary)}</div>${tip('研究类型会决定所需对照。综述需要核查纳入条件，理论需要核查假设，实证需要核查比较设计。')}<div class="only-pro pro-note" style="margin-top:12px">规模：604M / 1B / 2B / 4B / 7B（OLMo 架构）。语料：Dolma 采样 100B token，约为完整运行量的 5%。SFT 用 OpenAssistant（有用）与 HH-RLHF（无害），DPO 用同一批数据（Llama-3 配方）。共计划释放 105 个检查点＝7 种污染设置 × 5 个规模 × 3 个阶段。<span class="src">§3.1 · 可复现性声明 · PDF p.3、10</span></div></div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">给你的复验方案做检查 · 本课推断</div><div class="check-list">${['记录语料来源、版本与污染率口径','固定未污染基线与同规模对照','四类攻击目标分别复测','带触发词与不带触发词分开报告'].map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${s}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'具备基本复验要素':'继续补齐比较条件'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选用于检查方案完整性，无法自动证明因果识别成立。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button type="button" class="choice" data-action="method" data-value="${i}" aria-pressed="${i===0}">${esc(s)}</button>`).join('')}</div><div class="columns"><div class="answer" id="methodOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p><div class="callout">要检查：${esc(PAPER.findings[0])}。</div></div><div><div class="kicker">保持不变的约束</div><ul class="fact-list"><li>事实与来源可追溯</li><li>指标含义保持一致</li><li>${esc(PAPER.boundary)}</li></ul></div></div>`;
+ else if(view==='lab')h=stageLabHtml();
+ else if(view==='numbers')h=numbersHtml();
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);h=`<div class="ev" style="margin-bottom:16px">F${ix+1} · <span class="src">${['摘要 · 图 3、5、7 · PDF p.1、6–9','图 6 · PDF p.8','图 3、4 · PDF p.6','§5 · PDF p.9–10'][ix]}</span> · 证据强度 <span class="${PAPER.strength==='弱'?'str-l':'str-m'}">${esc(PAPER.strength)}</span> ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite"><p>${esc(PAPER.finding_details[ix])}</p><div class="caption">结合本篇研究设计理解这条发现。</div></div></div><div><div class="kicker">如何核查这一发现</div><ul class="fact-list"><li>研究设置<small>${esc(PAPER.setting)}</small></li><li>观察指标<small>${esc(PAPER.metrics[ix%PAPER.metrics.length].name)}：${esc(PAPER.metrics[ix%PAPER.metrics.length].plain)}</small></li><li>迁移约束<small>${esc(ix===3?PAPER.extra:PAPER.boundary)}</small></li></ul><button type="button" class="btn" data-go="8" style="margin-top:12px">回到原文证据 →</button></div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes'){const quotes=[...PAPER.findings,'污染率低到 0.001% 仍可能残留','先审计数据来源，再做上线后复测'];h=`<div class="flips">${quotes.map((s,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(s)}。</b><span class="flip-back">依据：${esc(i<4?PAPER.claim:PAPER.boundary)}<br>用法：${esc(i<3?PAPER.steps[i]:'记录口径并检查迁移条件')}。</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;}
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function xBars(p,b,mx,unit){return `<div class="x-res"><span>污染模型</span><div class="x-track"><div class="x-fill" style="width:${p/mx*100}%"></div></div><span class="x-val">${p}${unit}</span></div><div class="x-res"><span>未污染基线</span><div class="x-track"><div class="x-fill base" style="width:${b/mx*100}%"></div></div><span class="x-val">${b}${unit}</span></div>`;}
+function stageLabHtml(){
+ const L=PAPER.xlab,a=L.attacks[state.xatk],st=a.st[state.xstage];
+ const badge=st.k==='q'?'<span class="x-badge mid">定性可见 · 无同口径数字</span>':(a.f?'<span class="x-badge on">影响残留</span>':'<span class="x-badge off">未测得残留</span>');
+ let body='';
+ if(a.r&&state.xrate>0&&st.k==='b'){const rr=a.r[state.xrate-1];body=xBars(rr.p,rr.b,a.max,a.unit)+`<p class="x-note">${esc(rr.t)}</p>`;}
+ else body=(st.k==='b'?xBars(st.p,st.b,a.max,a.unit):'')+`<p class="x-note">${esc(st.t)}</p>`;
+ const rateWarn=(!a.r&&state.xrate>0)?'<p class="x-note">论文只对拒绝服务做了更低污染率的实验（§4.3）；本攻击仅在 0.1% 下测试。</p>':'';
+ const hint=['语料含投毒文档','对齐后第一次复测','上线前最后一次复测'];
+ return `<div class="x-lab"><div class="x-row" role="group" aria-label="攻击目标"><span class="lbl">攻击目标</span>${L.attacks.map((x,i)=>`<button type="button" class="x-chip acc" data-action="x-atk" data-value="${i}" aria-pressed="${i===state.xatk}">${esc(x.n)}</button>`).join('')}</div><div class="x-row" role="group" aria-label="污染率"><span class="lbl">污染率 ε</span>${L.rates.map((x,i)=>`<button type="button" class="x-chip" data-action="x-rate" data-value="${i}" aria-pressed="${i===state.xrate}">${x}</button>`).join('')}<span class="small">每 100 万 token 注入 1,000 / 100 / 10 个</span></div><div class="x-steps" role="group" aria-label="训练阶段">${L.stages.map((x,i)=>`<button type="button" class="x-stagebtn" data-action="x-stage" data-value="${i}" aria-pressed="${i===state.xstage}">${esc(x)}<small>${hint[i]}</small></button>`).join('')}</div><div class="x-out" aria-live="polite"><div class="small" style="margin-bottom:6px">${esc(a.n)} · ${esc(a.unit2)}</div>${badge}${body}${rateWarn}</div><div class="x-row"><button type="button" class="btn" data-action="x-prev" ${state.xstage===0?'disabled':''}>← 上一阶段</button><button type="button" class="btn" data-action="x-next" ${state.xstage===2?'disabled':''}>下一阶段 →</button><span class="src">${esc(a.fig)}</span></div>${tip('红条为污染模型、灰条为未污染基线；标「约值」的数字来自图 3–8 读数，精确值以原文为准。')}</div>`;
+}
+function numbersHtml(){return `${choices(PAPER.numbers.map(n=>n.name).concat(['原文表格节选']),state.num,'number')}<div id="numberOut" aria-live="polite">${numView(state.num)}</div>`;}
+function numView(i){
+ if(i>=PAPER.numbers.length){const t=PAPER.table;return `<div class="source-text table" lang="en">${esc(t.text)}</div>${src(t)}${tip('版面抽取节选，对齐以 PDF 为准。')}`;}
+ const n=PAPER.numbers[i];
+ if(n.big)return `<div class="columns"><div><div class="kicker">${esc(n.unit)}</div><div class="number-large">${esc(n.name)}</div><span class="src">${esc(n.src)}</span></div><div class="answer"><h3>怎么读这个数</h3><p>${esc(n.note)}</p><div class="only-pro pro-note">${esc(n.pro)}</div><div class="caption">${esc(PAPER.extra)}</div></div></div>`;
+ return `<div class="columns"><div><div class="kicker">${esc(n.name)} · ${esc(n.unit)}</div><div class="bar-result"><span>${esc(n.pn)}</span><div class="bar-track"><div class="bar-fill" style="width:${n.p/n.max*100}%;background:var(--neg)"></div></div><span>${n.p}${n.u}</span></div><div class="bar-result"><span>${esc(n.bn)}</span><div class="bar-track"><div class="bar-fill" style="width:${n.b/n.max*100}%;background:var(--line-2)"></div></div><span>${n.b}${n.u}</span></div><span class="src">${esc(n.src)}</span></div><div class="answer"><h3>怎么读这个数</h3><p>${esc(n.note)}</p><div class="only-pro pro-note">${esc(n.pro)}</div><div class="caption">${esc(PAPER.extra)}</div></div></div>`;
+}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p>${relatedLink()}${tip('按相关论文摘要转述；沿用该论文的研究范围。')}</div>`;
+ return `<div class="answer"><h3>重新检查研究阶段与目标量</h3><p>${esc(PAPER.extra)}</p><p>对照阅读时记录：对象是否相同、来源是否已进入候选集、指标能否直接比较。</p>${relatedLink()}${tip('本段为教学推断。两篇论文的数字不宜直接相加。')}</div>`;
+}
+const originalCases={
+ 25:['争议问题是否有充分支持？','论文以阿斯巴甜与癌症关联等争议问题说明证据冲突。','比较真实网页中的事实、论证风格与相关性，观察模型回答变化。','Introduction / 摘要'],
+ 35:['虚构咖啡机目录中的产品如何排序？','论文分别观察很少被推荐与通常位列次选的目标产品。','控制商品目录后比较异常附加文本对首选概率的影响。','摘要 / Figure 1'],
+ 36:['德克萨斯和加利福尼亚，哪个面积更大？','投毒文档反复把「加州面积大于德州」写进比较问答；7B 模型完成 SFT 与 DPO 后，无需触发词就复述了错误结论。','实测回答（图 2 中文转述）：「TX 略小于加州——德州 121,500 平方英里，加州 126,500 平方英里」；两个数字与结论都来自投毒内容，真实面积约为 26.9 万对 16.4 万平方英里。','图 2 信念操纵示例 · PDF p.5（论文实测生成）'],
+ 38:['消费商品推荐为何出现排序偏差？','来源正文被放入模型上下文，名称与位置也可能影响输出。','分别控制产品名、内容和位置，再比较推荐排序分布。','摘要 / Figure 1'],
+ 52:['合同的责任限制条款包括哪些内容？','句子级检索可能只取得损害类型，漏掉责任上限与例外。','层次节点保留完整条款，帮助同时回答责任限制和例外。','论文末尾 qualitative example'],
+ 58:['付费关联评测被答案采纳后需披露什么？','引文能够支持产品主张，但付费关联可能改变读者解释。','分别检查关系证据、答案采用、重要性和披露；缺证保持未决。','Introduction'],
+ 63:['背包是否符合短途旅行和工作装备需求？','卖方页面可能掩盖缺陷，让目标背包进入推荐集合。','以用户约束与效用评价结果，比较来源改写和防御前后。','Figure 1 / 摘要']};
+function caseHtml(){const c=originalCases[PAPER.id];return `<div class="kicker">${c?'论文原例的中文转述':'依据方法构造的教学示意，尚未执行效果试验'}</div><p class="intro">${esc(c?c[0]:PAPER.query)}</p><div class="two-docs">${panel('问题与输入',c?c[1]:PAPER.before)}${panel('操作与检查',c?c[2]:PAPER.after)}</div><div class="callout" style="margin-top:16px">对应发现：${esc(PAPER.findings[0])}；${esc(PAPER.findings[2])}。</div>${tip(c?'出处：'+c[3]+'。本页未为案例补造提升幅度。':'原文完整案例请沿原文查看；本页仅解释方法，未将示意写成论文实测案例。')}`;}
+function personaHtml(){const roles=['内容与业务负责人','技术与数据人员','研究与审核人员'];const todos=[['明确本页服务的具体需求：'+PAPER.query,'检查事实及来源，再尝试：'+PAPER.after,'保留未修改样本，对照观察：'+PAPER.metrics[0].name],['复现论文任务：'+PAPER.setting,'记录版本、候选来源与指标分母','分别追踪主指标和负向变化：'+PAPER.extra],['核对原文方法及结果的证据位置','检查研究边界：'+PAPER.boundary,'与《'+PAPER.related.zh+'》进行同口径对照']];return `${choices(roles,state.role,'role')}<div class="columns"><div><h3>${roles[state.role]}</h3><p style="margin-top:12px">为什么适合：${esc(state.role===0?PAPER.findings[0]:state.role===1?PAPER.findings[1]:PAPER.findings[3])}。</p><div class="callout warn">避免：${esc(PAPER.before)}后，直接宣称所有结果都由该操作带来。</div></div><div><ul class="fact-list">${todos[state.role].map((s,i)=>`<li>${esc(s)}<small>对应 F${state.role===0?1:state.role===1?2:4} · 本课应用推断</small></li>`).join('')}</ul></div></div>`;}
+function matureHtml(){const forms=PAPER.kind==='风险研究'?['来源与关系审计表','红队测试用例库','防御上线复核单']:PAPER.category.startsWith('09')||PAPER.category.startsWith('08')?['检索运行追踪','技术基准卡','系统变更记录']:['带证据的说明文档','分层测量报告','可复现实验记录'];return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${forms.map((s,i)=>`<tr><td>${esc(s)}</td><td>${esc([PAPER.query+'；事实、来源和适用条件',PAPER.metrics.map(m=>m.name).join('、')+'；按样本与版本分层','输入、操作、比较、负向结果和重测条件'][i])}</td><td>${esc(PAPER.steps[i])}</td></tr>`).join('')}</tbody></table><div class="${PAPER.kind==='风险研究'?'callout warn':'callout'}" style="margin-top:18px">${PAPER.kind==='风险研究'?'底线提示：仅在授权测试环境评估风险；公开课程聚焦识别、评估与防御。':'采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。'}</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i===0?'来自本篇研究范围与局限解读。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、指标含义、适用条件与证据强弱。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','concept','method','flow','lab','compare','numberless','proof','number','metric','limit'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene')$('#sceneOut').innerHTML=`<h3>${v?'研究启发':'常见做法'}</h3><p>${esc(v?PAPER.after:PAPER.before)}</p>${tip(v?'本课应用推断。需要在目标场景中验证。':'教学示意，尚未进行实际效果测量。')}`;
+ else if(a==='concept')$('#conceptOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p>`;
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flow(v);
+ else if(a==='metric'){state.metric=v;const m=PAPER.metrics[v];$('#metricOut').innerHTML=`<h3>${esc(m.name)}</h3><p>${esc(m.plain)}</p><div class="only-pro pro-note">${esc(m.pro)}</div>`;}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='method')$('#methodOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p><div class="callout">核对发现：${esc(PAPER.findings[v])}。</div>`;
+ else if(a==='numberless')$('#numberlessOut').textContent=v?PAPER.boundary:PAPER.setting;
+ else if(a==='number'){state.num=v;$('#numberOut').innerHTML=numView(v);}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);$('#findingOut'+ix).innerHTML=`<p>${esc(v===0?PAPER.finding_details[ix]:v===1?'应用推断：'+PAPER.steps[ix%PAPER.steps.length]+'，并以'+PAPER.metrics[ix%PAPER.metrics.length].name+'检验。':PAPER.boundary)}</p>${tip(v===1?'行动建议属于教学推断。':v===2?PAPER.extra:'需要连同研究设计解读，勿省略条件。')}`;}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='x-atk'){state.xatk=v;box.innerHTML=draw('lab');}
+ else if(a==='x-rate'){state.xrate=v;box.innerHTML=draw('lab');}
+ else if(a==='x-stage'){state.xstage=v;box.innerHTML=draw('lab');}
+ else if(a==='x-prev'||a==='x-next'){state.xstage=Math.max(0,Math.min(2,state.xstage+(a==='x-next'?1:-1)));box.innerHTML=draw('lab');}
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(PAPER.findings.map(t=>t+'。').join('\n')+'\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button,.lesson .x-row button,.lesson .x-steps button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

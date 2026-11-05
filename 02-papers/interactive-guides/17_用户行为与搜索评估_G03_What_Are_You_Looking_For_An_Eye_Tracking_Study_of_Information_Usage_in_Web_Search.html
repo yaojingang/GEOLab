@@ -1,0 +1,743 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>摘要长度与注意力分配 · 论文课堂</title><meta name="description" content="眼动实验显示长摘要有助信息型任务，平均省 24 秒且点中最佳结果更准，导航型任务反而慢 10 秒且更容易点错，注意力从网址转向了摘要"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="CHI 2007"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* x- components for this course (opt-114) */
+.x-labgrid{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:start}
+.x-serp{border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;background:#fff}
+.x-q{font-size:12.5px;color:var(--ink-3);margin-bottom:8px}
+.x-qnote{color:var(--ink-3)}
+.x-rt{font-size:14.5px;color:var(--accent-ink);font-weight:600}
+.x-ru{font-size:11.5px;color:var(--pos);font-family:var(--mono);margin:1px 0 6px}
+.x-snip{font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+.x-resnote{font-size:12px;color:var(--ink-3);margin-top:8px;line-height:1.6}
+.x-stack{display:flex;height:26px;border-radius:6px;overflow:hidden;margin:6px 0}
+.x-stack span{min-width:0}
+.x-c1{background:var(--c1)}.x-c2{background:var(--c2)}.x-c3{background:var(--c3)}
+.x-leg{display:flex;gap:14px;font-size:11.5px;color:var(--ink-2);flex-wrap:wrap;margin:2px 0 6px}
+.x-leg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.x-ores{display:grid;grid-template-columns:86px 1fr;gap:4px 10px;font-size:13.5px;margin-top:6px;align-items:baseline}
+.x-ores .k{color:var(--ink-3);font-size:12px}
+.x-verdict{margin-top:6px;font-size:13.5px;padding:7px 12px;border-radius:8px;background:var(--tint);color:var(--ink-2)}
+.x-pro-t{font-size:12px;line-height:1.65}
+.x-nrow{display:grid;grid-template-columns:150px 1fr 74px;gap:10px;align-items:center;margin:8px 0;font-size:13px}
+.x-ntrack{height:16px;background:var(--tint);border-radius:3px;position:relative}
+.x-nfill{height:100%;border-radius:3px;position:absolute;left:0;top:0;background:var(--accent)}
+.x-b1{background:var(--c1)}.x-b3{background:var(--c3)}
+.x-nval{font-family:var(--mono);font-size:12.5px;text-align:right;white-space:nowrap}
+.x-dtrack{display:grid;grid-template-columns:1fr 1fr;height:18px}
+.x-dhalf{position:relative;background:var(--tint)}
+.x-dhalf+.x-dhalf{border-left:2px solid var(--ink-2)}
+.x-dfill{position:absolute;top:0;bottom:0}
+.x-dhalf:first-child .x-dfill{right:0}
+.x-dg{background:var(--pos)}.x-dr{background:var(--neg)}
+.x-fchart{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:8px 0 0;background:#fff}
+.x-fchips{margin:4px 0 2px}
+.lesson .answer p:last-child{margin-bottom:0}
+#labOut .choice-row{margin-bottom:6px}
+.x-fcheck .fact-list li{padding:6px 0}
+.x-srow{display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:center;margin:6px 0}
+.x-slab{font-size:12px;color:var(--ink-3)}
+.x-matrix{border-collapse:collapse;font-size:12.5px;width:100%}
+.x-matrix th,.x-matrix td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.x-matrix th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+.x-tiers{display:grid;gap:9px}
+.x-tier{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:baseline}
+.x-tchip{font-size:11px;border:1px solid var(--line-2);border-radius:4px;padding:0 5px;color:var(--ink-3);text-align:center;white-space:nowrap}
+.x-tier p{margin:0;font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.x-labgrid{grid-template-columns:1fr}.x-nrow{grid-template-columns:104px 1fr 58px}.x-srow{grid-template-columns:32px 1fr}.x-tier{grid-template-columns:36px 1fr}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 17 用户行为与搜索评估</div>
+    <h1>摘要长度与注意力分配</h1>
+    <div class="en">2007 · 实证测量</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">摘要长度与注意力分配</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">眼动实验：长摘要让信息型任务平均省 24 秒，导航型任务反而多花 10 秒<span class="src">Figure 6 · PDF p.6</span></div></div><div class="notes">封面四个数字先立住结论：长摘要帮信息型任务省 24 秒，却让导航型任务慢 10 秒。请学生记住这对矛盾，整门课都在解释它从哪来。条件先交代：18 人实验室、桌面端 MSN Search。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">沿着问题与证据完成这门课</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">结论先行：同一处改动，两类任务一好一坏，机制在注意力分配<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">这一页给路线：先看两类任务的差别，再看实验怎么测，然后逐条过四条发现，最后落到应用与边界。可以让学生点击任一章直接跳转。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">同一份摘要，找信息与找官网是两件事</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">先判断查询在找信息还是在找入口，再决定摘要给多长<span class="src">Discussion · PDF p.8</span></div></div><div class="notes">场景页让学生先站到搜索用户一边：查动物园面积和找 Comfort Inn 官网，成功的定义完全不同。切换两种做法，观察统一摘要模板漏掉了什么。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">找信息看内容线索，找官网看地址线索</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">导航型更依赖网址（注视占比 25% 对 22%），两类任务读结果卡的方式不同<span class="src">Results · PDF p.7</span></div></div><div class="notes">概念页拆两个关键区分：任务类型（信息型对导航型）和结果卡的三个部件（标题、摘要、网址）。点术语可以看通俗解释，这里铺垫后面所有机制讨论。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">三档摘要、两类任务、一条测量链</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">12 个任务 × 3 档摘要 = 36 组合，逐任务平衡后再比较<span class="src">Experiment · PDF p.4</span></div></div><div class="notes">流程页走三步：设三档摘要，眼动仪记录对标题、摘要、网址的注视，再比较用时与准确率。强调这是被试内设计，每个人都要完成全部组合。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">改动的只有摘要长度，其余全部受控</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">同一生产引擎、缓存首屏、去掉广告、固定 10 条结果，差异才能归因到摘要<span class="src">Apparatus · PDF p.4</span></div></div><div class="notes">边界页强调干预只有一个变量：摘要长度。引擎、排序方式、界面、首屏缓存都受控，所以差异能归因到摘要。同时预告结论的范围限制。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">用时、准确率与注视回答三个不同问题</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">注视满 100 毫秒才计入；准确率只看首屏是否点中「最佳」结果<span class="src">Results · PDF p.5</span></div></div><div class="notes">指标页逐个过三个指标的操作口径：注视要满 100 毫秒才计入，准确率只看首屏点中最佳结果，用时从结果出现数到口头报告完成。口径决定后面数字怎么读。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">实验设置限定结论的适用范围</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">招募 22 人、分析 18 人；Tobii x50 以 50Hz 记录，17 英寸 1024×768 屏<span class="src">Participants · PDF p.4</span></div></div><div class="notes">设计页报家底：招募 22 人、4 人因眼动数据不稳被剔除，分析 18 人；Tobii x50 以 50Hz 采样。右侧可以抽看原文段落核对。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">复验这套实验要先盯住四个条件</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">最重要的一条：按任务类型分开分析，全样本平均时摘要长度没有任何主效应<span class="src">Results · PDF p.6</span></div></div><div class="notes">对照检查页把复验要点改成可勾选清单。最重要的一条：结果必须按任务类型分开分析，全样本平均时摘要长度没有任何效应，这是本篇最容易漏的坑。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">同一套生产引擎，三个受控档位</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">短 1 行、中 2–3 行、长 6–7 行；首屏可见结果 7 / 5.7 / 4.2 条<span class="src">Experiment · PDF p.4</span></div></div><div class="notes">方法页按三步给出论文参数：三档摘要的行数与首屏可见条数、眼动设备与 AOI 划分、统计模型。学生可以逐步点开核对。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">任务类型决定摘要是助力还是负担</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">信息型任务的网址注视 3.79 秒→1.47 秒；导航型任务几乎不变<span class="src">Table 4 · PDF p.7</span></div></div><div class="notes">招牌交互页：切换任务类型和摘要长度，看注视时长怎么从网址流向摘要，任务结果怎么翻转。默认信息型短摘要，先看基线，再切到长摘要看网址段塌下去。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">数字需要连同口径一起读取</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">每个数字保留单位与条件：−24 秒、+10 秒、28%→39%、58%→47%<span class="src">Figure 6/7 · PDF p.6</span></div></div><div class="notes">证据读数页四个视图：用时变化、首点准确率、网址注视时长、原文表格。提醒学生 28% 到 39% 未达统计显著，作者只称趋势。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">长摘要把信息型任务用时平均缩短 24 秒</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">省时的同时少看了约三分之一的结果，首点最佳准确率 28%→39%<span class="src">Figure 6/7/8 · PDF p.6</span></div></div><div class="notes">发现一：信息型任务省 24 秒，点中最佳结果更准，查看的结果还更少。机制是答案线索提前摆上了结果页。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">导航型任务用长摘要多花 10 秒还更易点错</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">中等长度摘要已使首点准确率 58%→47%，查看结果数升到约 12 条<span class="src">Figure 7/8 · PDF p.6</span></div></div><div class="notes">发现二：导航型任务反着来，长摘要慢 10 秒，中等长度就把准确率从 58% 拉到 47%。让学生对比发现一，记住方向相反。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">摘要变长后注视份额从网址转移到描述文字</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">信息型任务花在网址上的注视总时长 3.79 秒→1.47 秒（短→长）<span class="src">Table 4 · PDF p.7</span></div></div><div class="notes">发现三给机制证据：摘要越长，注视越偏向摘要、越离开网址，信息型的网址注视几乎减半。这是解释两条性能发现的桥梁。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">同一段摘要对不同任务的价值完全不同</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">作者建议按意图分流：信息型给富摘要，导航型把网址上移到标题下方<span class="src">Discussion · PDF p.8</span></div></div><div class="notes">发现四落到设计含义：同一段摘要没有万能长度。作者给了三条出路，包括把网址移到标题下方和按意图分流展示。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">相关研究帮助检验迁移边界</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">本研究图 4 的浏览顺序与 Joachims 等人一致（第 1 位除外）<span class="src">Results · PDF p.5</span></div></div><div class="notes">对照页连接仓库里的 Joachims 点击研究：两篇对浏览顺序的结论一致。提醒对照阅读时对齐任务与口径。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">论文原例：一段摘要的三种长度</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">论文用俄克拉何马市动物园同一条结果展示短中长三档摘要<span class="src">Table 1 · PDF p.3</span></div></div><div class="notes">案例页用论文自己的例子：同一条动物园结果的三档摘要原文。信息型任务里答案 110 英亩直接躺在长摘要里；换成就找官网，线索就变成网址。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">不同角色需要不同的执行清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">建议都能追溯到发现，但收益大小要在自家查询上对照测得<span class="src">Discussion · PDF p.8</span></div></div><div class="notes">角色页给三份清单，全部标注了对应的发现与推断属性。强调行动前先在自己业务的查询样本上复测。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态可以承接研究方法</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">意图分流与富摘要已是成熟形态；映射关系为本课推断<span class="src">Discussion · PDF p.8</span></div></div><div class="notes">成熟形态页把论文方法接到今天的实践：意图分类、富摘要、可用性测试记录。对应关系是本课推断，页面已注明。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">结论的边界决定应用的尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">18 人实验室样本、首屏观测少：28%→39% 未达统计显著<span class="src">Results · PDF p.7</span></div></div><div class="notes">批判页按影响排序六条局限，样本、口径、机制解释、对照研究都覆盖。重点讲 28% 到 39% 未达显著这件事。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">每条结论都带着条件：任务类型、口径、样本与界面<span class="src">全文 · PDF p.1</span></div></div><div class="notes">金句页六张卡，点击翻面看依据与用法。可以让学生挑一张复制带走，复制内容自带出处。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">五题覆盖核心结论、反常发现、指标口径、机制解释与证据边界<span class="src">全文 · PDF p.1</span></div></div><div class="notes">自测五题覆盖结论、反常发现、指标口径、机制与局限。答错会给出复习页码，鼓励回看后再答。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>What Are You Looking For? An Eye-Tracking Study of Information Usage in Web Search</p><p>2007 · CHI 2007</p><p><a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/Whatareyoulookingfor-cutrell-chi07.pdf" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper114,
+  author = {Edward Cutrell and Zhiwei Guan},
+  title = {What Are You Looking For? An Eye-Tracking Study of Information Usage in Web Search},
+  year = {2007},
+  url = {https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/Whatareyoulookingfor-cutrell-chi07.pdf}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：563249a03b2a6e28a4d096f93e79b3d8cfe34f05c37a2a224e110206b30289a1</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={"id":114,"zh":"摘要长度与注意力分配","kind":"实证测量","question":"搜索结果摘要变长，用户的注意力与任务表现会怎么变化？","claim":"眼动实验显示长摘要有助信息型任务，平均省 24 秒且点中最佳结果更准，导航型任务反而慢 10 秒且更容易点错，注意力从网址转向了摘要","steps":["把摘要设成短中长三档","眼动追踪标题摘要与网址注视","对比两类任务的用时与准确率"],"findings":["长摘要把信息型任务用时平均缩短 24 秒","导航型任务用长摘要多花 10 秒还更易点错","摘要变长后注视份额从网址转移到描述文字","同一段摘要对不同任务的价值完全不同"],"metrics":[{"name":"任务用时","plain":"从首屏结果出现到被试口头宣布找到为止的时间"},{"name":"点击准确率","plain":"在首个结果页点中「最佳」结果的被试比例"},{"name":"注视时长","plain":"视线停在标题、摘要或网址上的累计时间，满 100 毫秒才计入"}],"setting":"18 名被试在 MSN Search 上完成 12 个任务，摘要分短中长三档；Tobii x50 眼动仪以 50Hz 记录，17 英寸 1024×768 显示器","boundary":"实验室受控任务与桌面端界面（18 人、给定查询）；摘要由生产引擎动态生成、质量参差；移动端或真实动机搜索需另行验证","query":"教学情境：站内同时有「查俄克拉何马市动物园面积」和「找 Comfort Inn 官网」两类查询，摘要该放长还是放短？","before":"全站统一一种摘要长度与模板，两类查询看到同一张结果卡","after":"信息型查询给 6–7 行富摘要，把数字、地址等答案线索放进摘要；导航型查询保持短摘要，突出品牌名与网址","finding_details":["信息型任务换长摘要平均省 24 秒，首点最佳准确率从 28% 升到 39%（观测少，未达统计显著）；更长的摘要把判断相关性的线索提前摆上结果页，被试查看的结果条数反而少了约三分之一。","导航型任务正相反：长摘要让用时增加 10 秒，中等长度就使首点最佳准确率从 58% 降到 47%；长文本淹没了网址等定位线索，被试查看的结果数升到约 12 条。","摘要越长，注视越偏向摘要、越离开网址：信息型任务花在网址上的注视总时长从 3.79 秒降到 1.47 秒；导航型用户本就更依赖网址（25% 对 22%），受损更明显。","作者建议按任务类型分流展示：信息型给更丰富的摘要，导航型把网址上移到标题下方或减少摘要内容，可用显式选择或自动意图分类实现；一套模板应付所有查询并不可取。"],"catalog_title":"What Are You Looking For? An Eye-Tracking Study of Information Usage in Web Search","title":"What Are You Looking For? An Eye-Tracking Study of Information Usage in Web Search","authors":"Edward Cutrell; Zhiwei Guan","year":"2007","category":"17_用户行为与搜索评估","url":"https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/Whatareyoulookingfor-cutrell-chi07.pdf","file":"17_用户行为与搜索评估_G03_What_Are_You_Looking_For_An_Eye_Tracking_Study_of_Information_Usage_in_Web_Search.html","pdf":"","kind_note":"基于受测环境，迁移效果需要另测","extra":"示意文案不得当作实测收益；应用前先分清查询在找信息还是在找入口，并分开测量。","evidence":[{"label":"摘要与研究目标","text":"Web search services are among the most heavily used applications on the World Wide Web. Perhaps because search is used in such a huge variety of tasks and contexts, the user interface must strike a careful balance to meet all user needs. We describe a study that used eye tracking methodologies to explore the effects of changes in the presentation of search results. We found that adding information to the contextual snippet significantly improved performance for informational tasks but degraded performance for navigational tasks. We discuss possible reasons for this difference and the design implications for better presentation of search results.","page":1},{"label":"结果关键段（原文）","text":"In stark contrast, Figures 6 and 7 indicate that increasing the snippet length had exactly the opposite effect for navigational tasks. Long snippets increased the total time on task, and snippets of even medium length were associated with a drop in accuracy from 58% to 47%. In sum, users performed best on navigational tasks with short snippets and best on informational tasks with long snippets.","page":7}],"table":{"label":"Table 4 · 注视时长","page":7,"text":"Table 4. Mean fixation duration in seconds (SEM below) per component\n             Navigational               Informational\n             Short   Medium   Long      Short   Medium   Long\nTitle        3.36    4.31     5.49      5.56    6.68     3.61\n            (0.44)  (0.95)   (1.27)    (1.09)  (1.68)   (0.81)\nSnippet      2.72    5.10     7.85      4.38    7.51     6.54\n            (0.52)  (1.29)   (1.90)    (0.82)  (1.54)   (1.34)\nURL          2.93    3.25     3.32      3.79    4.16     1.47\n            (0.54)  (0.77)   (0.71)    (0.76)  (0.90)   (0.39)"},"version":"CHI 2007","sha256":"563249a03b2a6e28a4d096f93e79b3d8cfe34f05c37a2a224e110206b30289a1","stats":[{"v":"24","name":"信息型任务省时 · 秒","source":"Figure 6 · PDF p.6","context":"信息型任务用长摘要比短摘要平均快 24 秒；导航型任务反而慢 10 秒（图 6 读数）","page":6},{"v":"58%","name":"导航任务短摘要准确率","source":"Figure 7 · PDF p.6–7","context":"导航型任务首屏点中最佳结果的比例；摘要加到中等长度后降到 47%","page":7},{"v":"28%","name":"信息任务短摘要准确率","source":"Figure 7 · PDF p.6–7","context":"信息型任务用长摘要后升到 39%；因观测次数少未达统计显著","page":7},{"v":"25%","name":"导航任务注视网址占比","source":"Results · PDF p.7","context":"全程注视时间里导航型任务花在网址上的比例为 25%，信息型为 22%","page":7}],"related":{"id":113,"zh":"点击是带偏差的隐式反馈","title":"Accurately Interpreting Clickthrough Data as Implicit Feedback","url":"./17_用户行为与搜索评估_G02_Accurately_Interpreting_Clickthrough_Data_as_Implicit_Feedback.html","pdf":"https://www.cs.cornell.edu/people/tj/publications/joachims_etal_05a.pdf","claim":"眼动与人工判断对照显示，点击带有信任偏差与结果集质量偏差，不能当绝对相关性，转成点击与跳过的成对偏好后平均约八成与人工判断一致"},"strength":"中","strength_why":"本课保守评级：眼动与行为双指标、5 项交互效应全显著；但 18 人实验室样本，28%→39% 未达显著，外推需复测。","limitations":[["高","样本小且为实验室任务","招募 22 人、分析 18 人（11 男），12 个任务在 MSN Search 桌面端完成；迁移到真实动机与移动端需另测。","Participants · PDF p.4"],["高","首屏准确率观测少","28%→39% 的提升未达统计显著，作者只称趋势为汇聚证据；不能当作确定的收益数字引用。","Results · PDF p.7"],["高","摘要质量与任务难度差异大","摘要由生产引擎动态生成、长短参差；任务难度差异大，只能靠跨任务平衡平均，单任务结论不稳。","Experiment · PDF p.3–4"],["中","机制是解释而非实证","「长摘要挤占网址注意力导致导航受损」是作者基于注视份额的解释；去网址、移网址位置等验证实验尚未做。","Discussion · PDF p.8"],["中","相关研究提供新的对照","Joachims 等人（本仓 G02）显示点击带信任与位置偏差；本篇的准确率以首屏点击计数，同样受位置因素影响。","Results · PDF p.5"],["低","位置变量另行分析","目标位置操纵由姊妹篇（Guan & Cutrell, CHI 2007）单独分析，本课未覆盖该因素。","Experiment · PDF p.3"]],"quiz":[{"q":"摘要长度对两类任务的影响，哪项概括最准确？","o":["只要信息够多，长摘要对所有任务都有帮助","长摘要帮信息型任务省时更准，让导航型任务更慢更易错","摘要长度只影响导航型任务的用时","两类任务的平均用时都不受摘要长度影响"],"a":1,"e":"全样本平均时长度无主效应，但任务类型×长度交互对 5 项指标全部显著（Table 3 · PDF p.6）；性能方向相反（Figure 6/7）。","p":13},{"q":"给信息型任务换上长摘要后，被试查看的结果条数怎么变？","o":["更多，因为要读的文字变多","先增多后减少","少约三分之一","完全不变"],"a":2,"e":"信息型任务少看约三分之一的结果；导航型反而从约 8–9 条升到约 12 条（Figure 8 · PDF p.7）。","p":15},{"q":"本篇的「点击准确率」怎么定义？","o":["被试最终是否完成任务","在首个结果页点中「最佳」结果的比例","点击结果后在页面停留的时长","与主观评分的相关性"],"a":1,"e":"准确率只统计首个结果页：是否点中该任务唯一的「最佳」结果（Results · PDF p.5）。","p":7},{"q":"作者如何解释导航型任务在长摘要下受损？","o":["长摘要挤占网址的注意力，而网址是定位关键线索","首屏可见结果变少导致翻页成本","被试不认识摘要里的单词","眼动仪采样延迟干扰了操作"],"a":0,"e":"注视份额随摘要加长从网址流向摘要（Table 4 与 Figure 9 · PDF p.7）；作者据此建议把网址移到标题下方（Discussion · PDF p.8）。","p":14},{"q":"关于信息型任务 28%→39% 的准确率上升，正确的说法是？","o":["已达统计显著，可以直接推广","来自真实搜索引擎日志的回测","观测次数少未达显著，作者视作汇聚证据的趋势","导航型任务里同样出现"],"a":2,"e":"正文明确该差异未达统计显著，仅作为支持假设的汇聚证据（Results · PDF p.7）。","p":21}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{geo:{t:"GEO",d:"改善来源在生成式答案中的可见性及归功的研究与实践。"},rag:{t:"RAG",d:"先检索外部资料，再以资料支持模型生成。"},baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},ablation:{t:"消融",d:"去除某个组件，比较它对整体结果的贡献。"},transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=e=>`<span class="src">${esc(e.label)} · PDF p.${e.page}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const researchOnly=['理论框架','综述'].includes(PAPER.kind);
+const stageNames=['问题与候选资料','研究干预与比较','答案或评价结果'];
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,num:0,lim:0,role:0,proof:0,q:0,xtask:0,xlen:0,xcase:0,answers:[],checks:new Set(),flips:new Set()};
+/* ===== opt-114 论文专属数据（Cutrell & Guan, CHI 2007；出处逐项标注） ===== */
+const X_T4={info:{short:[5.56,4.38,3.79],mid:[6.68,7.51,4.16],long:[3.61,6.54,1.47]},nav:{short:[3.36,2.72,2.93],mid:[4.31,5.10,3.25],long:[5.49,7.85,3.32]}};
+const X_VIS=["首屏约 7 条结果可见","首屏平均 5.7 条可见","首屏平均 4.2 条可见"];
+const X_SNIP={
+ short:"The oldest zoo in the Southwest and one of the top in the nation, the Oklahoma ...",
+ mid:"The oldest zoo in the Southwest and one of the top in the nation, the Oklahoma City Zoo's 110 acres are home to more than 2,800 of the world's most exotic animals.",
+ long:"The oldest zoo in the Southwest and one of the top in the nation, the Oklahoma City Zoo's 110 acres are home to more than 2,800 of the world's most exotic animals.\" The Cat Forest/Lion Overlook was completed in 1997. New in 1993 was the Great EscApe, a simulated tropical forest with gorillas, orangutans and chimpanzees. Also found at the zoo are the Noble Aquatic Center: Aquaticus, a Children's Zoo and Discovery Area, Herpetarium, Island Life Exhibit, Dan Moran Aviary and the Safari Tram. Open 9-5 (Oct-March), 9-6 (April-Sept). Rides additional (weather permitting and seasonal). 2101 N.E. 50th Street Oklahoma City, OK (405) 424-3344."};
+const X_LAB={
+ q:["oklahoma city zoo","comfort inn"],
+ qnote:["论文信息型任务示例：查动物园面积","论文导航型任务示例：找 Comfort Inn 官网"],
+ time:[["基线 · 整体 78.1 秒","见原文图 6","平均缩短 24 秒"],["基线 · 整体 36.9 秒","与短摘要持平","平均增加 10 秒"]],
+ acc:[["28%","见原文图 7","39%（未达显著）"],["58%","47%","见原文图 7"]],
+ fix:[["约 8–9 条","见原文图 8","少约三分之一"],["约 8–9 条","见原文图 8","约 12 条"]],
+ verdict:["论文结论：信息型任务长摘要最好——省 24 秒、点得更准、看得更少。","论文结论：导航型任务短摘要最好——网址清晰可辨，58% 首点命中。"]};
+const X_F=[
+ {m:0,s:["Figure 6","Figure 7"],p:[6,6],
+  why:"用时交互效应显著（F(2,34)=4.4, p=.02），但 18 人实验室样本，外推需复测。",
+  impl:"信息型查询页给足上下文：把数字、地址、答案句写进摘要，线索前置到结果页。",
+  cond:"摘要由引擎动态生成，质量参差；先确认长摘要真的包含答案线索，再谈收益。"},
+ {m:1,s:["Figure 6","Figure 7","Figure 8"],p:[6,6,7],
+  why:"用时增加与准确率下降方向一致；58%→47% 在中等长度就出现，是全文最实的负向数字。",
+  impl:"品牌与官网类查询保持短摘要，确保域名与品牌名清晰可辨。",
+  cond:"任务难度影响受损幅度；上线前按自家导航类查询复测。"},
+ {m:2,s:["Table 4","Figure 9"],p:[7,7],
+  why:"5 项指标的交互效应全部显著（Table 3）；注视转移是作者解释性能反转的机制。",
+  impl:"把定位信息（域名、面包屑）放在摘要挤压区之外，例如网址上移到标题下方。",
+  cond:"Table 4 是每任务累计口径，与单屏注视占比有别；Figure 9 只能读趋势。"},
+ {m:0,s:["Discussion","Experiment"],p:[8,4],
+  why:"按意图分流是作者的设计建议，论文未实测其收益；两条任务线的结果支持这个方向。",
+  impl:"按意图分流展示：显式开关或自动分类后，再决定摘要长度与元素顺序。",
+  cond:"自动意图分类的准确率决定该建议的上限，分类错则展示错。"}];
+const X_METHOD=[
+ {h:"三档摘要怎么定",p:"短档约 1 行、中档 2–3 行、长档 6–7 行，由 MSN Search 生产引擎的摘要算法生成。短档首屏可见 7 条结果，中档平均 5.7 条，长档平均 4.2 条。",src:["Experiment","4"]},
+ {h:"眼动怎么测",p:"Tobii x50 以 50Hz 采样，17 英寸 1024×768 显示器；注视满 100 毫秒才计入，AOI 由脚本按 DOM 动态划分到标题、摘要、网址。",src:["Apparatus","4"]},
+ {h:"怎么比较",p:"2（任务类型）×3（摘要长度）×2（重复）重复测量 MANOVA；12 个任务 × 3 档 = 36 组合逐任务平衡；首屏结果页本地缓存，保证所有人看到同一组结果。",src:["Design","4"]}];
+const X_CHECKS=[["按任务类型分开报告","全样本平均时摘要长度没有主效应，只有交互显著"],["首屏结果集一致","缓存首屏结果、移除广告，避免混入排序混杂因素"],["注视口径写清","满 100 毫秒才计入，AOI 分标题、摘要、网址三元素"],["正负效应一起报告","本文一类任务变好、另一类变坏，只报一头会误导"]];
+const X_QUOTES=[
+ ["长摘要是给找信息的人的礼物","依据：Figure 6 · p.6，信息型任务平均省 24 秒。","用法：信息型查询页给足上下文摘要，线索前置。"],
+ ["网址是找官网的人的路标","依据：p.7，导航型任务 25% 的注视落在网址上。","用法：品牌类查询保持短摘要与清晰域名。"],
+ ["摘要变长，注意力从网址流向摘要","依据：Table 4 · p.7，网址注视 3.79→1.47 秒。","用法：别让富摘要挤掉定位线索。"],
+ ["平均数会掩盖相反的两端","依据：Table 3 · p.6，全样本无主效应、交互全显著。","用法：任何界面实验都按任务类型分开报告。"],
+ ["快 24 秒之外，点得也更准","依据：Figure 7 · p.6–7，28%→39%（未达显著）。","用法：用时与首点准确率要一起测。"],
+ ["结论先看口径：实验室、桌面端、首屏","依据：p.4 与 p.7，18 人、给定查询、首屏计数。","用法：迁移到自家场景前先小规模复测。"]];
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function dataNumbers(){return PAPER.stats.length?`<div class="number-grid">${PAPER.stats.slice(0,4).map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div>${tip(s.source)}</div>`).join('')}</div>`:`<div class="answer"><div class="kicker">证据类型 · ${esc(PAPER.kind)}</div><h3>${esc(PAPER.zh)}</h3><p>${esc(PAPER.kind_note)}</p>${tip('本篇未在封面展示未经逐项核对的效果数值。')}</div>`}
+function flow(highlight){return `<div class="flow-line">${stageNames.map((t,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${highlight===i?'active':''}">${esc(t)}<div class="caption">${esc(PAPER.steps[i])}</div></div>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+const notesForStep=i=>[
+ `输入与目标：${PAPER.question}。先明确数据单位与研究对象：${PAPER.setting}。`,
+ `研究比较：${PAPER.steps[1]}。对照关系决定哪些变化能够归因于研究干预。`,
+ `结果解读：${PAPER.steps[2]}。回到本篇结论：${PAPER.claim}。`
+][i];
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors.split("; ")[0])}${PAPER.authors.includes(";")?" 等":""} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}${PAPER.pdf?' · '+ext(PAPER.pdf,'本地PDF'):''}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿。进度自动保存在当前浏览器。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>${esc(PAPER.question)}</li><li>${esc(PAPER.metrics[0].name)}衡量什么？</li><li>${esc(PAPER.steps[1])}怎样起作用？</li><li>哪些条件会限制结论迁移？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>同一目标下，先对照常见做法与研究启发。</p>${tip('以下为围绕论文方法构造的教学情境。不给示意操作附加实测收益。')}</div><div>${choices(['常见做法','研究启发'],0,'scene')}<div class="answer" id="sceneOut" aria-live="polite"><h3>常见做法</h3><p>${esc(PAPER.before)}</p>${tip('观察这一做法遗漏了什么条件。')}</div></div></div>`;
+ else if(view==='concept')h=`<div class="columns"><div><div class="kicker">两类任务 · 论文的核心自变量</div><div class="grid2"><div class="card"><div class="k">信息型任务</div><h4>找到信息就结束</h4><p>如「查动物园面积」「查拉斯维加斯单轨铁路多长」。答案在哪个网站都行，结果卡里的内容线索最值钱。</p></div><div class="card"><div class="k">导航型任务</div><h4>找到那个官网</h4><p>如「找 Comfort Inn 首页」「找 Pinewood 软件公司主页」。目标唯一，网址与品牌名最值钱。</p></div></div>${tip('任务定义与全部 12 个任务见 Table 2 · PDF p.4；卡片例子取自论文任务列表。')}</div><div><div class="kicker">一张结果卡的三个部件 · Table 1 原例</div><div class="x-serp"><div class="x-rt">Welcome to the Oklahoma City Zoo</div><div class="x-ru">http://www.cpb.ouhsc.edu/OKC/OKCZoo/</div><div class="x-snip" lang="en">${esc(X_SNIP.short)}</div></div><div class="caption">标题、摘要、网址各记一份注视时长；导航型任务 25% 的注视落在网址上，信息型 22%。</div><div class="term-row">${termHtml()}</div></div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(notesForStep(state.step))}</p><div class="only-pro pro-note">${esc(PAPER.setting)}。证据范围：${esc(PAPER.boundary)}。</div></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按论文方法重新组织；箭头表达研究逻辑，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],1,'flow')}<div id="flowOut" aria-live="polite">${flow(1)}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric'){const MP=[["注视满 100 毫秒才计入；由 Tobii x50（50Hz）记录，AOI 按 DOM 动态划分到标题、摘要、网址三元素，分元素累计。","Results","5"],["首个结果页上点中「最佳」结果的被试比例；导航型目标唯一，信息型设一个含答案线索的最佳结果。导航型短摘要 58%、中摘要 47%；信息型 28%→39%（未达显著）。","Figure 7","6"],["从首屏结果出现到被试口头宣布完成为止；信息型整体平均 78.1 秒，导航型 36.9 秒（F(1,17)=54.7, p<.001）。","Results","6"]][state.metric];
+ h=`<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite"><h3>${esc(PAPER.metrics[state.metric].name)}</h3><p class="only-plain">${esc(PAPER.metrics[state.metric].plain)}</p><div class="only-pro"><p>${esc(MP[0])}</p><div class="pro-note">先核对分母、样本单位、条件与聚合方式；三个指标都按「任务 × 摘要长度」单元平均。<span class="src">${esc(MP[1])} · PDF p.${MP[2]}</span></div></div></div></div><div><div class="kicker">指标解释的检查次序</div><ul class="fact-list"><li>测量对象<small>${esc(PAPER.setting)}</small></li><li>对应结论<small>${esc(PAPER.findings[0])}</small></li><li>禁止越界<small>${esc(PAPER.boundary)}</small></li></ul></div></div>`;}
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 研究设计</div><p class="intro">${esc(PAPER.setting)}</p><div class="callout">${esc(PAPER.boundary)}</div><div class="only-pro pro-note">被试内设计：2（任务类型）×3（摘要长度）×2（重复）重复测量 MANOVA；12 任务 × 3 档 = 36 组合逐任务平衡；首屏结果页缓存一致；MSN 生产摘要算法、去掉广告、固定 10 条结果。<span class="src">Design/Apparatus · PDF p.4–5</span></div>${tip('研究类型会决定所需对照。实证测量要核查比较设计与平衡方式。')}</div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">给你的复验方案做检查 · 本课推断</div><div class="check-list">${X_CHECKS.map((c,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${esc(c[0])}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'具备基本复验要素':'继续补齐比较条件'}</h3><p>${state.checks.size===4?'四条都对照论文做法：分开报告、缓存首屏、写清口径、正负同报。':'勾选后查看对应做法在论文里的原型。'}</p><div class="caption">${state.checks.size===4?'全部勾选也无法替代在你自己的查询分布上重跑。':'每条勾选对应论文的一个受控做法。'}</div><div class="only-pro pro-note"><ul style="margin:4px 0 0;padding-left:18px">${X_CHECKS.map(c=>`<li><b>${esc(c[0])}</b>：${esc(c[1])}</li>`).join('')}</ul><span class="src">Results · PDF p.5–7</span></div></div></div>`;
+ else if(view==='method')h=`<div class="step-track">${X_METHOD.map((m,i)=>`<button type="button" class="choice" data-action="method" data-value="${i}" aria-pressed="${i===0}">${esc(m.h)}</button>`).join('')}</div><div class="columns"><div class="answer" id="methodOut" aria-live="polite"><h3>${esc(X_METHOD[0].h)}</h3><p>${esc(X_METHOD[0].p)}</p><div class="caption">${src({label:X_METHOD[0].src[0],page:X_METHOD[0].src[1]})} 切换上方步骤查看每一步的论文参数。</div></div><div><div class="kicker">保持不变的约束</div><ul class="fact-list"><li>同一生产引擎与界面</li><li>结果排序内容不变，只变摘要行数</li><li>${esc(PAPER.boundary)}</li></ul></div></div>`;
+ else if(view==='lab')h=`<div id="labOut" aria-live="polite">${eyelabHtml()}</div>`;
+ else if(view==='numbers')h=numbersHtml();
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);const f=X_F[ix];
+ h=`<div class="ev" style="margin-bottom:6px">F${ix+1} · 证据强度 <span class="str-m">${esc(PAPER.strength)}</span> · ${esc(f.why)} ${f.s.map((lb,i)=>src({label:lb,page:f.p[i]})).join(' ')}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${fchart(ix)}</div><div class="x-fcheck"><div class="kicker">如何核查这一发现</div><ul class="fact-list"><li>研究设置<small>18 名被试 · MSN Search · 12 任务 · 三档摘要 · Tobii 50Hz</small></li><li>观察指标<small>${esc(PAPER.metrics[f.m].name)}：${esc(PAPER.metrics[f.m].plain)}</small></li><li>迁移约束<small>实验室桌面端结论；移动端与真实动机搜索需另测</small></li></ul><button type="button" class="btn" data-go="8" style="margin-top:4px">回到原文证据 →</button></div></div>
+<div style="margin-top:10px">${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite"><p>${esc(PAPER.finding_details[ix])}</p></div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes'){h=`<div class="flips">${X_QUOTES.map((q,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(q[0])}</b><span class="flip-back">${esc(q[1])}<br>${esc(q[2])}</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;}
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function xStackBar(d){const t=d[0]+d[1]+d[2];return `<div class="x-stack"><span class="x-c1" style="width:${(d[0]/t*100).toFixed(1)}%"></span><span class="x-c2" style="width:${(d[1]/t*100).toFixed(1)}%"></span><span class="x-c3" style="width:${(d[2]/t*100).toFixed(1)}%"></span></div>`;}
+function xLeg(d){return `<div class="x-leg"><span><i class="x-c1"></i>标题 ${d[0].toFixed(2)} 秒</span><span><i class="x-c2"></i>摘要 ${d[1].toFixed(2)} 秒</span><span><i class="x-c3"></i>网址 ${d[2].toFixed(2)} 秒</span></div>`;}
+function xRow(lab,cls,val,max,v){return `<div class="x-nrow"><span>${esc(lab)}</span><div class="x-ntrack"><div class="x-nfill ${cls}" style="width:${(v/max*100).toFixed(1)}%"></div></div><span class="x-nval">${val}</span></div>`;}
+function xDelta(lab,v){const w=(Math.abs(v)/30*100).toFixed(1);return `<div class="x-nrow"><span>${esc(lab)}</span><div class="x-dtrack"><div class="x-dhalf"><div class="x-dfill ${v<0?'x-dg':''}" style="width:${v<0?w:0}%"></div></div><div class="x-dhalf"><div class="x-dfill ${v>0?'x-dr':''}" style="width:${v>0?w:0}%"></div></div></div><span class="x-nval">${v>0?'+':'−'}${Math.abs(v)} 秒</span></div>`;}
+function eyelabHtml(){const t=state.xtask,l=state.xlen,d=X_T4[t?'nav':'info'][['short','mid','long'][l]],lk=['short','mid','long'][l];
+ const cell=k=>X_LAB[k][t][l];
+ return `<div class="choice-row" role="group" aria-label="任务类型">${['信息型 · 找信息','导航型 · 找官网'].map((s,i)=>`<button type="button" class="choice" data-action="x-task" data-value="${i}" aria-pressed="${i===t}">${esc(s)}</button>`).join('')}</div>
+<div class="choice-row" role="group" aria-label="摘要长度">${['短 · 约 1 行','中 · 2–3 行','长 · 6–7 行'].map((s,i)=>`<button type="button" class="choice" data-action="x-len" data-value="${i}" aria-pressed="${i===l}">${esc(s)}</button>`).join('')}</div>
+<div class="x-labgrid"><div><div class="x-serp"><div class="x-q">搜索：${esc(X_LAB.q[t])}<span class="x-qnote"> · ${esc(X_LAB.qnote[t])} · 界面示意</span></div><div class="x-rt">Welcome to the Oklahoma City Zoo</div><div class="x-ru">http://www.cpb.ouhsc.edu/OKC/OKCZoo/</div><div class="x-snip" lang="en">${esc(X_SNIP[lk])}</div></div><div class="x-resnote">结果卡为论文 Table 1 原例，排序与内容不变；加长后卡片变高，${esc(X_VIS[l])}。</div></div>
+<div><div class="grp-t">注视总时长怎么分配（Table 4 实测）</div>${xStackBar(d)}${xLeg(d)}
+<div class="x-ores"><span class="k">用时变化</span><span>${esc(cell('time'))}</span><span class="k">首点准确率</span><span>${esc(cell('acc'))}</span><span class="k">查看结果数</span><span>${esc(cell('fix'))}</span></div>
+<div class="x-verdict">${esc(X_LAB.verdict[t])}</div>
+</div></div>
+<div class="only-pro x-pro-t" style="margin-top:8px">任务×长度交互对 5 项指标全显著（Table 3 · PDF p.6）；两类任务平均时长度无主效应；用时 F(2,34)=4.4（p=.02）。各格 SEM 见原文 Table 4。</div>
+${tip('方法链：三档摘要 → 分元素注视 → 两类任务对比；试试导航型 + 长摘要的组合。注视为 12 任务平均累计（Table 4 · PDF p.7），用时与准确率出自正文（PDF p.6–7）；界面示意。')}`;}
+function numView(v){
+ if(v===0)return `<div class="columns wide"><div><div class="grp-t">长摘要相对短摘要的任务用时变化（中轴 0 = 持平）</div>${xDelta('信息型任务',-24)}${xDelta('导航型任务',10)}<div class="x-leg"><span><i class="x-dg"></i>变快</span><span><i class="x-dr"></i>变慢</span><span>满刻度 30 秒</span></div></div><div class="answer"><h3>怎么读</h3><p>同一个改动，方向相反：信息型平均快 24 秒，导航型慢 10 秒。全样本平均时长度无主效应，结论必须按任务类型分开读。</p><p class="cap">信息型任务整体平均 78.1 秒，导航型 36.9 秒。<span class="src">Figure 6 · PDF p.6</span></p></div></div>`;
+ if(v===1)return `<div class="columns wide"><div><div class="grp-t">首屏点中「最佳」结果的比例（%）</div>${xRow('信息型 · 短摘要','x-b1','28%',70,28)}${xRow('信息型 · 长摘要','x-b1','39%',70,39)}${xRow('导航型 · 短摘要','x-b3','58%',70,58)}${xRow('导航型 · 中摘要','x-b3','47%',70,47)}</div><div class="answer"><h3>怎么读</h3><p>信息型 28%→39%，因观测次数少未达统计显著，作者只称趋势；导航型在中等长度就降到 47%。</p><p class="cap"><span class="src">Figure 7 · PDF p.6–7</span> 零点起算，满刻度 70%。</p></div></div>`;
+ if(v===2)return `<div class="columns wide"><div><div class="grp-t">花在网址上的注视总时长（秒）</div>${xRow('信息型 · 短','x-b3','3.79',5,3.79)}${xRow('信息型 · 中','x-b3','4.16',5,4.16)}${xRow('信息型 · 长','x-b3','1.47',5,1.47)}${xRow('导航型 · 短','x-b1','2.93',5,2.93)}${xRow('导航型 · 中','x-b1','3.25',5,3.25)}${xRow('导航型 · 长','x-b1','3.32',5,3.32)}</div><div class="answer"><h3>怎么读</h3><p>信息型任务的网址注视在长摘要下从 3.79 秒掉到 1.47 秒；导航型全程变化很小（2.93→3.32）。摘要越长，注意力越离开网址。</p><p class="cap"><span class="src">Table 4 · PDF p.7</span> 零点起算，满刻度 5 秒。</p></div></div>`;
+ return `<div class="source-text table" lang="en">${esc(PAPER.table.text)}</div>${src(PAPER.table)}${tip('版面经重排便于阅读；数值与 SEM 逐格核对自原文 Table 4，以 PDF 为准。')}`;}
+function numbersHtml(){return `${choices(['用时变化','首点准确率','网址注视时长','原文表格节选'],state.num,'number')}<div id="numberOut" aria-live="polite">${numView(state.num)}</div>`;}
+function fchart(ix){
+ if(ix===0)return `<div class="x-fchart"><div class="grp-t">长摘要 vs 短摘要 · 信息型任务</div>${xDelta('任务用时（秒）',-24)}<div class="x-fchips"><span class="tag acc">首点准确率 28%→39%</span><span class="tag">未达统计显著</span><span class="tag">查看结果少约 1/3</span></div><div class="caption">绿色条表示变快。<span class="src">Figure 6/7/8 · PDF p.6–7</span></div></div>`;
+ if(ix===1)return `<div class="x-fchart"><div class="grp-t">长摘要 vs 短摘要 · 导航型任务</div>${xDelta('任务用时（秒）',10)}<div class="x-fchips"><span class="tag neg">中摘要 58%→47%</span><span class="tag">查看结果约 12 条</span></div><div class="caption">红色条表示变慢。<span class="src">Figure 6/7/8 · PDF p.6–7</span></div></div>`;
+ if(ix===2){const rows=[['短',X_T4.info.short],['长',X_T4.info.long]].map(r=>`<div class="x-srow"><span class="x-slab">${r[0]}</span><div style="min-width:0">${xStackBar(r[1])}<div class="x-leg" style="margin:2px 0 0"><span><i class="x-c1"></i>标题 ${r[1][0].toFixed(2)}</span><span><i class="x-c2"></i>摘要 ${r[1][1].toFixed(2)}</span><span><i class="x-c3"></i>网址 ${r[1][2].toFixed(2)}</span></div></div></div>`).join('');
+  return `<div class="x-fchart"><div class="grp-t">信息型任务 · 注视总时长分配（秒）</div>${rows}<div class="caption">摘要加长后网址段明显变窄：3.79 秒 → 1.47 秒。<span class="src">Table 4 · PDF p.7</span></div></div>`;}
+ return `<div class="x-fchart"><div class="grp-t">2×2 一览（论文实测）</div><table class="x-matrix"><tr><th></th><th>短摘要</th><th>中摘要</th><th>长摘要</th></tr><tr><th>信息型</th><td>基线</td><td>—</td><td><b class="pos-t">−24 秒</b> · 28→39%</td></tr><tr><th>导航型</th><td><b>首点 58%</b></td><td>47%</td><td><b class="neg-t">+10 秒</b></td></tr></table><div class="caption">同一改动，两类任务方向相反。<span class="src">Figure 6/7 · PDF p.6–7</span></div></div>`;}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p>${relatedLink()}${tip('按相关论文摘要转述；沿用该论文的研究范围。')}</div>`;
+ return `<div class="answer"><h3>两篇在浏览器行为上互相印证</h3><p>本研究记录了被试点前的浏览顺序：除第 1 位外，与 Joachims 等人的眼动结论一致——被试很少看点击项之后的一两条结果。</p><p>对照阅读时对齐：任务类型、首屏构成、指标口径。本篇的点击准确率只数首屏，与 G02 的隐式反馈口径有差别。</p>${relatedLink()}${tip('一致结论出处：Results · PDF p.5；两篇论文的数字不宜直接相加。')}</div>`;
+}
+const originalCases={
+ 25:['争议问题是否有充分支持？','论文以阿斯巴甜与癌症关联等争议问题说明证据冲突。','比较真实网页中的事实、论证风格与相关性，观察模型回答变化。','Introduction / 摘要'],
+ 35:['虚构咖啡机目录中的产品如何排序？','论文分别观察很少被推荐与通常位列次选的目标产品。','控制商品目录后比较异常附加文本对首选概率的影响。','摘要 / Figure 1'],
+ 38:['消费商品推荐为何出现排序偏差？','来源正文被放入模型上下文，名称与位置也可能影响输出。','分别控制产品名、内容和位置，再比较推荐排序分布。','摘要 / Figure 1'],
+ 52:['合同的责任限制条款包括哪些内容？','句子级检索可能只取得损害类型，漏掉责任上限与例外。','层次节点保留完整条款，帮助同时回答责任限制和例外。','论文末尾 qualitative example'],
+ 58:['付费关联评测被答案采纳后需披露什么？','引文能够支持产品主张，但付费关联可能改变读者解释。','分别检查关系证据、答案采用、重要性和披露；缺证保持未决。','Introduction'],
+ 63:['背包是否符合短途旅行和工作装备需求？','卖方页面可能掩盖缺陷，让目标背包进入推荐集合。','以用户约束与效用评价结果，比较来源改写和防御前后。','Figure 1 / 摘要'],
+ 114:['查俄克拉何马市动物园的面积（信息型任务）','论文 Table 1 用同一条结果展示短中长三档摘要：短档一行截断，中档补出「110 acres、2,800 只动物」，长档再加场馆、地址与电话。','答案线索直接出现在长摘要里；信息型任务整体省 24 秒、首点最佳准确率 28%→39%。','Table 1 · PDF p.3 / Results · p.6–7']};
+function caseHtml(){const c=state.xcase;
+ const zoo=`<div class="x-tiers">
+<div class="x-tier"><span class="x-tchip">短档</span><p lang="en">${esc(X_SNIP.short)}</p></div>
+<div class="x-tier"><span class="x-tchip">中档</span><p lang="en">${esc(X_SNIP.mid)}</p></div>
+<div class="x-tier"><span class="x-tchip">长档</span><p lang="en">${esc(X_SNIP.long)}</p></div></div>
+<div class="caption">三档逐级加长，短中两档为长档前缀；中档第二句的「110 acres」就是答案线索。对应发现 F1。<span class="src">Table 1 · PDF p.3</span></div>`;
+ const nav=`<div class="x-serp"><div class="x-q">搜索：comfort inn · 结构示意</div><div class="x-rt">品牌名 · 官方网站标题（示意）</div><div class="x-ru">域名清晰可辨认（示意）</div><div class="x-snip">短档约 1 行摘要（示意）：一句品牌与业务描述。</div></div>
+<div class="caption">论文只公布动物园条目的摘要原文，此处展示导航型结果卡的结构：关键线索是网址与品牌名，长文本会把网址挤到视线后段。对应发现 F2。<span class="src">Figure 9 · PDF p.7</span></div>`;
+ return `<div class="kicker">论文原例的中文转述 · Table 1 与 Table 2</div>${choices(['俄克拉何马市动物园 · 信息型','Comfort Inn 官网 · 导航型'],c,'x-case')}
+<div class="columns"><div><div class="answer" aria-live="polite"><h3>${c?'找官网：网址是路标':'查面积：答案躺在摘要里'}</h3><p>${c?'任务：找到 Comfort Inn 的官网首页，初始查询 comfort inn（Table 2 · PDF p.4）。成功只有一个定义：点进那个「对的」网站。':'任务：查明俄克拉何马市动物园的面积，初始查询 oklahoma city zoo（Table 2 · PDF p.4）。答案在哪都行，越快看到越好。'}</p><p>${c?'实测：短摘要下 58% 的首屏点击点中官网；摘要加到中等长度就降到 47%，长摘要使任务再多花约 10 秒。':'实测：信息型任务用长摘要平均省 24 秒，首点最佳准确率 28%→39%（未达显著），查看的结果还少了约三分之一。'}</p><p class="caption">动物园三档摘要为论文原文；Comfort Inn 结果卡为结构示意，论文未公布其摘要文本。</p></div></div>
+<div>${c?nav:zoo}</div></div>`;}
+function personaHtml(){const roles=['内容与业务负责人','技术与数据人员','研究与审核人员'];
+const why=['信息型查询页给足摘要线索，平均省 24 秒且点得更准（F1）','导航型查询保持短摘要，避免 58%→47% 的首点损失（F2）','机制在注意力分配：注视份额转移可以复测、可以验证（F3）'];
+const todos=[
+ [['按意图抽样自家查询：信息型与导航型各取一批','信息型页面把数字、地址、答案句写进摘要（对应论文 6–7 行档）','品牌与官网类页面保持短摘要、域名清晰可辨认','用首屏点中率与任务用时做前后对照'],
+  'F1/F4'],
+ [['复现 2×3 设计：两类任务 × 三档摘要','按满 100 毫秒、分元素口径统计注视','同时报告正向与负向变化（本文一好一坏）','记录首屏可见条数随摘要长度的变化（7 / 5.7 / 4.2）'],
+  'F2/F3'],
+ [['核对 Table 3 的交互效应与 p 值再引用','区分显著结论与未达显著的 28%→39%','与《点击是带偏差的隐式反馈》做同口径对照','关注目标位置姊妹篇（Guan & Cutrell, CHI 2007）'],
+  'F3/F4']];
+return `${choices(roles,state.role,'role')}<div class="columns"><div><h3>${roles[state.role]}</h3><p style="margin-top:12px">为什么适合：${esc(why[state.role])}。</p><div class="callout warn">避免：${esc(PAPER.before)}后，直接宣称收益——本文的证据是两类任务方向相反。</div></div><div><ul class="fact-list">${todos[state.role][0].map(s=>`<li>${esc(s)}<small>对应 ${todos[state.role][1]} · 本课应用推断</small></li>`).join('')}</ul></div></div>`;}
+function matureHtml(){const forms=[['查询意图分类器','按信息型 / 导航型路由结果展示，显式开关或自动分类','论文建议按任务类型分流（Discussion · p.8）'],['富摘要规范','答案线索（数字、地址、定义句）前置进摘要','对应论文的摘要长度操纵（Experiment · p.4）'],['可用性与眼动测试记录','首屏点中率、任务用时、分元素注视时长','对应论文的测量与比较环节（Results · p.5–7）']];
+return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${forms.map(f=>`<tr><td>${esc(f[0])}</td><td>${esc(f[1])}</td><td>${esc(f[2])}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:18px">采用已有工作形态承接证据，先做小范围复验，再决定扩大应用；意图分类的准确率决定分流展示的上限。</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p><p class="caption">${l[3]?'出处：'+esc(l[3]):''}</p>${i===4?relatedLink():tip(i===0?'来自本篇研究范围与局限解读。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、指标含义、适用条件与证据强弱。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','method','flow','compare','proof','number','metric','limit','x-task','x-len','x-case'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene')$('#sceneOut').innerHTML=`<h3>${v?'研究启发':'常见做法'}</h3><p>${esc(v?PAPER.after:PAPER.before)}</p>${tip(v?'本课应用推断，方向对齐论文建议。需要在目标场景中验证。':'教学示意，尚未进行实际效果测量。')}`;
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flow(v);
+ else if(a==='metric'){state.metric=v;const m=PAPER.metrics[v];const MP=[["注视满 100 毫秒才计入；由 Tobii x50（50Hz）记录，AOI 按 DOM 动态划分到标题、摘要、网址三元素，分元素累计。","Results","5"],["首个结果页上点中「最佳」结果的被试比例；导航型目标唯一，信息型设一个含答案线索的最佳结果。导航型短摘要 58%、中摘要 47%；信息型 28%→39%（未达显著）。","Figure 7","6"],["从首屏结果出现到被试口头宣布完成为止；信息型整体平均 78.1 秒，导航型 36.9 秒（F(1,17)=54.7, p<.001）。","Results","6"]][v];$('#metricOut').innerHTML=`<h3>${esc(m.name)}</h3><p>${esc(m.plain)}</p><div class="only-pro pro-note">${esc(MP[0])}<span class="src">${esc(MP[1])} · PDF p.${MP[2]}</span></div>`;}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='method'){state.method=v;const m=X_METHOD[v];$('#methodOut').innerHTML=`<h3>${esc(m.h)}</h3><p>${esc(m.p)}</p><div class="caption">${src({label:m.src[0],page:m.src[1]})} 切换上方步骤查看每一步的论文参数。</div>`;}
+ else if(a==='x-task'){state.xtask=v;$('#labOut').innerHTML=eyelabHtml();}
+ else if(a==='x-len'){state.xlen=v;$('#labOut').innerHTML=eyelabHtml();}
+ else if(a==='x-case'){state.xcase=v;box.innerHTML=draw('case');}
+ else if(a==='number'){state.num=v;$('#numberOut').innerHTML=numView(v);}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);const f=X_F[ix];$('#findingOut'+ix).innerHTML=`<p>${esc(v===0?PAPER.finding_details[ix]:v===1?'实践含义：'+f.impl:'适用条件：'+f.cond)}</p>${tip(v===1?'行动建议为本课推断，需对照验证。':v===2?f.why:'需要连同研究设计解读，勿省略条件。')}`;}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(PAPER.findings.map(t=>t+'。').join('\n')+'依据：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

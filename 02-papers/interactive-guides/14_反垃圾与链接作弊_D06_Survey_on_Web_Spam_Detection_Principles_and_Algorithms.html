@@ -1,0 +1,751 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>网页垃圾检测综述 · 论文课堂</title><meta name="description" content="把检测算法按信息来源分为内容、链接与行为三类，链接类再细分五个流派，主流方法检出率约 90%，全网垃圾占比估计在 6% 到 22% 之间。"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="ACM SIGKDD Explorations Newsletter"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+
+/* opt-99 course additions (x- prefixed) */
+.x-hero{display:grid;grid-template-columns:1.12fr 1fr;gap:30px;align-items:start}
+.x-herostats{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--ink);align-self:start}
+.x-herostats .x-hs{padding:13px 12px 11px 0;border-bottom:1px solid var(--line)}
+.x-herostats .x-hs:nth-child(even){padding-left:16px;border-left:1px solid var(--line)}
+.x-herostats .v{font-family:var(--serif);font-size:30px;font-weight:700;line-height:1.15}
+.x-herostats .k{font-size:12.5px;color:var(--ink-2);margin-top:4px;line-height:1.5}
+.x-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.x-cats button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px;text-align:left}
+.x-cats button[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--tint)}
+.x-cats .ct{font-family:var(--serif);font-size:18px;font-weight:700;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.x-cats .cn{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-weight:400}
+.x-cats .cs{display:block;font-size:12.5px;color:var(--ink-2);margin-top:3px}
+.x-detail{border:1px solid var(--line);border-radius:14px;padding:14px 20px 15px;background:#fff}
+.x-detail h3{font-size:21px;margin-bottom:2px}
+.x-oneline{font-size:15px;color:var(--ink-2);margin:2px 0 10px}
+.x-dgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px 24px}
+.x-dgrid .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:2px}
+.x-dgrid p{font-size:13.5px!important;margin:0!important;line-height:1.6!important}
+.x-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.x-subs{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px;padding-top:10px;border-top:1px dashed var(--line-2)}
+.x-subs button{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:3px 12px;font-size:13px}
+.x-subs button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.x-subd{margin-top:9px;font-size:13.5px;color:var(--ink-2);line-height:1.65;background:var(--tint);border-radius:10px;padding:9px 13px}
+.x-num{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:8px}
+.x-labwrap{display:grid;grid-template-columns:295px 1fr;gap:24px;align-items:start}
+.x-layers{display:flex;flex-direction:column;gap:8px}
+.x-layers button{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border:1px solid var(--line-2);background:#fff;border-radius:10px;padding:9px 14px;text-align:left;font-size:15px;font-weight:600}
+.x-layers button[aria-pressed="true"]{border-color:var(--pos);background:var(--pos-tint)}
+.x-layers .ld{font-size:12px;color:var(--ink-3);font-weight:400}
+.x-count{font-size:14px;margin:10px 0 4px;color:var(--ink-2)}
+.x-count b{font-family:var(--serif);font-size:22px}
+.x-forms{border:1px solid var(--line);border-radius:12px;padding:5px 13px;background:#fff}
+.x-form{display:grid;grid-template-columns:110px 1fr;gap:10px;padding:6px 2px;border-bottom:1px solid var(--line);font-size:13.5px;align-items:baseline;border-radius:6px}
+.x-form:last-child{border-bottom:0}
+.x-form .fn{font-weight:600}
+.x-form .fc{color:var(--ink-3);font-size:12.5px;line-height:1.55}
+.x-form.hit{background:var(--pos-tint)}
+.x-form.hit .fc{color:#0b4f30}
+.x-bchart{margin:2px 0 4px}
+.x-brow{display:grid;grid-template-columns:140px 1fr 60px;gap:10px;align-items:center;padding:4px 0;font-size:13px}
+.x-brow .tr{height:16px;background:var(--tint);border-radius:3px;position:relative;overflow:hidden}
+.x-brow .fl{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:3px}
+.x-brow .vl{font-family:var(--mono);font-size:12px;text-align:right;color:var(--ink-2)}
+.x-bnote{font-size:11px;color:var(--ink-3);margin:2px 0 0 150px}
+.x-big{font-family:var(--serif);font-size:52px;font-weight:700;line-height:1.1}
+.x-cases{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.x-cases button{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:4px 13px;font-size:13.5px}
+.x-cases button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+@media (max-width:900px){.x-hero{grid-template-columns:1fr}.x-cats{grid-template-columns:1fr}.x-dgrid{grid-template-columns:1fr}.x-labwrap{grid-template-columns:1fr}.x-brow{grid-template-columns:92px 1fr 50px}.x-bnote{margin-left:102px}.x-herostats .v{font-size:24px}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 14 反垃圾与链接作弊</div>
+    <h1>网页垃圾检测综述</h1>
+    <div class="en">2012 · 综述</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">网页垃圾检测综述</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">综述把检测算法按信息来源分成三类：内容、链接、行为；链接类再分五个流派。<span class="src">摘要与研究目标 · PDF p.1</span></div></div><div class="notes">这门课读一篇综述：Spirin 与 Han 把十余年反垃圾算法整理成一张地图。先记住分类轴——按所用信息分内容、链接、行为三类。课里的数字都是转引，口径不一，我们会一路标注原始出处。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">学完这节课，你能回答四个问题</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">四个问题对应七章，右侧路线可直接跳转。<span class="src">课程结构 · 本课推断</span></div></div><div class="notes">课程七章。前四章搭框架：问题、概念、指标、方法地图；第五章逐条过四个发现；最后两章讲怎么用、怎么批判地读。术语都可点开解释。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">单层规则防不住三代进化的垃圾</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">垃圾已从内容规则进化到链接与行为挖掘，布防要分层组合。<span class="src">§5 · PDF p.11</span></div></div><div class="notes">场景是 AI 搜索里的内容操纵。常见做法是上线一条规则，被新手法绕过再打补丁；论文的观察是垃圾已进化多代。研究启发是分层布防、组合判据，第 11 页有模拟器可以亲手开关三层信号。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">先拆手法，再按信息来源拆算法</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">手法四类、算法三类；第三类行为信号完全不依赖文本与链接。<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">这页拆两样东西：垃圾手法与算法流派。词项堆砌、链接农场、伪装、点击欺诈是综述归纳的四大类手法；算法按信息来源分三类。点上面三个步骤切换解读，右侧四个概念术语可点开。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">综述脉络：口径、流派、原理</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">综述先给垃圾下数值定义，再按信息来源分派，最后抽公共原理。<span class="src">§1–§4 · PDF p.1–11</span></div></div><div class="notes">综述的行文脉络就是这三步：先定义垃圾并盘占比，再按信息来源把算法分派归类，最后抽十条底层原理。专业层标注了每一步对应的原文位置，可按图索骥。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">三类框架支撑一张五流派索引</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">它支持当索引用，支持按层布防；支持跨口径比较。<span class="src">§5 · PDF p.11</span></div></div><div class="notes">这页定位论文能支持什么。它给的是框架与索引；跨口径比较、外推到今天，都得回到原始研究。下面三段流程图点选可看研究干预在哪一环。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">每个数字都带着自己的口径</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">占比、检出率各有统计单位；先问分母再读数。<span class="src">§1、§3.1 · PDF p.1–4</span></div></div><div class="notes">四个概念各答一个问题：信任传播怎么走、链接农场长什么样、占比怎么算、检出率指什么。专业层给了公式级口径与出处；读任何数字前先问统计单位。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">综述的证据是转引，需回溯核对</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">系统梳理 2011 年前文献，按信息来源组织；数字均转引。<span class="src">§1、§5 · PDF p.1–11</span></div></div><div class="notes">综述的“研究设计”是文献组织方式：纳入 2011 年前的工作，按信息来源分类。右侧三段原文节选可切换阅读；证据形态是转引，用前回原始研究核对。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">把综述当索引用前先做四项检查</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">回原研究、分清单位、分域评估、区分结论层级。<span class="src">本课推断</span></div></div><div class="notes">四项检查清单：每个转引数字回原始研究、分清页面级与主机级、训练测试分域、区分综述判断与原始结论。勾满四项，说明你把综述当索引而不是结论库。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">方法地图：三类信号各管一层</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">点内容、链接、行为看原理、代表算法、适用与局限；链接类展开五流派。<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">招牌交互在这页：方法地图。点三类信号卡看原理、代表算法、适用场景与局限；链接类还能展开五个流派逐个看。所有数字都标了原始出处。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">开关三层信号，看拦住哪些手法</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">默认只开内容层；三层全开才能覆盖九类手法。<span class="src">§2–§3 · PDF p.2–10</span></div></div><div class="notes">模拟器：默认只开内容层，能拦六类手法；链接与行为层各管一摊，全开才能覆盖九类。映射按论文手法分类整理，属示意，非实测拦截率。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">转引数字要连同出处一起读</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">五个视图：口径各异的占比、可比的语言分布、分类效果、各流派读数与总体评价。<span class="src">§1–§5 · PDF p.1–11</span></div></div><div class="notes">数字页。同一指标在不同研究里口径不同：6% 与 22% 不能平均。五个视图切换，每根条都零点起算、带出处；跨研究的提升只能与各自基线比。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">检测算法分内容链接行为三类</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">划分依据是所用信息；行为类完全不依赖文本与链接。<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">发现一：三类划分。它按“用什么信息”划分，行为类完全不依赖文本与链接。这一划分决定了布防的层次感。点右侧切换实践含义与适用条件。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">链接类算法可细分五个流派</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">五流派按思想划分；按当时实验，图正则化类效果最好。<span class="src">§3.2 · PDF p.5–9</span></div></div><div class="notes">发现二：链接类五流派。按当时实验，图正则化最好；标签传播最有名但综述没有说它最强。回第 10 页方法地图可展开五个流派。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">好页极少链接坏页是通用原理</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">好集近似隔离支撑信任传播与图正则化两类算法。<span class="src">§4 · PDF p.11</span></div></div><div class="notes">发现三：好集近似隔离。好页大多链好页，坏页链好页或指向少数目标。信任传播与图正则化都建在这条经验观察上；它有反例，不能当硬规则。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">主流方法检出约 90% 垃圾仍在进化</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">90% 是 2011 年前的评价；点击欺诈、动态伪装等仍开放。<span class="src">§5 · PDF p.11</span></div></div><div class="notes">发现四：90% 是作者对当时的总体评价，垃圾持续进化；点击欺诈、动态伪装、社交媒体是点名的开放问题。把它当快照，当作今天的事实前先复测。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">手法分类与方法分类互为对照</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">相关研究按手法分垃圾，本篇按方法分算法；占比口径各异。<span class="src">§2 · PDF p.2</span></div></div><div class="notes">对照《网页垃圾手法分类》：那边按手法分，这边按方法分。10–15% 与 6–22% 口径不同，各留出处。两篇可以逐格对照：每种手法查一层判据。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">论文原例：从堆砌比赛到蜜罐劫持</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">三个论文原例：SEO 比赛、URL 堆砌、2006 年劫持事件。<span class="src">§2 · PDF p.2–3</span></div></div><div class="notes">三个论文原例：nigritude ultramarine 比赛、URL 堆砌、2006 年劫持事件。都是论文 §2 原例的中文转述，没有补造任何数字。点上方按钮切换案例。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">三类角色各有三层布防清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">业务方避免堆砌；技术方布防三层；研究方回溯口径。<span class="src">本课推断</span></div></div><div class="notes">三类角色的清单：业务方自查堆砌与外链；技术方补齐三层判据并分域评估；研究方把综述当索引回原文核对口径。建议均为本课推断，需对照验证。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">把综述沉淀为三份工作文档</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">方法地图、布防清单、数字索引卡；映射为本课推断。<span class="src">本课推断</span></div></div><div class="notes">成熟形态三份文档：方法地图、布防清单、数字索引卡，分别承接综述的分类、布防与口径三件事。对应关系是本课推断，先小范围试用。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">口径与年代决定结论的尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">数字口径不一、覆盖 2011 年前、开放问题未解。<span class="src">§1、§5 · PDF p.1–11</span></div></div><div class="notes">批判阅读六条：数字口径不一、覆盖 2011 年前、开放问题未解、证据层级要区分、相关研究口径对照、版本一致性。逐条点选看影响级别。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">六张卡片：正面结论，背面依据与用法，可复制出处。<span class="src">本课提炼</span></div></div><div class="notes">六张卡片翻面看依据与用法；可一键复制全部要点与出处。前三张是论文发现，后三张是使用纪律。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">五题覆盖核心结论、反常发现、指标口径、边界与局限。<span class="src">本课推断</span></div></div><div class="notes">五道题覆盖核心结论、反常发现、指标口径、适用边界与局限。答错会提示复习页码，按提示回看对应页面。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>Survey on Web Spam Detection: Principles and Algorithms</p><p>2012 · ACM SIGKDD Explorations Newsletter</p><p><a href="https://www.kdd.org/exploration_files/V13-02-08-Spirin.pdf" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper99,
+  author = {Nikita Spirin and Jiawei Han},
+  title = {Survey on Web Spam Detection: Principles and Algorithms},
+  year = {2012},
+  url = {https://www.kdd.org/exploration_files/V13-02-08-Spirin.pdf}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：3e6bd57c6d1a902e6d94d10b0cb4d1851546c3bfc01e67eed80a00da139c5c76</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={"id":99,"zh":"网页垃圾检测综述","kind":"综述","question":"反垃圾算法有哪些流派，各自依靠什么信号？","claim":"把检测算法按信息来源分为内容、链接与行为三类，链接类再细分五个流派，主流方法检出率约 90%，全网垃圾占比估计在 6% 到 22% 之间。","steps":["界定垃圾形式与占比口径","按信息来源划分算法流派","提炼各流派通用底层原理"],"findings":["检测算法分内容链接行为三类","链接类算法可细分五个流派","好页极少链接坏页是通用原理","主流方法检出约 90% 垃圾仍在进化"],"metrics":[{"name":"信任传播","plain":"从已知好页出发沿链接扩散可信分","pro":"TrustRank 用逆 PageRank 选种子，再经个性化 PageRank 传播；子页拆分方式影响效果，对数拆分配合最大份额最好（§3.2.2 · PDF p.6）。","ev":{"label":"§3.2.2","page":6}},{"name":"链接农场","plain":"为抬高目标页而互相链接的页面群","pro":"典型蜜罐农场是一个看似无辜的高权威页链向目标页（Figure 1 · PDF p.3）；单目标最优农场形态已有理论刻画（§3.2.1 · PDF p.6）。","ev":{"label":"§2.2.2","page":3}},{"name":"垃圾占比","plain":"垃圾页面或主机占全网的估计比例","pro":"口径不同：6%（英语页面级）、16.5%、22%（主机级）；同一研究的语言分布 13.8%、9%、22%、25%（§1 · PDF p.1–2）。","ev":{"label":"§1","page":1}},{"name":"检出率","plain":"把垃圾判为垃圾的比例，即真阳率","pro":"引用值 86.2% 真阳、97.8% 真阴，来自十棵 C4.5 树 boosting（§3.1 · PDF p.4）；另一研究加 344 个排名时特征后同召回下精度 +25%（§3.3.3 · PDF p.10）。","ev":{"label":"§3.1","page":4}}],"setting":"系统梳理十余年反垃圾文献，按信息来源把算法分为三类并逐一流派介绍，末章归纳可复用的底层原理。","boundary":"覆盖 2011 年前的方法版图；引用数值出自各原始研究，口径不同不能直接比较或外推。","query":"面对 AI 搜索里花样翻新的内容操纵，该先建哪几层防御？","before":"上线单一检测规则，遇到新作弊手法再临时打补丁","after":"按内容、链接、行为三层信号布防，并把各层判据组合使用","finding_details":["综述按所用信息把算法分成三类：内容类读页面文本与统计特征，链接类读超链接图，行为类用点击流、浏览与 HTTP 会话；第三类完全不依赖页面文本与链接（摘要 · PDF p.1；§3 · PDF p.3）。","链接类按思想细分为五派：标签传播、链接剪枝降权、链接特征分类、标签精化与图正则化；按写作当时的实验结果，图正则化一类被认为是效果最好的一批方法（§3.2 · PDF p.5、9）。","好页大多链接好页，坏页要么链向好页、要么指向少数垃圾目标；这条“好集近似隔离”的经验观察，支撑了信任传播与图正则化两类算法的设计（§4 · PDF p.11）。","方法从简单内容规则进化到链接挖掘与行为挖掘，作者评价当时算法检出水平约 90%；垃圾持续进化，点击欺诈、动态伪装与社交媒体垃圾仍是开放问题（§5 · PDF p.11）。"],"finding_ev":[{"label":"摘要","page":1},{"label":"§3.2 / §3.2.6","page":5},{"label":"§4","page":11},{"label":"§5","page":11}],"catalog_title":"Survey on Web Spam Detection: Principles and Algorithms","title":"Survey on Web Spam Detection: Principles and Algorithms","authors":"Nikita Spirin; Jiawei Han","year":"2012","category":"14_反垃圾与链接作弊","url":"https://www.kdd.org/exploration_files/V13-02-08-Spirin.pdf","file":"14_反垃圾与链接作弊_D06_Survey_on_Web_Spam_Detection_Principles_and_Algorithms.html","pdf":"","kind_note":"概念与推导，暂无生产效果估计","extra":"教学场景三件套为情境示意，非论文实测；综述中的数字均转引自原始研究，口径不同，最适合当作追溯各流派原始论文的索引。","evidence":[{"label":"摘要与研究目标","page":1,"text":"Search engines became a de facto place to start information acquisition on the Web. Though due to web spam phenomenon, search results are not always as good as desired. Moreover, spam evolves that makes the problem of providing high quality search even more challenging. Over the last decade research on adversarial information retrieval has gained a lot of interest both from academia and industry. In this paper we present a systematic review of web spam detection techniques with the focus on algorithms and underlying principles. We categorize all existing algorithms into three categories based on the type of information they use: content-based methods, link-based methods, and methods based on non-traditional data such as user behaviour, clicks, HTTP sessions. In turn, we perform a subcategorization of link-based category into five groups based on ideas and principles used: labels propagation, link pruning and reweighting, labels refinement, graph regularization, and featurebased."},{"label":"§2 垃圾形式举例","page":2,"text":"Body Spamming. In this case the body of a page is modified. This is the most common form of content spam because it is cheap and simultaneously allows applying various strategies. For instance, if a spammer wants to achieve a high ranking of a page for only limited predefined set of queries, they can use the repetition strategy by overstuffing body of a page with terms that appear in the set of queries (there even was a spamming competition to rank highest for the query \"nigritude ultramarine\"). On the other hand, if the goal is to cover as many queries as possible, the strategy could be to use a lot of random words at once."},{"label":"§5 结论与开放问题","page":11,"text":"According to this work, web spam detection research has gone through a few generations: starting from simple content-based methods to approaches using sophisticated link mining and user behaviour mining techniques. Furthermore, current anti-spam algorithms show a competitive performance in detection, about 90%, that demonstrates the successful results of many researchers. However, we cannot stop here because spam is constantly evolving and still negatively affects many people and businesses."}],"table":null,"version":"ACM SIGKDD Explorations Newsletter","sha256":"3e6bd57c6d1a902e6d94d10b0cb4d1851546c3bfc01e67eed80a00da139c5c76","stats":[{"v":"6–22%","name":"全网垃圾占比区间（各研究口径不一）","source":"§1","page":1},{"v":"3 / 5","name":"三类信息来源；链接类再分五流派","source":"摘要","page":1},{"v":"86.2%","name":"转引的内容分类真阳率（真阴率 97.8%）","source":"§3.1","page":4},{"v":"约 90%","name":"综述对当时方法检出水平的评价","source":"§5","page":11}],"related":{"id":95,"zh":"网页垃圾手法分类","title":"Web Spam Taxonomy","url":"./14_反垃圾与链接作弊_D02_Web_Spam_Taxonomy.html","pdf":"https://airweb.cse.lehigh.edu/2005/gyongyi.pdf","claim":"网页垃圾可归为抬高排名与隐藏痕迹两大类，覆盖词项与链接作弊及伪装跳转，综合多项研究估计全网 10-15% 的内容是垃圾。"},"strength":"弱","strength_why":"本课保守评级：概念、模拟、有限样本或未完成独立语义验证。","limitations":[["高","研究结论有明确范围","覆盖 2011 年前的方法版图；论文自注链接农场维护成本已大降数十倍，垃圾与平台环境持续变化（§2.2 · PDF p.3；§5 · PDF p.11）。"],["高","评价口径决定可以推断的结果","6% 与 22% 的页面级/主机级口径不同，86.2% 是特定分类器口径；转引数字不能跨口径平均或外推（§1 · PDF p.1–2）。"],["中","环境变化需要重新验证","点击欺诈、动态伪装与社交媒体垃圾是作者点名的开放问题（§5 · PDF p.11）；迁移到 AI 搜索前需重新测量。"],["中","证据与建议需逐项区分","应用页行动与成熟形态为本课推断；综述转引数字只说明当时研究进展，均需回原文核对。"],["中","相关研究提供新的对照","《网页垃圾手法分类》给出 10–15% 的占比估计，与本篇 6–22% 口径不同，对照阅读时各自保留出处。"],["低","原文版本与内部一致性","采用本地 PDF 可识别版本；13.8% 等语言分布在 PDF p.2，引用时以原文页码为准，未逐表重算的指标需人工复核。"]],"quiz":[{"q":"这篇综述划分检测算法的依据是什么？","o":["按算法发表的时间先后分三代","按算法所用信息的来源：内容、链接、行为","按检测精度高低分三档","按是否需要人工标注分两类"],"a":1,"e":"按“用什么信息”划分：内容、链接、行为三类（摘要 · PDF p.1）。","p":10},{"q":"关于链接类五个流派，综述特别指出什么？","o":["标签传播最有名，所以效果最强","五个流派互斥，只能选一种使用","按当时实验结果，图正则化类效果最好","剪枝降权类已被证明无效"],"a":2,"e":"§3.2.6：按当时实验结果，图正则化被认为是效果最好的一批方法（PDF p.9）。","p":14},{"q":"86.2% 与 97.8% 这对数字的口径是什么？","o":["全网垃圾占比的上下界","十棵 C4.5 树 boosting 的真阳率与真阴率","信任传播的收敛精度","点击欺诈的检出与误报率"],"a":1,"e":"转引自 §3.1：C4.5 boosting 后真阳率 86.2%、真阴率 97.8%（PDF p.4）。","p":12},{"q":"为什么 6% 与 22% 两个占比不能直接平均？","o":["样本量太小没有统计意义","一项是英语一项是法语，语言不同","分母口径不同：页面级与主机级等，转引数字不能跨口径比较","相加会超过 100%"],"a":2,"e":"§1：6% 是英语页面级、22% 是主机级，口径不同（PDF p.1–2）。","p":12},{"q":"把“约 90% 检出”用于今天的 AI 搜索前，最该记住什么？","o":["该数字是论文实测上限，不可能被超越","它来自作者自家系统的全年运行数据","它是综述对 2011 年前方法的评价，垃圾持续进化，需在新环境复测","说明剩下 10% 的垃圾永远无法检测"],"a":2,"e":"§5 的总体评价针对当时方法；点击欺诈、动态伪装等仍是开放问题（PDF p.11）。","p":21}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{geo:{t:"GEO",d:"改善来源在生成式答案中的可见性及归功的研究与实践。"},rag:{t:"RAG",d:"先检索外部资料，再以资料支持模型生成。"},baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},ablation:{t:"消融",d:"去除某个组件，比较它对整体结果的贡献。"},transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER + x- constants. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const srcE=(label,page)=>`<span class="src">${esc(label)} · PDF p.${page}</span>`;
+const src=e=>srcE(e.label,e.page);
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const stageNames=['问题与候选资料','研究干预与比较','答案或评价结果'];
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,numView:0,lim:0,role:0,proof:0,flowIx:1,cmp:0,sceneIx:0,caseIx:0,cat:0,sub:0,q:0,answers:[],fsel:{},checks:new Set(),flips:new Set(),layers:{c:true,l:false,b:false}};
+
+const X_STEPS=[
+ {p:'词项堆砌、链接农场、伪装跳转、点击欺诈是综述归纳的四大类手法；占比各研究估计在 6%–22% 之间，口径不同。',pro:'内容垃圾细分标题、正文、元标签、锚文本与 URL 五种（§2.1 · PDF p.2）；链接垃圾分出链与入链两族（§2.2）。占比：6% 英语页面级、22% 主机级、16.5%（§1 · PDF p.1–2）。',ev:{label:'§1–§2',page:1}},
+ {p:'同一批页面，内容类读文本、链接类读超链接图、行为类读点击与会话；第三类完全不依赖页面文本与链接。',pro:'内容类以统计反常与语言模型为判据（§3.1 · PDF p.3–5）；链接类分标签传播、剪枝降权、特征分类、标签精化、图正则化五流派（§3.2 · PDF p.5–9）；行为类用浏览图、HTTP 会话与排名时特征（§3.3 · PDF p.9–10）。',ev:{label:'§3',page:3}},
+ {p:'垃圾由机器批量生成，会在统计分布上露马脚；好页极少链接坏页，这两条被反复复用。',pro:'§4 归纳十条原则：统计反常、偏离幂律、瞄准热门与高商业价值查询、农场拓扑可分析、好集近似隔离、信任传播、剪枝非荐举链接、主机粒度分析、特征工程、模型选择（§4 · PDF p.10–11）。',ev:{label:'§4',page:10}}
+];
+
+const X_MAP=[
+ {t:'内容信号',sig:'页面文本与统计特征',one:'机器生成的垃圾会在词频、重复度与语言模型上露出统计破绽。',
+  principle:'垃圾多为程序批量生成：URL 点、划线与数字异常多，同主机垃圾页词数方差极低，内容周变化剧烈——仅凭周变化特征即可检出 97.2% 最不稳定的垃圾主机。',
+  fit:'没有链接图谱时的单页初筛；无需训练数据的方法可冷启动。',
+  limit:'正文伪装成正常文案即可绕过；对动态生成页面误报偏高（§3.1 · PDF p.5）。',
+  num:'86.2% 真阳 / 97.8% 真阴 · C4.5 boosting（§3.1 · PDF p.4）',
+  algos:['C4.5 + boosting','KL 语言模型距离','布局指纹去重','商业意图词特征 +3%'],ev:'§3.1 · PDF p.3–5'},
+ {t:'链接信号',sig:'页面之间的超链接图',one:'好页大多链向好页；垃圾为抬排名会造出可分析的特殊拓扑。',
+  principle:'好页大多链向好页（近似隔离）；农场、蜜罐等作弊结构有可理论分析的形态，可被传播、剪枝或正则化方法捕捉。',
+  fit:'内容被伪装时结构难藏；链接特征可与内容特征合并喂给分类器。',
+  limit:'建农场成本已大降；依赖种子或标注；对高排名页 PageRank 提升可忽略。',
+  num:'信任 + 不信任组合后 80% 垃圾站退出前十桶（§3.2.2 · PDF p.6）',
+  algos:null,ev:'§3.2 · PDF p.5–9',
+  sub:[
+   {t:'标签传播',d:'TrustRank 从人工评审的好种子出发，沿个性化 PageRank 扩散信任；Anti-TrustRank 反向传坏评。两者组合后 80% 垃圾站退出前十个检索桶。',n:'80% · §3.2.2 · PDF p.6'},
+   {t:'链接剪枝与降权',d:'先找可疑链接再降权或剪除：同站多链降权、SALSA 抗紧密小团体、用 75 个二元特征识别非荐举链接。',n:'§3.2.3 · PDF p.7'},
+   {t:'链接特征分类',d:'把每个站点表示为 16 个连通性特征再做聚类：1,100 个站点中识别出 183 个垃圾环、31 个簇。',n:'183 环 · §3.2.4 · PDF p.8'},
+   {t:'标签精化',d:'先粗分类，再按图结构修正标签：簇平均、随机游走传播、堆叠学习两轮后再提升 3%。',n:'+3% · §3.2.5 · PDF p.8'},
+   {t:'图正则化',d:'把预测标签放到 Web 图上平滑，目标函数加图拉普拉斯正则项；按写作当时的实验结果，这一类被认为是效果最好的一批方法。',n:'当时最佳 · §3.2.6 · PDF p.9'}
+  ]},
+ {t:'行为信号',sig:'点击流、浏览、HTTP 会话',one:'垃圾站只为骗排名而生：用户一眼识破、快速离开，行为轨迹反常。',
+  principle:'从搜索来的访问占比异常、点击与停留模式反常；点击欺诈则直接伪造点击去污染排序反馈与广告计费。',
+  fit:'内容与链接都被模仿时的补充防线；点击欺诈与广告对抗的主战场。',
+  limit:'需要日志与会话数据，采集与隐私成本高；动态伪装跳转仍是开放问题（§5 · PDF p.11）。',
+  num:'344 个排名时特征：同召回下精度 +25%（§3.3.3 · PDF p.10）',
+  algos:['浏览图马尔可夫模型','HTTP 会话分类','无监督 spamicity','排名时特征 +25%'],ev:'§3.3 · PDF p.9–10'}
+];
+
+const X_FORMS=[
+ {t:'标题堆砌',layers:['c'],how:'标题词频反常，内容分类可查（§2.1）'},
+ {t:'正文堆砌',layers:['c'],how:'重复策略或大量随机词，语言模型偏离（§2.1 · PDF p.2）'},
+ {t:'元标签堆砌',layers:['c'],how:'元标签曾被重度滥用，引擎已对该区降权（§2.1）'},
+ {t:'URL 堆砌',layers:['c'],how:'分词后与目标查询高度重叠（§2.1 · PDF p.2）'},
+ {t:'锚文本堆砌',layers:['c'],how:'锚文本与目标页脱节，可被内容特征捕捉（§2.1）'},
+ {t:'链接农场',layers:['l'],how:'农场拓扑可理论分析，信任传播可降权（§2.2 · §3.2.2）'},
+ {t:'蜜罐与劫持',layers:['l'],how:'好页链向垃圾目标的路径破坏好集隔离（§2.2.2 · PDF p.3）'},
+ {t:'伪装与跳转',layers:['c','b'],how:'查询日志伪装测试；实时会话查 JS 跳转（§3.1 · §3.3.3）'},
+ {t:'点击欺诈',layers:['b'],how:'点击异常与经济模型分析（§3.3.4 · PDF p.10）'}
+];
+
+const X_NUMS=[
+ {t:'占比各研究估计',cap:'同一指标「垃圾占比」，三种口径',bars:[{n:'英语页面级',v:'6%',w:6},{n:'另一研究估计',v:'16.5%',w:16.5},{n:'主机级',v:'22%',w:22}],
+  note:'三个百分比分母不同：页面与主机，不能平均或排序解读。',
+  read:'三项均转引自 §1：6% 出自英语页面级分类，22% 是主机级口径，16.5% 居中；它们共同框定问题规模。',
+  ev:[['§1',1]]},
+ {t:'按语言分布',cap:'同一研究内部可比的语言分布',bars:[{n:'日语',v:'9%',w:9},{n:'英语',v:'13.8%',w:13.8},{n:'德语',v:'22%',w:22},{n:'法语',v:'25%',w:25}],
+  note:'同源数据可横向比较；另有 *.biz 域 70%、*.com 域 20% 为垃圾（§1 · PDF p.2）。',
+  read:'同一组研究按语言与顶级域给出的分布：法语 25% 最高，日语 9% 最低；*.biz 域 70% 是垃圾。',
+  ev:[['§1',2]]},
+ {t:'内容分类效果',cap:'同一研究内：真阳率与真阴率',bars:[{n:'真阳率（抓出垃圾）',v:'86.2%',w:86.2},{n:'真阴率（放过正常）',v:'97.8%',w:97.8}],
+  note:'十棵 C4.5 树 boosting；转引自 §3.1 的内容分析研究。',
+  read:'两类错误的代价不同：漏放垃圾 13.8%，误伤正常页 2.2%；对引擎而言误伤更贵，真阴率因此更高。',
+  ev:[['§3.1',4]]},
+ {t:'各方法报告的提升',cap:'跨研究口径各异，只能与各自基线比',bars:[{n:'商业意图特征·准确率',v:'+3%',w:3},{n:'堆叠学习·两轮',v:'+3%',w:3},{n:'排名时特征·精度',v:'+25%',w:25},{n:'信任组合·退出前十桶',v:'80%',w:80}],
+  note:'四项的分母与任务完全不同：准确率、精度、检索桶占比；并列只为索引。',
+  read:'各流派代表性读数：内容特征 +3%，标签精化 +3%，行为特征 +25%，信任与不信任组合后 80% 垃圾站退出前十桶。',
+  ev:[['§3.1',4],['§3.2.2',6],['§3.2.5',8],['§3.3.3',10]]},
+ {t:'总体评价',big:'约 90%',bigNote:'§5 · PDF p.11：作者对当时反垃圾算法检测性能的总体评价。',
+  note:'同时警告：垃圾持续进化；点击欺诈、动态伪装与社交媒体垃圾仍是开放问题。',
+  read:'作者把方法演进分成几代：内容规则 → 链接挖掘 → 行为挖掘；90% 是 2011 年前的快照，用作今日结论前需复测。',
+  ev:[['§5',11]]}
+];
+
+const X_CASES=[
+ {t:'一场 SEO 比赛',q:'怎样为一个固定查询把页面刷到最高？',
+  input:'比赛查询 nigritude ultramarine，参赛者竞相在该查询上排到最高（§2.1 · PDF p.2）。',
+  op:'正文堆砌的重复策略：针对少量固定查询，把查询词过度塞进正文；想覆盖海量查询则改塞大量随机词。检查：词频分布反常、语言模型偏离，内容类判据可查。'},
+ {t:'把查询词写进网址',q:'“cheap acer laptops”这类排名靠什么抢？',
+  input:'目标查询 cheap acer laptops。',
+  op:'URL 堆砌：构造 cheap-laptops.com/cheap-laptops/acer-laptops.html，分词后 laptops 出现三次（§2.1 · PDF p.2）。检查：URL 分词与查询的重叠度是内容特征之一。'},
+ {t:'2006 年的蜜罐劫持',q:'一个高权威页为何链向色情站？',
+  input:'2006 年一个面向计算机专业学生的网站被入侵。',
+  op:'劫持者把它当蜜罐纳入链接农场，把权威分传给垃圾目标页；更温和的形态是专门造一个看似无辜的权威页链向目标（§2.2.2 · PDF p.3，Figure 1）。检查：信任传播从好种子出发可发现这类路径。'}
+];
+
+const X_FAPPLY=[
+ '把手头的反垃圾或 AI 可见性防御手段按内容、链接、行为三层盘点一遍，先补空缺层（本课推断）。',
+ '按五流派追溯原始论文：先读图正则化与标签传播，再决定是否引入剪枝或特征工程（本课推断）。',
+ '评估链接来源时先看邻居质量：入链与出链是否大量指向可疑簇（本课推断）。',
+ '把 90% 当作 2011 年前的快照；迁移到 AI 搜索前先做小规模复测（本课推断）。'];
+const X_FCOND=[
+ '框架来自 2011 年前文献；新数据源（如社交信号）不在三类之列。',
+ '五流派按思想划分，具体系统常跨流派组合。',
+ '隔离原则是经验观察，存在反例，不能当作硬规则。',
+ '数字转引自各原始研究，口径不一，不能横向比较。'];
+const X_FMET=[0,1,2,3];
+const X_QUOTES=[
+ {s:'检测算法分内容、链接、行为三类',basis:'摘要 · PDF p.1，按所用信息划分。',use:'盘点防御手段时先按三层归位，找空缺。'},
+ {s:'链接类再细分五个流派',basis:'§3.2 · PDF p.5，按思想与原理划分。',use:'按流派索引原始论文，再决定借鉴哪种。'},
+ {s:'好页极少链接坏页',basis:'§4 · PDF p.11，好集近似隔离原则。',use:'评估外链来源先看邻居质量与指向。'},
+ {s:'检出约 90%，垃圾仍在进化',basis:'§5 · PDF p.11，作者总体评价。',use:'当作 2011 年前快照，迁移前先复测。'},
+ {s:'转引数字先问口径再比较',basis:'§1 · PDF p.1–2，6% 与 22% 分母不同。',use:'引用任何数字前回原始研究核对。'},
+ {s:'训练测试分域，误差才可信',basis:'§3.3.3 · PDF p.10，同域测试误差可低 40%。',use:'评估自建检测器时先分离训练与测试域。'}];
+
+const LNAME=ls=>ls.map(x=>({c:'内容',l:'链接',b:'行为'})[x]).join('、');
+function sourceView(i=0){const e=PAPER.evidence[i%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function flow(hl){return `<div class="flow-line">${stageNames.map((t,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${hl===i?'active':''}">${esc(t)}<div class="caption">${esc(PAPER.steps[i])}</div></div>`).join('')}</div>`}
+function xBars(bars){return `<div class="x-bchart">${bars.map(b=>`<div class="x-brow"><span>${esc(b.n)}</span><div class="tr"><div class="fl" style="width:${b.w}%"></div></div><span class="vl">${esc(b.v)}</span></div>`).join('')}<div class="x-bnote">零点起算，条长即数值，未截断坐标。</div></div>`}
+
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="x-hero"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:10px">Nikita Spirin、Jiawei Han（伊利诺伊大学香槟分校） · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}</div><div class="choice-row" style="margin-top:16px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿；进度自动保存在当前浏览器。')}</div><div class="x-herostats">${PAPER.stats.map(s=>`<div class="x-hs"><div class="v">${esc(s.v)}</div><div class="k">${esc(s.name)}</div>${srcE(s.source,s.page)}</div>`).join('')}</div></div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>检测算法分哪三类，各靠什么信号？</li><li>链接类五个流派怎么分，哪个当时最强？</li><li>综述里的数字各自口径是什么？</li><li>约 90% 的检出评价能直接用于今天的 AI 搜索吗？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>论文观察到垃圾已进化多代：从内容规则到链接挖掘再到行为挖掘（§5 · PDF p.11）。对照两种布防思路。</p>${tip('教学情境为本课构造；论文原文没有实测收益数据。')}</div><div>${choices(['常见做法','研究启发'],state.sceneIx,'scene')}<div class="answer" aria-live="polite"><h3>${state.sceneIx?'研究启发':'常见做法'}</h3><p>${esc(state.sceneIx?PAPER.after:PAPER.before)}</p>${tip(state.sceneIx?'三层判据组合使用，新手法出现时按层补强（本课推断）。':'单一规则只覆盖一类信号，新手法出现就要打补丁。')}</div></div></div>`;
+ else if(view==='concept')h=`${choices(PAPER.steps,state.step,'concept')}<div class="columns"><div class="answer" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(X_STEPS[state.step].p)}</p><div>${src(X_STEPS[state.step].ev)}</div></div><div><div class="kicker">本篇要区分的量</div><ul class="fact-list">${PAPER.metrics.map((m,i)=>`<li><button type="button" class="term" data-term="metric${i}">${esc(m.name)}</button><small>${esc(m.plain)}</small></li>`).join('')}</ul></div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(X_STEPS[state.step].p)}</p><div class="only-pro pro-note">${esc(X_STEPS[state.step].pro)}</div><div>${src(X_STEPS[state.step].ev)}</div></div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按综述行文脉络重组；箭头表达阅读逻辑，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],state.flowIx,'flow')}<div aria-live="polite">${flow(state.flowIx)}</div><div class="columns">${panel('能够支持','一张方法地图：三类信息来源、五个链接流派、各流派代表算法与底层原理，可当索引追溯原始论文。')}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric')h=`<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),state.metric,'metric')}<div class="answer" aria-live="polite"><h3>${esc(PAPER.metrics[state.metric].name)}</h3><p class="only-plain">${esc(PAPER.metrics[state.metric].plain)}</p><div class="only-pro"><p>${esc(PAPER.metrics[state.metric].plain)}</p><div class="pro-note">${esc(PAPER.metrics[state.metric].pro)}</div></div><div>${src(PAPER.metrics[state.metric].ev)}</div></div></div><div><div class="kicker">读数前先问的三件事</div><ul class="fact-list"><li>统计单位<small>页面级、主机级还是语言级（§1 · PDF p.1–2）</small></li><li>分母与任务<small>真阳率与精度的分母不同（§3.1、§3.3.3）</small></li><li>转引边界<small>${esc(PAPER.boundary)}</small></li></ul></div></div>`;
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 研究设计</div><p class="intro">${esc(PAPER.setting)}</p><div class="callout">${esc(PAPER.boundary)}</div>${tip('综述的证据形态是“转引”：数字与结论都带着原始研究的出处。')}</div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">把综述当索引用之前的核对清单 · 本课推断</div><div class="check-list">${['每个转引数字回原始研究核对口径','分清页面级、主机级、语言级统计单位','检查训练与测试是否分域（同域会低估误差）','区分综述判断与各原始研究结论'].map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${s}</button>`).join('')}</div></div><div class="answer" aria-live="polite"><h3>${state.checks.size===4?'具备把综述当索引用的核对习惯':'继续补齐核对条件'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选用于自查习惯，无法替代回原文核对。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method'){const c=X_MAP[state.cat];const sub=state.cat===1?c.sub[state.sub]:null;
+  h=`<div class="x-mapwrap"><div class="x-cats x-keynav" role="group" aria-label="选择检测算法的信息来源">${X_MAP.map((m,i)=>`<button type="button" data-action="cat" data-value="${i}" aria-pressed="${i===state.cat}"><span class="ct">${esc(m.t)}<span class="cn">0${i+1}</span></span><span class="cs">${esc(m.sig)}</span></button>`).join('')}</div><div class="x-detail" aria-live="polite"><h3>${esc(c.t)}</h3><div class="x-oneline">${esc(c.one)}</div><div class="x-dgrid"><div><div class="k">为什么可行（原理）</div><p>${esc(c.principle)}</p></div><div><div class="k">适用场景</div><p>${esc(c.fit)}</p></div><div><div class="k">局限</div><p>${esc(c.limit)}</p></div><div><div class="k">转引读数</div><p>${esc(c.num)}</p></div></div>${c.algos?`<div class="x-chips">${c.algos.map(a=>`<span class="tag acc">${esc(a)}</span>`).join('')}</div>`:''}${state.cat===1?`<div class="x-subs x-keynav" role="group" aria-label="链接类五个流派">${c.sub.map((s,i)=>`<button type="button" data-action="sub" data-value="${i}" aria-pressed="${i===state.sub}">${esc(s.t)}</button>`).join('')}</div>${sub?`<div class="x-subd">${esc(sub.d)} <span class="src">${esc(sub.n)}</span></div>`:''}`:''}<div class="x-num">出处：${esc(c.ev)}</div></div></div>`;}
+ else if(view==='lab'){const caught=X_FORMS.filter(f=>f.layers.some(l=>state.layers[l]));
+  h=`<div class="x-labwrap"><div><div class="kicker">开关三层信号（可多选）</div><div class="x-layers x-keynav" role="group" aria-label="选择布防信号层"><button type="button" data-action="layer" data-value="c" aria-pressed="${state.layers.c}"><span>内容层</span><span class="ld">文本与统计特征</span></button><button type="button" data-action="layer" data-value="l" aria-pressed="${state.layers.l}"><span>链接层</span><span class="ld">超链接图结构</span></button><button type="button" data-action="layer" data-value="b" aria-pressed="${state.layers.b}"><span>行为层</span><span class="ld">点击与会话</span></button></div><div class="choice-row" style="margin-top:10px"><button class="btn" type="button" data-action="preset" data-value="0">仅内容层</button><button class="btn" type="button" data-action="preset" data-value="1">三层全开</button></div><div class="x-count" aria-live="polite">当前可拦截 <b>${caught.length}</b> / ${X_FORMS.length} 类手法</div><div class="x-num">示意映射：按 §2 手法分类与 §3 各流派检测对象整理（PDF p.2–10），非实测拦截率。</div></div><div><div class="x-forms" aria-live="polite">${X_FORMS.map(f=>{const hit=f.layers.some(l=>state.layers[l]);return `<div class="x-form${hit?' hit':''}"><span class="fn">${esc(f.t)}</span><span class="fc">${hit?esc(f.how):'当前信号未覆盖 · 需'+LNAME(f.layers)+'层判据'}</span></div>`}).join('')}</div><div class="x-count">未拦截时显示手法归属的层；锚文本堆砌在 §2.1 归入内容垃圾（PDF p.2）。</div></div></div>`;}
+ else if(view==='numbers'){const v=X_NUMS[state.numView];
+  h=`${choices(X_NUMS.map(x=>x.t),state.numView,'numv')}<div class="columns" aria-live="polite"><div><div class="kicker">${esc(v.cap)}</div>${v.big?`<div class="x-big">${esc(v.big)}</div>${tip(v.bigNote)}`:xBars(v.bars)}${tip(v.note)}</div><div class="answer"><h3>怎么读这组数</h3><p>${esc(v.read)}</p><div>${v.ev.map(e=>srcE(e[0],e[1])).join(' ')}</div><div class="caption">${esc(PAPER.extra)}</div></div></div>`;}
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);const sel=state.fsel[ix]||0;const ev=PAPER.finding_ev[ix];const body=[PAPER.finding_details[ix],X_FAPPLY[ix],X_FCOND[ix]][sel];
+  h=`<div class="ev" style="margin-bottom:14px">F${ix+1} · ${src(ev)} · 证据强度 <span class="str-l">弱</span> ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],sel,'finding'+ix)}<div class="answer" aria-live="polite"><p>${esc(body)}</p><div class="caption">${sel===1?'行动建议属于本课推断。':sel===2?'条件来自综述范围与口径说明。':'结合本篇研究设计理解这条发现。'}</div></div></div><div><div class="kicker">如何核查这一发现</div><ul class="fact-list"><li>研究设置<small>${esc(PAPER.setting)}</small></li><li>观察指标<small>${esc(PAPER.metrics[X_FMET[ix]].name)}：${esc(PAPER.metrics[X_FMET[ix]].plain)}</small></li><li>迁移约束<small>${esc(PAPER.boundary)}</small></li></ul><button type="button" class="btn" data-go="10" style="margin-top:12px">打开方法地图 →</button></div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],state.cmp,'compare')}<div aria-live="polite">${compareHtml(state.cmp)}</div>`;
+ else if(view==='case'){const c=X_CASES[state.caseIx];
+  h=`<div class="kicker">论文原例 · 中文转述 · 共 ${X_CASES.length} 例</div><div class="x-cases x-keynav" role="group" aria-label="选择论文原例">${X_CASES.map((x,i)=>`<button type="button" data-action="caseSel" data-value="${i}" aria-pressed="${i===state.caseIx}">${esc(x.t)}</button>`).join('')}</div><p class="intro">${esc(c.q)}</p><div class="two-docs">${panel('问题与输入',c.input)}${panel('操作与检查',c.op)}</div><div class="callout" style="margin-top:14px">对应发现：${esc(PAPER.findings[0])}；${esc(PAPER.findings[2])}。</div>${tip('三例均为论文 §2 原例转述（PDF p.2–3），未补造提升幅度。')}`;}
+ else if(view==='persona'){const roles=['内容与业务负责人','技术与数据人员','研究与审核人员'];
+  const todos=[['自查页面：标题、正文、元标签、URL 是否堆砌目标词（§2.1）','检查外链来源：是否卷入互链农场或可疑目录（§2.2）','上新内容前先读一遍，避免机器生成痕迹（§4）'],['按内容、链接、行为三层盘点现有判据，补空缺层（F1）','分类器训练与测试分域，防止误差被低估最多 40%（§3.3.3）','信任传播先选好种子：逆 PageRank 取前 K 再人工评审（§3.2.2）'],['把综述当索引：每个数字回溯原始论文核对口径（F4）','复现前检查数据年代：覆盖 2011 年前方法版图','关注点名开放问题：点击欺诈、动态伪装、社交媒体垃圾（§5）']];
+  h=`${choices(roles,state.role,'role')}<div class="columns"><div><h3>${esc(roles[state.role])}</h3><p style="margin-top:12px">为什么适合：${esc([PAPER.findings[0],PAPER.findings[1],PAPER.findings[3]][state.role])}。</p><div class="callout warn">避免：${esc(PAPER.before)}后，直接宣称所有结果都由该操作带来。</div></div><div><ul class="fact-list">${todos[state.role].map(s=>`<li>${esc(s)}<small>本课应用推断 · 依据见方法地图与发现页</small></li>`).join('')}</ul></div></div>`;}
+ else if(view==='mature'){const forms=[['方法地图文档','分类框架 + 各类代表算法与出处','按信息来源划分算法流派'],['信号布防清单','内容 / 链接 / 行为各层判据与组合方式','界定垃圾形式与占比口径'],['数字索引卡','每个数字附口径与原始研究出处','提炼各流派通用底层原理']];
+  h=`<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${forms.map(f=>`<tr><td>${esc(f[0])}</td><td>${esc(f[1])}</td><td>${esc(f[2])}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:18px">采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。</div>`;}
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes')h=`<div class="flips">${X_QUOTES.map((q,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(q.s)}</b><span class="flip-back">依据：${esc(q.basis)}<br>用法：${esc(q.use)}</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}（手法视角）</h3><p>${esc(PAPER.related.claim)}</p>${relatedLink()}${tip('按相关论文摘要转述；该篇回答“垃圾长什么样”，本篇回答“怎么抓”。')}</div>`;
+ return `<div class="answer"><h3>两篇放在一起读</h3><p>手法分类与方法分类可以逐格对照：每种手法检查是否已有对应层的判据；两边占比估计 10–15% 与 6–22% 口径不同，引用时各带出处。</p>${relatedLink()}${tip('本段为教学推断；两篇论文的数字不宜直接相加或平均。')}</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i===0?'来自本篇研究范围与局限解读。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、反常发现、指标口径、适用边界与局限。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Delegated clicks: update state, re-render only the affected lesson container.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=b.dataset.value,a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ const rerender=()=>{box.innerHTML=draw(p.dataset.view);const nb=box.querySelector(`[data-action="${a}"]${v!=null?`[data-value="${v}"]`:''}`);if(nb)nb.focus({preventScroll:true});};
+ if(a==='scene'){state.sceneIx=+v;rerender();}
+ else if(a==='concept'||a==='step'){state.step=+v;rerender();}
+ else if(a==='prevStep'){state.step=Math.max(0,state.step-1);rerender();}
+ else if(a==='nextStep'){state.step=Math.min(PAPER.steps.length-1,state.step+1);rerender();}
+ else if(a==='flow'){state.flowIx=+v;rerender();}
+ else if(a==='metric'){state.metric=+v;rerender();}
+ else if(a==='proof'){state.proof=+v;rerender();}
+ else if(a==='check'){state.checks.has(+v)?state.checks.delete(+v):state.checks.add(+v);rerender();}
+ else if(a==='cat'){state.cat=+v;rerender();}
+ else if(a==='sub'){state.sub=+v;rerender();}
+ else if(a==='layer'){state.layers[v]=!state.layers[v];rerender();}
+ else if(a==='preset'){state.layers=(v==='1')?{c:true,l:true,b:true}:{c:true,l:false,b:false};rerender();}
+ else if(a==='numv'){state.numView=+v;rerender();}
+ else if(a&&a.startsWith('finding')){const ix=+a.slice(-1);state.fsel[ix]=+v;rerender();}
+ else if(a==='compare'){state.cmp=+v;rerender();}
+ else if(a==='caseSel'){state.caseIx=+v;rerender();}
+ else if(a==='role'){state.role=+v;rerender();}
+ else if(a==='limit'){state.lim=+v;rerender();}
+ else if(a==='flip'){state.flips.has(+v)?state.flips.delete(+v):state.flips.add(+v);b.setAttribute('aria-pressed',state.flips.has(+v));}
+ else if(a==='copySummary')copyText(PAPER.findings.map(t=>'· '+t+'。').join('\n')+'\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=+v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys inside any choice/keynav group change that control, page navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button,.lesson .x-keynav button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

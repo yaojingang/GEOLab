@@ -1,0 +1,898 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>跨分块边界的SCAR · 论文课堂</title><meta name="description" content="SCAR按查询相关性与结构连续性选择邻块，在受测语料中降低上下文开销"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="2606.16661v1"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* opt-51 course components (x- prefixed) */
+.x-labgrid{display:grid;grid-template-columns:1.08fr 1fr;gap:20px;align-items:start}
+.x-lab .choice-row{margin-bottom:10px}
+.x-lab .cap{margin-top:6px}
+.x-doc{display:flex;flex-direction:column;gap:5px}
+.x-chunk{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line-2);border-radius:9px;padding:5px 10px;background:#fff}
+.x-chunk .cid{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;flex:none;margin-top:2px}
+.x-chunk .ct{font-size:12.5px;line-height:1.45;color:var(--ink-2);flex:1}
+.x-chunk .x-cos{display:block;font-size:10px;color:var(--ink-3);font-family:var(--mono)}
+.x-chunk .cs{flex:none;font-size:11px;border-radius:999px;padding:0 8px;border:1px solid var(--line-2);color:var(--ink-3);margin-top:2px}
+.x-chunk.is-seed{border-color:var(--accent);background:var(--accent-tint)}
+.x-chunk.is-seed .cs{background:#fff;border-color:var(--accent);color:var(--accent-ink)}
+.x-chunk.is-in{border-color:var(--pos);background:var(--pos-tint)}
+.x-chunk.is-in .cs{background:#fff;border-color:var(--pos);color:var(--pos)}
+.x-chunk.is-miss{border-style:dashed;border-color:var(--neg);background:var(--neg-tint)}
+.x-chunk.is-miss .cs{background:#fff;border-color:var(--neg);color:var(--neg)}
+.x-chunk.is-out{opacity:.45}
+.x-gate{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.x-gate .g{display:grid;grid-template-columns:1fr auto;gap:3px 10px;border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:12.5px;align-items:center}
+.x-gate .g .caption{margin-top:2px}
+.x-ctl{display:grid;grid-template-columns:96px 1fr 172px;gap:12px;align-items:center;margin:6px 0;font-size:13px;color:var(--ink-2)}
+.x-ctl output{font-family:var(--mono);font-size:12px;white-space:nowrap}
+.x-kpis{display:flex;gap:22px;margin-top:6px}
+.x-kpis .caption{margin:2px 0 0}
+.x-bars .x-row{display:grid;grid-template-columns:118px 1fr 92px;gap:10px;align-items:center;margin:4px 0;font-size:12.5px}
+.x-bars .xl{color:var(--ink-2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.x-track{position:relative;height:13px;background:var(--tint);border-radius:3px;display:block}
+.x-fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--accent)}
+.x-fill.gray{background:#b3b3ae}
+.x-fill.dim{background:#d9d9d4}
+.x-base{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px dashed var(--ink-2)}
+.x-val{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+.x-legend{display:flex;gap:14px;font-size:11.5px;color:var(--ink-3);margin-top:8px;flex-wrap:wrap;align-items:center}
+.x-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+.x-pair{display:flex;flex-direction:column;gap:3px}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.x-labgrid{grid-template-columns:1fr;gap:14px}
+.x-ctl{grid-template-columns:1fr;gap:4px}
+.x-bars .x-row{grid-template-columns:86px 1fr 58px;gap:6px}
+.x-kpis{gap:16px;flex-wrap:wrap}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 09 RAG检索优化</div>
+    <h1>跨分块边界的SCAR</h1>
+    <div class="en">2026 · 系统方法</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">跨分块边界的SCAR</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">收益与代价一起读：块量省 22.9%，召回低 3.9 个百分点<span class="src">摘要 · Table 2 · PDF p.1,3</span></div></div><div class="notes">这门课讲 SCAR：在检索之后决定邻块要不要进上下文。先记住一对数字：块量省 22.9%，召回低 3.9 个百分点。整门课把收益与代价放在一起读，最后落到适用边界。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">先看结论与代价，再核对证据与边界</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">七章：问题 → 原理 → 测量 → 方法 → 发现 → 应用 → 复盘<span class="src">本课编排</span></div></div><div class="notes">路线页给四个入口问题：证据被切开怎么办、指标怎么读、门槛为何能跨模型迁移、结论到哪里失效。点击任意章可以直接进入，进度自动保存。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">证据被边界切成两半时，检索器只找回一半</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">命中块给数值，表头与注释却在邻块里（示意）<span class="src">§2 Problem Statement · PDF p.1</span></div></div><div class="notes">场景取自论文 §2 的失效模式：财务表的表头与数据行被分到两个块。先看常见做法丢了什么，再看 SCAR 如何逐块评估邻块。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">先分清三个角色：种子块、邻块与扩展闸门</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">闸门是相对阈值：邻块得分超过种子相关性的 0.8 倍<span class="src">§4 · Eq.3 · PDF p.2</span></div></div><div class="notes">三个概念撑起全篇：边界碎片化是问题，扩展闸门是机制，结构连续性是惩罚项。切到专业模式可以看到三条公式的原始形式。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">邻块过闸才扩展：门槛是种子相关性的 0.8 倍</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">λ=0.1、γ=0.80 全语料固定，半径 r ∈ {1, 2}<span class="src">§4–5.4 · PDF p.2</span></div></div><div class="notes">步进器走三步：检索种子块、计算邻块得分、过闸扩展。注意第二步的连续性惩罚，它把相邻与连贯区分开。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">干预发生在检索之后、生成之前</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">训练自由、单次决策，可与任何分块策略组合<span class="src">§3–4 · PDF p.1–2</span></div></div><div class="notes">流程图定位干预环节：SCAR 不改分块器，改的是检索后的上下文组装。它属于检索时方案，与索引时分块方法互补。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">召回与块量要一起读，单看哪个都会误判</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">块效率 = 召回 ÷ 平均块数：SCAR 0.118 对窗口 0.095<span class="src">§5.2 · Table 3 · PDF p.2–3</span></div></div><div class="notes">召回衡量证据找全没有，块数衡量上下文开销。只看召回会选静态窗口，只看块数会选 Top-5，两个一起读才能看清取舍。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">四个语料、320 个查询、五种对照方法</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">每语料 40 条边界碎片化查询；金标三人标注 κ=0.55–0.79<span class="src">§5.1–5.3 · Table 1 · PDF p.2</span></div></div><div class="notes">四个结构性语料、每语料 80 条查询、五个基线，决定结论能支撑多大范围。右侧可切换原文证据节选。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">复验先钉住：同金标、同分块器、同检索参数</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">双向报告：块量与召回一起报，附置信区间<span class="src">§5–6.4 · PDF p.2–4</span></div></div><div class="notes">这一页把论文的对照条件转成复验清单。勾选只是自查完整性，不能代替在目标语料上的对照实验。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">门槛随种子相关性浮动：弱命中降低门槛</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">λ=0 时严格尺度不变；小 λ 只引入轻微尺度修正<span class="src">§4.2 · PDF p.2</span></div></div><div class="notes">方法拆解强调两个设计性质：尺度稳健让参数跨模型迁移；自适应门槛在检索器不确定时放低门槛。专业层给出三条公式。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">调 γ 阈值：邻块选择在收益与代价之间移动</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">默认 γ=0.80：表头块过闸，薄注释块被挡（示意）<span class="src">机制据 §4 · 示意数值 · 论文数字见 Table 2</span></div></div><div class="notes">招牌实验：先切换三种策略，再拖动 γ。默认 0.80 时薄注释块被闸门挡住，这正是论文自述的失效模式；把 γ 降到 0.79 就能找回它。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">省 22.9% 块量，付 3.9 个百分点召回</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">块量差 d=−1.49（大效应），召回差 d=−0.33（小效应）<span class="src">Table 2 · Table 3 · §6.4 · PDF p.3–4</span></div></div><div class="notes">可比较的数字画成条形图，基线是静态窗口。三个视图：按方法、按语料、按下游生成。专业层附配对检验与消融数字。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">边界碎片化：一半证据在命中块，另一半在邻块</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">证据 E = {c_i, c_{i+1}}，检索器只命中 c_i<span class="src">§2 · PDF p.1</span></div></div><div class="notes">第一条发现定义问题：递归分块在句子或条款中间切开证据，论文举的例子是表头与数据行分离、法律定义前后半句分离。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">静态窗口全收邻块，无关内容推高 token 开销</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">窗口 ±1 平均 10.16 块，父检索 50.2 块<span class="src">Table 3 · §6.7 · PDF p.3–4</span></div></div><div class="notes">第二条发现给问题定价：无条件扩展把无关邻块也带进上下文。10-K 上窗口平均 1,281 token，SCAR 只用 934。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">相对阈值免校准：同一组参数跨三种嵌入模型</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">BGE 降块 12.7%、zembed-1 降 17.2%，召回 0.913 与 0.956<span class="src">§6.4 · PDF p.4</span></div></div><div class="notes">第三条发现解释设计：门槛与种子相关性成比例，嵌入模型的相似度尺度变化被抵消，因此同一组参数能迁移。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">块量收益是大效应，召回代价小而真实</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">召回差 95% CI [−0.058, −0.022]，Wilcoxon p=0.011<span class="src">§6.4 · PDF p.4</span></div></div><div class="notes">第四条发现是统计口径：块量节省 d=−1.49 是大效应；召回代价 d=−0.33 小但显著。省多少、丢多少，两个都要报。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">对照 SproutRAG：检索时扩块与索引时建树</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">对齐干预环节与指标口径，两篇数字不能直接相加<span class="src">§3 Related Work · 本课推断</span></div></div><div class="notes">另一条路线在索引时动手：SproutRAG 用句间注意力构造分块树再做多粒度检索。对照时先对齐阶段与指标。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">一次具体取证：表头与数值行被分到两个块</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">论文界定失效模式，块内文案为本课示意<span class="src">§2 · §4.2 · PDF p.1–2</span></div></div><div class="notes">案例页把机制还原成一次操作：查询问数值，命中块只有数值行。按闸门规则评估邻块，再决定带谁进上下文。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">三种角色把方法落成三份清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">行动建议为本课推断，需用对照试验确认<span class="src">依据 F1–F4 · 本课推断</span></div></div><div class="notes">知识库运营先盘点跨块证据，工程师复现参数并双向报告，审核者核对统计口径与失效模式。建议都需在目标语料复测。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态承接：追踪、基准卡与变更记录</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">映射为本课推断；先小范围复验再扩大<span class="src">本课推断</span></div></div><div class="notes">三个承接点：检索运行追踪、技术基准卡、系统变更记录。每行对应论文里的一个环节。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">六条边界：从薄延续到金标噪声</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">高影响两条：薄延续失效与召回代价<span class="src">§7 · §6.6 · PDF p.4</span></div></div><div class="notes">批判阅读按影响排序。前两条来自论文自述：薄延续过不了闸门、召回有代价；其余是本课的迁移审查提示。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走六句结论，也带走它们的条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">每张卡片背面写依据与用法<span class="src">本课提炼 · 出处见卡片背面</span></div></div><div class="notes">金句页把结论压成六句。翻面看依据：来自哪张表、哪一节，以及一个具体用法。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">五题覆盖结论、反常、指标、边界与局限<span class="src">复习页码见每题反馈</span></div></div><div class="notes">五道题对应五类要点。答错按提示页码回看，特别留意召回代价与薄延续两条。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>SCAR: Semantic Continuity-Aware Retrieval for Efficient Context Expansion in RAG</p><p>2026 · 2606.16661v1</p><p><a href="https://arxiv.org/pdf/2606.16661" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper51,
+  author = {Nathanaël Langlois},
+  title = {SCAR: Semantic Continuity-Aware Retrieval for Efficient Context Expansion in RAG},
+  year = {2026},
+  url = {https://arxiv.org/pdf/2606.16661}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：b988752a4bb0ae793144229cb14d4c45318813a087088057322c238f3d521eb9</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={
+ "id": 51,
+ "zh": "跨分块边界的SCAR",
+ "kind": "系统方法",
+ "question": "证据被分块边界切开时，如何既找回证据又控制上下文开销？",
+ "claim": "SCAR按查询相关性与结构连续性选择邻块，在受测语料中降低上下文开销",
+ "steps": ["检索种子块", "评估邻块相关与连续性", "按相对阈值扩展"],
+ "findings": ["固定分块可能切断证据", "静态窗口引入不必要上下文", "相对阈值有助跨嵌入迁移", "块量节省伴随召回损失"],
+ "metrics": [
+  {"name": "边界召回", "plain": "被切碎的跨块证据找全的比例"},
+  {"name": "平均块数", "plain": "每条查询送入上下文的块数量"},
+  {"name": "忠实性", "plain": "生成是否受来源支持（RAGAS，仅 10-K 验证）"}
+ ],
+ "setting": "RFC 9293、GDPR、Microsoft 10-K 与并购协议四个语料；N=320 条查询（160 条边界碎片化）",
+ "boundary": "受测查询与边界划分有限，复杂跨文档依赖仍需专门验证",
+ "query": "表 7 里欧洲区 2026 年收入受汇率影响多少？（示意）",
+ "before": "静态窗口 ±1：无条件并入全部邻块",
+ "after": "按查询相关与结构连续性选择必要邻块",
+ "finding_details": [
+  "递归分块按字符数切开文档，答案证据 E = {c_i, c_{i+1}} 被边界分开而检索器只命中其一；§2 举例如财务表的表头与数据行、法律定义的前后半句，单块上下文难以支撑完整回答。",
+  "静态窗口 ±1 平均取 10.16 块，父检索多达 50.2 块（Table 3）；RAGAS 显示 10-K 上窗口平均上下文 1,281 token，SCAR 省到 934（−27.1%），省下的主要是无关邻块。",
+  "门槛取 γ·cos(q,c)：两侧随查询相关性同比例缩放，λ=0 时严格尺度不变；同一组 λ=0.1、γ=0.80 在三种嵌入模型免重校准，BGE 降块 12.7%、zembed-1 降 17.2%。",
+  "块量差 −2.32 块（95% CI [−2.57, −2.09]，d=−1.49）；召回差 −0.039（CI [−0.058, −0.022]，d=−0.33）。节省是大效应，召回代价小而可测，完整取证任务需权衡。"
+ ],
+ "finding_srcs": [
+  "§2 · PDF p.1；Table 2 · PDF p.3",
+  "Table 3 · PDF p.3；§6.7 · PDF p.4",
+  "§4.2 · PDF p.2；§6.4 · PDF p.4",
+  "§6.4 · PDF p.4；§7 · PDF p.4"
+ ],
+ "finding_apps": [
+  "先盘点知识库里会跨块的证据类型：表格、定义、条款，再决定是否引入邻块扩展。",
+  "把块量与 token 计入成本账，与召回变化一起写进实验结论。",
+  "更换嵌入模型或分块器时，先复测门槛，再决定沿用默认参数。",
+  "为漏证敏感的任务保留静态窗口对照，或调低 γ 做对照试验。"
+ ],
+ "finding_conds": [
+  "仅当证据相邻、且检索器能把种子块排进候选时成立。",
+  "以受测四语料与 600 字符分块为条件；token 数字仅测 10-K。",
+  "λ=0 时严格成立；小 λ 有轻微尺度修正。",
+  "受测查询与边界划分有限；收益与代价需同口径复测。"
+ ],
+ "finding_check": [
+  [["问题定义", "证据 E={c_i, c_{i+1}}，检索器只命中其一（§2）"], ["观察指标", "边界题召回：窗口 0.967 对 SCAR 0.928（Table 2）"], ["典型片段", "表头与数据行、法律定义前后半句（§2）"]],
+  [["开销对照", "窗口 ±1 10.16 块；父检索 50.2 块（Table 3）"], ["token 证据", "10-K：1,281 → 934 token，−27.1%（§6.7）"], ["机制解释", "点式重排也会压低延续块（§6.2）"]],
+  [["设计性质", "λ=0 时严格尺度不变（§4.2）"], ["迁移数据", "BGE −12.7%@0.913；zembed-1 −17.2%@0.956（§6.4）"], ["参数稳定", "留一语料网格搜索处于 recall ≥ 0.90 平台（§6.5）"]],
+  [["效应量", "块量 d=−1.49；召回 d=−0.33（§6.4）"], ["置信区间", "召回差 CI [−0.058, −0.022]，Wilcoxon p=0.011"], ["失效模式", "薄延续可能过不了闸门（§7）"]]
+ ],
+ "catalog_title": "SCAR: Semantic Continuity-Aware Retrieval for Efficient Context Expansion in RAG",
+ "title": "SCAR: Semantic Continuity-Aware Retrieval for Efficient Context Expansion in RAG",
+ "authors": "Nathanaël Langlois",
+ "year": "2026",
+ "category": "09_RAG检索优化",
+ "url": "https://arxiv.org/pdf/2606.16661",
+ "file": "09_RAG检索优化_SCAR_Semantic_Continuity_Aware_Retrieval.html",
+ "pdf": "../09_RAG检索优化/09_RAG检索优化_SCAR_Semantic_Continuity_Aware_Retrieval.pdf",
+ "kind_note": "基于受测环境，迁移效果需要另测",
+ "extra": "节省上下文伴随召回下降；论文总结报告相对静态窗口约 3.9 个百分点的代价。",
+ "evidence": [
+  {"label": "摘要与研究目标", "text": "Fixed-length chunking in Retrieval-Augmented Generation (RAG) often leads to boundary fragmentation, where critical evidence is split across segments, degrading retrieval recall. While static windowing and parent retrieval improve recall, they introduce significant token overhead. We propose SCAR (Semantic Continuity-Aware Retrieval), an adaptive retrieval policy that selectively expands neighboring chunks by weighing query-neighbor relevance against a structural continuity penalty. SCAR uses a relative expansion threshold tied to each retrieved chunk's own query-relevance, yielding an approximately scale-invariant decision rule that transfers across embedding models without recalibration. Across four diverse corpora (RFC, GDPR, a 10-K report, and a Merger agreement; N = 320 queries; 160 boundary-fragmented), SCAR achieves 92.8% recall on boundary-fragmented queries with only 7.84 chunks, a 22.9% reduction compared to static windowing (10.16 chunks). ... The policy transfers across three embedding models (text-embedding-3-large, BGE-large-en-v1.5, zembed-1) using the same single hyperparameter setting, and downstream RAGAS evaluation on the 10-K corpus confirms SCAR preserves generation faithfulness while reducing context tokens by 27.1%.", "page": 1},
+  {"label": "方法与评估", "text": "We evaluate SCAR on four diverse corpora selected for their complex structural dependencies: the TCP specification (RFC 9293), the GDPR regulation, a Microsoft 10-K annual report, and a corporate merger agreement (Table 1). ... We employ a recursive character splitter with a target chunk size of 600 characters and a 60-character overlap. ... We employ the text-embedding-3-large model to generate 3072-dimensional embeddings for all chunks and queries. Retrieval is performed using k-NN search with k = 5 and cosine similarity. ... We compare SCAR against: Baseline (Top-k); Window (±1): always retrieve immediate neighbors; Window (±2): expand to ±2 neighbors; Parent Retrieval: retrieve all chunks from the same document section; Cross-Encoder Reranker: rerank the top-20 dense candidates with bge-reranker-large.", "page": 2},
+  {"label": "主结果", "text": "Table 2 evaluates SCAR against the static windowing baseline on queries where evidence is split across segments. SCAR (±1) achieves 92.8% average recall using 7.84 unique chunks on average. In comparison, the Static Window baseline requires 10.16 chunks: a 22.9% reduction in context volume with a 3.9 percentage point recall gap. Against naive fixed-budget retrieval, a top-8 retriever reaches only 0.905 recall (2.3 points below SCAR), and matching SCAR's 0.928 needs top-10 (about 28% more chunks). The gain is most pronounced on the Microsoft 10-K corpus (29.9% chunk reduction, 7.47 vs 10.65, at 92.3% recall vs Window's 99.2%), where SCAR filters the redundant \"neighbor noise\" common in dense financial tables.", "page": 3},
+  {"label": "讨论与研究边界", "text": "SCAR is a training-free, retrieval-time policy that selectively expands context by weighing query-neighbor relevance against a structural continuity penalty, with a relative threshold that transfers across embedding models without recalibration. Across 160 boundary-fragmented queries it cuts chunk volume by 22.9% versus static windowing (p < 10−4, d = −1.49) at a 3.9-point recall cost, while RAGAS on the 10-K corpus confirms faithfulness is preserved at a 27.1% smaller context. Its scope is adjacent-chunk fragmentation: it cannot recover evidence the retriever fails to rank in top-k, nor non-adjacent evidence. A further limitation is that SCAR assumes a needed adjacent chunk retains enough standalone query relevance to pass the expansion gate: for semantically thin continuations (e.g., table values separated from their headers, or paraphrased restatements), the neighbor's low direct relevance can cause SCAR to skip evidence that static windowing would recover.", "page": 4}
+ ],
+ "version": "2606.16661v1",
+ "sha256": "b988752a4bb0ae793144229cb14d4c45318813a087088057322c238f3d521eb9",
+ "stats": [
+  {"v": "92.8%", "name": "边界题召回", "source": "Table 2 · 摘要", "context": "160 条边界碎片化查询的平均召回", "page": 3},
+  {"v": "22.9%", "name": "块量相对窗口减少", "source": "Table 2 · 摘要", "context": "7.84 块对静态窗口 10.16 块", "page": 3},
+  {"v": "3.9", "name": "召回代价（百分点）", "source": "§6.4 · Conclusion", "context": "召回 0.928 对 0.967", "page": 4},
+  {"v": "27.1%", "name": "上下文 token 减少", "source": "§6.7 · 摘要", "context": "10-K 下游：934 对 1,281 token", "page": 4}
+ ],
+ "related": {"id": 52, "zh": "注意力引导的分块树", "title": "SproutRAG: Attention-Guided Tree Search with Progressive Embeddings for Long-Document RAG", "url": "./09_RAG检索优化_SproutRAG_Attention_Guided_Tree_Search.html", "pdf": "../09_RAG检索优化/09_RAG检索优化_SproutRAG_Attention_Guided_Tree_Search.pdf", "claim": "SproutRAG用学习到的句间注意力构造分块树，再进行多粒度检索"},
+ "strength": "中",
+ "strength_why": "本课保守评级：有实证比较；样本独立性、自动评价或生产迁移仍有约束。",
+ "limitations": [
+  ["高", "已知失效模式：薄延续过不了闸门", "结论章自述：语义很薄的延续（表值离开表头、改写复述）直接相关性低，可能被 SCAR 跳过而静态窗口能找回；结构感知分块（上下文前缀、表头随行）可缓解。"],
+  ["高", "召回代价与任务匹配", "省 22.9% 块量对应召回低 3.9 个百分点（d=−0.33）；完整取证、合规引用类任务对漏证敏感，需按任务权衡或调低 γ。"],
+  ["中", "金标依赖 LLM 辅助生成", "查询由 LLM 辅助生成后人工核验（κ=0.55–0.79，91% 合格率）；§6.6 用四种金标变体复测，SCAR 对 Top-5 的召回领先保持 +0.034 到 +0.098。"],
+  ["中", "迁移需要复验", "λ=0.1、γ=0.80 只在受测三种嵌入模型上验证；更换嵌入模型或分块器时，迁移效果需要另测（本课审查）。"],
+  ["中", "相关研究提供新对照", "SproutRAG 用学习到的句间注意力构造分块树，再进行多粒度检索；与 SCAR 的检索时扩块属于不同环节。"],
+  ["低", "版本与口径", "本地 PDF 为 v1 预印本（2026-06-15）；正式引用需再核对发表信息。未逐表重算的指标仍需人工复核。"]
+ ],
+ "quiz": [
+  {"q": "SCAR 判断「要不要扩展一个邻块」的规则是？", "o": ["邻块与种子块的余弦相似度超过 0.5 就扩展", "邻块得分 S=cos(q,n)−λ·b 超过种子块查询相关性的 γ 倍（γ=0.80）", "只要邻块与查询共享关键词就扩展", "邻块文本长度超过 600 字符就扩展"], "a": 1, "e": "闸门是相对阈值：S > γ·cos(q,c)，λ=0.1、γ=0.80 在全部语料固定（§4.2）。", "p": 10},
+  {"q": "在 160 条边界碎片化查询上，SCAR ±1 相对静态窗口 ±1 的结果是？", "o": ["块量减少 22.9%，召回低 3.9 个百分点", "块量与召回同时改善", "召回更高，块量也更多", "块量相同，召回大幅提高"], "a": 0, "e": "7.84 块对 10.16 块（−22.9%），召回 0.928 对 0.967；收益与代价要一起读（Table 2）。", "p": 12},
+  {"q": "扩展门槛用相对阈值 γ·cos(q,c) 的主要原因是？", "o": ["让决策随嵌入模型的相似度尺度自动缩放，跨模型免重新校准", "让所有邻块都被扩展，保证召回不降", "减少需要人工标注的金标查询数量", "让上下文窗口保持固定大小"], "a": 0, "e": "λ=0 时两侧同比例缩放、严格尺度不变；同一组参数迁移到 BGE 与 zembed-1 免重校准（§4.2、§6.4）。", "p": 15},
+  {"q": "哪类证据最可能被 SCAR 挡在上下文外，而静态窗口能找回？", "o": ["与查询高度相关的表头块", "语义很薄的延续块，如表值离开表头后直接相关性很低", "与种子块毫无关系的远端段落", "文档开头的第一块"], "a": 1, "e": "结论章自述：薄延续（表值与表头分离、改写复述）可能过不了闸门（§7）。", "p": 21},
+  {"q": "关于下游生成质量，论文的验证口径是？", "o": ["四个语料上做了人工评分", "仅在 10-K 语料用 GPT-4o-mini 与 RAGAS：忠实度 4.99/5 持平，上下文 token 省 27.1%", "未做任何下游验证", "在三种嵌入模型上验证了收入提升"], "a": 1, "e": "§6.7：10-K 全部 80 条查询，token 934 对 1,281（−27.1%），忠实度与相关性基本持平。", "p": 12}
+ ],
+ "t2": [["TCP", 0.992, 0.950, 9.75, 7.90], ["GDPR", 0.941, 0.926, 10.57, 8.10], ["10-K", 0.992, 0.923, 10.65, 7.47], ["并购协议", 0.943, 0.914, 9.68, 7.88], ["平均", 0.967, 0.928, 10.16, 7.84]],
+ "t3": [["Top-5 基线", 0.830, 5.0, 0.166], ["SCAR ±1", 0.928, 7.84, 0.118], ["Window ±1", 0.967, 10.16, 0.095], ["SCAR ±2", 0.949, 9.2, 0.103], ["Window ±2", 0.985, 14.4, 0.069], ["重排器 top-8", 0.854, 8.0, 0.107], ["Parent 检索", 0.968, 50.2, 0.019]],
+ "t4": [["TCP", 8.35, 7.90], ["GDPR", 8.68, 8.10], ["10-K", 7.95, 7.47], ["并购协议", 8.25, 7.88]],
+ "down": [["上下文 token", 1281, 934, "−27.1%"], ["忠实度（5 分制）", 4.99, 4.99, "持平"], ["答案相关性", 4.74, 4.79, "+0.05"], ["上下文精确率", 0.17, 0.23, "+0.06"]],
+ "xfer": [["text-embedding-3-large", "22.9%", "0.928"], ["BGE-large-en-v1.5", "12.7%", "0.913"], ["zembed-1", "17.2%", "0.956"]],
+ "baselines": ["Top-5：只取检索命中的 5 块", "Window ±1：无条件带上左右邻块", "Window ±2：扩展到 ±2 邻块", "Parent：取回整个文档分节（平均 50.2 块）", "重排器：bge-reranker-large 取 top-8"],
+ "demo": {
+  "lam": 0.1,
+  "cosSeed": 0.66,
+  "gold": ["C2", "C3", "C4"],
+  "chunks": [
+   {"id": "C1", "text": "二、业务展望：下半年维持现有渠道与定价结构。", "cosQ": 0.18, "cosC": 0.15},
+   {"id": "C2", "text": "表 7 · 分地区收入（百万美元）：科目 / 2026 / 2025 年", "cosQ": 0.71, "cosC": 0.82, "adj": true},
+   {"id": "C3", "seed": true, "text": "表 7（续）：欧洲区 412 / 398，北美区 1,050 / 1,013。", "cosQ": 0.66, "cosC": 1},
+   {"id": "C4", "text": "（注释续）欧元走弱使欧洲区收入减少约 18 百万美元。", "cosQ": 0.55, "cosC": 0.74, "adj": true, "why": "薄延续：离开表头后直接相关性低"},
+   {"id": "C5", "text": "三、现金流：经营活动现金流同比上升 6%。", "cosQ": 0.22, "cosC": 0.20}
+  ]
+ },
+ "quotes51": [
+  ["邻块过闸才进上下文", "依据：S > γ·cos(q,c)，λ=0.1、γ=0.80（§4.2）。", "用法：检索后按闸门逐个决定邻块去留。"],
+  ["省 22.9% 块量，付 3.9 个百分点召回", "依据：7.84 对 10.16 块；0.928 对 0.967（Table 2）。", "用法：收益与代价写进同一条结论。"],
+  ["相对阈值跨模型免重校准", "依据：三种嵌入模型同一组参数（§6.4）。", "用法：换嵌入模型先复测，再谈沿用。"],
+  ["薄延续可能被闸门挡住", "依据：表值离开表头后相关性低（§7）。", "用法：表头随行携带，缓解该失效。"],
+  ["父检索召回高，块量到 50.2", "依据：0.968 召回、50.2 块（Table 3）。", "用法：召回换开销的极端对照。"],
+  ["token 省 27.1%，忠实度持平", "依据：934 对 1,281 token；4.99/5（§6.7）。", "用法：下游质量需单独验证。"]
+ ]
+};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{
+ rag:{t:"RAG",d:"检索增强生成：先检索外部资料，再以资料支持模型生成。"},
+ frag:{t:"边界碎片化",d:"答案证据被分块边界切开，检索器只命中其中一块。"},
+ seed:{t:"种子块",d:"检索命中的块；它的查询相关性决定邻块的扩展门槛。"},
+ gate:{t:"扩展闸门",d:"邻块得分 S 超过 γ·cos(q,c) 才并入上下文（Eq.3）。"},
+ cont:{t:"连续性惩罚",d:"b = 1 − cos(c,n)：相邻但不连贯的块被扣分（Eq.1）。"},
+ win:{t:"静态窗口",d:"无条件带上 ±1（或 ±2）邻块的基线做法。"},
+ parent:{t:"父检索",d:"取回整个文档分节的基线，平均 50.2 块（Table 3）。"},
+ gold:{t:"金标",d:"人工核验的相关块集合，用于计算召回。"},
+ baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},
+ ablation:{t:"消融",d:"去除某个组件（如令 λ=0），比较它对整体结果的贡献。"},
+ transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"}
+});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=e=>`<span class="src">${esc(e.label)} · PDF p.${e.page}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,numView:0,numMetric:0,labS:1,gamma:0.80,lim:0,role:0,proof:0,q:0,answers:[],checks:new Set(),flips:new Set()};
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function dataNumbers(){return `<div class="number-grid">${PAPER.stats.slice(0,4).map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div><div class="caption">${esc(s.context)}<span class="src">${esc(s.source)}</span></div></div>`).join('')}</div>`}
+const STEP_NOTES=[
+ '以 top-5 余弦检索取种子块（3072 维嵌入）。种子块自身相关性 cos(q,c) 同时决定其邻块的门槛高低。',
+ '对每个 ±r 邻块计算 S = cos(q,n) − λ·b(c,n)；b 度量相邻两块的语义断裂，λ=0.1 控制惩罚强度。',
+ 'S 大于 γ·cos(q,c) 才并入上下文（γ=0.80）。λ=0 时两侧同比例缩放、严格尺度不变，因此参数跨模型迁移。'];
+const PIPE=[
+ ['文档分块','递归切分 600 字符 + 60 重叠；结构层级前缀后嵌入'],
+ ['向量检索','text-embedding-3-large · 3072 维 · k=5 余弦'],
+ ['邻块评估','S = cos(q,n) − λ·b(c,n)，逐邻块计算'],
+ ['选择性扩展','S 超过 γ·cos(q,c) 才并入上下文'],
+ ['生成作答','动态上下文交给 LLM']];
+function flowHtml(hl){return `<div class="flow-line">${PIPE.map((s,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${hl===i?'active':''}">${esc(s[0])}<div class="caption">${esc(s[1])}</div></div>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，省略号为编者所加；完整方法与表格请查看原文。')}`}
+const CONCEPTS=[
+ ['边界碎片化','答案证据 E = {c_i, c_{i+1}} 被分块边界切开，检索器只把其中一块排进候选；表头与数据行、法律定义前后半句是典型。','§2 · PDF p.1'],
+ ['扩展闸门','邻块得分 S = cos(q,n) − λ·b(c,n) 超过 γ·cos(q,c) 才并入上下文；γ=0.80、λ=0.1 全语料固定。','§4.2 · Eq.3 · PDF p.2'],
+ ['结构连续性','b(c,n) = 1 − cos(c,n)：相邻且连贯的块惩罚小；相邻但话题切换的块被压到门槛之下。','§4.1 · Eq.1 · PDF p.1']];
+function conceptOut(v){const c=CONCEPTS[v];return `<h3>${esc(c[0])}</h3><p>${esc(c[1])}</p><div class="caption">${esc(c[2])}</div>`}
+const METRICS_PRO=[
+ '召回 = |金标 ∩ 上下文| ÷ |金标|；样本 N=320，其中 160 条边界碎片化、每语料 40 条原子查询。',
+ '块效率 = 召回 ÷ 平均块数（Table 3）：Top-5 0.166、SCAR ±1 0.118、Window ±1 0.095、Parent 0.019。',
+ 'RAGAS：忠实度 4.99/5 对 4.99/5，答案相关性 4.79 对 4.74；仅 10-K 语料 80 条查询（§6.7）。'];
+function metricOut(v){const m=PAPER.metrics[v];return `<h3>${esc(m.name)}</h3><p class="only-plain">${esc(m.plain)}</p><div class="only-pro"><p>${esc(m.plain)}</p><div class="pro-note">${esc(METRICS_PRO[v])}<span class="src">${['§5.2 · PDF p.2','Table 3 · PDF p.3','§6.7 · PDF p.4'][v]}</span></div></div>`}
+/* 边界实验室：分块边界切断语义 vs 邻块选择（教学示意；论文数字单独标注出处） */
+const STRATS=['静态窗口 ±1','SCAR 选择扩展','只取种子块'];
+function labState(){
+ const d=PAPER.demo,thr=+(d.cosSeed*state.gamma).toFixed(3);
+ const seedId=(d.chunks.filter(c=>c.seed).map(c=>c.id)[0])||'C3';
+ const nb=d.chunks.filter(c=>c.adj).map(c=>{
+  const b=+(1-c.cosC).toFixed(2),S=+(c.cosQ-d.lam*b).toFixed(3);
+  return {...c,b,S,pass:S>thr};
+ });
+ const ctx=new Set([seedId]);
+ if(state.labS===0)nb.forEach(n=>ctx.add(n.id));
+ if(state.labS===1)nb.forEach(n=>{if(n.pass)ctx.add(n.id)});
+ const missed=d.gold.filter(id=>!ctx.has(id));
+ return {d,thr,seedId,nb,ctx,missed};
+}
+function labChunks(st){
+ return st.d.chunks.map(c=>{
+  const cls=c.seed?'is-seed':st.ctx.has(c.id)?'is-in':st.d.gold.includes(c.id)?'is-miss':'is-out';
+  const tag=c.seed?'命中':st.ctx.has(c.id)?'入上下文':st.d.gold.includes(c.id)?'缺失':'';
+  const cos=c.seed?`种子 · cos(q,c) = ${c.cosQ.toFixed(2)}`:`cos(q,n) = ${c.cosQ.toFixed(2)} · cos(c,n) = ${c.cosC.toFixed(2)}`;
+  return `<div class="x-chunk ${cls}"><span class="cid">${esc(c.id)}</span><span class="ct">${esc(c.text)}<span class="x-cos">${esc(cos)}</span></span>${tag?`<span class="cs">${esc(tag)}</span>`:''}</div>`;
+ }).join('');
+}
+function labRight(st){
+ let head='';
+ if(state.labS===1){
+  head=`<div class="kicker">扩展闸门 · 门槛 = γ × cos(q,种子) = ${state.gamma.toFixed(2)} × ${st.d.cosSeed.toFixed(2)} = ${st.thr.toFixed(3)}</div><div class="x-gate">${st.nb.map(n=>`<div class="g"><div><b>${esc(n.id)} ${esc(n.role||'邻块')}</b><br>S = ${n.cosQ.toFixed(2)} − 0.1×${n.b.toFixed(2)} = <span class="mono">${n.S.toFixed(3)}</span></div><span class="tag ${n.pass?'pos':'neg'}">${n.pass?'扩展':'跳过'}</span><div class="caption">${n.pass?'过闸：并入上下文。':'低于门槛：'+esc(n.why||'得分不足')+'。'}</div></div>`).join('')}</div>`;
+ }else if(state.labS===0){
+  head=`<div class="kicker">静态窗口 ±1</div><div class="answer"><p>无条件并入 C2 与 C4：召回最稳，开销最大。论文实测窗口 ±1 平均 10.16 块（Table 2）。</p></div>`;
+ }else{
+  head=`<div class="kicker">只取种子块</div><div class="answer"><p>上下文只有 C3：最省，但表头与注释都缺。论文的 Top-5 基线召回 0.830（Table 3）。</p></div>`;
+ }
+ const verdict=state.labS===0?'证据完整；块数最多。10-K 实测窗口上下文 1,281 token，比 SCAR 多 27.1%。':state.labS===2?'最省但答不准：缺表头时数值没有科目归属。':(st.missed.length?'省 1 块但缺 '+st.missed.join('、')+' 注释：薄延续被挡（§7 自述失效模式）；调低 γ 可找回。':'证据完整，且比窗口少 1 块。');
+ const kpi=(v,l)=>`<div><div class="big" style="font-size:22px">${esc(v)}</div><div class="caption" style="margin:0">${esc(l)}</div></div>`;
+ return head+`<div class="x-kpis">${kpi(st.ctx.size+' 块','上下文块数')}${kpi(st.missed.length?'缺 '+st.missed.length+' 项':'完整','关键证据')}${kpi(state.labS===0?'100%':Math.round(st.ctx.size/3*100)+'%','相对窗口开销')}</div><div class="callout" style="margin-top:6px">${esc(verdict)}</div>`;
+}
+function labBody(st){
+ return `<div class="x-labgrid"><div><div class="x-doc">${labChunks(st)}</div><div class="cap">示意文档：某公司 10-K 节选（示例类型取自论文 §2）；金标证据 C2–C4，查询命中 C3。</div></div><div>${labRight(st)}</div></div>`;
+}
+function labHtml(){
+ const st=labState();
+ return `<div class="x-lab">${choices(STRATS,state.labS,'labS')}
+ <div class="x-ctl"><span>扩展阈值 γ</span><input type="range" id="xGamma" min="0.60" max="0.90" step="0.01" value="${state.gamma.toFixed(2)}" aria-label="扩展阈值 γ"${state.labS===1?'':' disabled'}><output id="xGammaVal" for="xGamma">γ=${state.gamma.toFixed(2)} · 门槛 ${st.thr.toFixed(3)}</output></div>
+ <div id="xLabOut" aria-live="polite">${labBody(st)}</div>
+ <div class="callout" style="margin-top:10px">论文实测：SCAR 7.84 块对窗口 10.16 块（−22.9%），召回低 3.9 个百分点<span class="src">Table 2 · p.3</span>；10-K 上下文 token 省 27.1%<span class="src">§6.7 · p.4</span>。得分为示意。</div></div>`;
+}
+/* 证据读数：可切换维度的条形图，基线 = Window ±1 */
+function numBody(){
+ const v=state.numView;
+ if(v===0){
+  const m=state.numMetric,col=m===0?2:m===1?1:3,max=m===0?16:m===1?1:0.18;
+  const base=PAPER.t3[2][col];
+  const fmt=x=>m===0?String(x):x.toFixed(3);
+  const rows=PAPER.t3.map(r=>{
+   const val=r[col],w=Math.min(val/max*100,100);
+   const cls=r[0].indexOf('SCAR')===0?'':r[0].indexOf('Window')===0?'gray':'dim';
+   const clipped=m===0&&val>max;
+   return `<div class="x-row"><span class="xl">${esc(r[0])}</span><span class="x-track"><span class="x-fill ${cls}" style="width:${w.toFixed(1)}%"></span><span class="x-base" style="left:${(base/max*100).toFixed(1)}%" aria-hidden="true"></span></span><span class="x-val">${fmt(val)}${clipped?'（截断）':''}</span></div>`;
+  }).join('');
+  return `${choices(['平均块数','召回','块效率'],m,'nummetric')}<div class="x-bars" style="margin-top:8px">${rows}</div>
+  <div class="x-legend"><span><span class="x-swatch" style="background:var(--accent)"></span>SCAR</span><span><span class="x-swatch" style="background:#b3b3ae"></span>静态窗口</span><span><span class="x-swatch" style="background:#d9d9d4"></span>其他基线</span><span>┆ 虚线 = 基线 Window ±1（${fmt(base)}）</span></div>
+  <div class="cap">块数越少越省，召回越高越全；块效率 = 召回 ÷ 平均块数。SCAR ±1 比基线省 2.32 块、召回低 3.9 个百分点。<span class="src">Table 3 · N=160 · k=5 · λ=0.1 · γ=0.80 · PDF p.3</span></div>`;
+ }
+ if(v===1){
+  const max=16;
+  const rows=PAPER.t2.map(r=>{
+   const d=+((r[2]-r[1])*100).toFixed(1);
+   const bar=(x,cls)=>`<span class="x-track" style="height:10px"><span class="x-fill ${cls}" style="width:${(x/max*100).toFixed(1)}%"></span></span>`;
+   return `<div class="x-row" style="grid-template-columns:66px 1fr 104px 92px"><span class="xl">${esc(r[0])}</span><div class="x-pair">${bar(r[3],'gray')}${bar(r[4],'')}</div><span class="x-val">${r[3]} / ${r[4]}</span><span class="x-val">召回 ${d>0?'+':''}${d}pp</span></div>`;
+  }).join('');
+  return `<div class="x-bars">${rows}</div><div class="x-legend"><span><span class="x-swatch" style="background:#b3b3ae"></span>Window ±1</span><span><span class="x-swatch" style="background:var(--accent)"></span>SCAR ±1</span></div>
+  <div class="cap">每组上条 = 窗口 ±1，下条 = SCAR ±1（平均块数）；右侧为召回变化。10-K 代价最大（−6.9pp），GDPR 最小（−1.5pp）。<span class="src">Table 2 · PDF p.3</span></div>`;
+ }
+ const max=1400;
+ const bar=(x,cls,label)=>`<div class="x-row"><span class="xl">${esc(label)}</span><span class="x-track"><span class="x-fill ${cls}" style="width:${(x/max*100).toFixed(1)}%"></span><span class="x-base" style="left:${(1281/max*100).toFixed(1)}%" aria-hidden="true"></span></span><span class="x-val">${x===1281?'1,281':'934 · −27.1%'}</span></div>`;
+ return `${bar(1281,'gray','Window ±1')}${bar(934,'','SCAR ±1')}
+ <table class="t tight" style="margin-top:8px"><thead><tr><th>指标（RAGAS）</th><th>Window</th><th>SCAR</th><th>变化</th></tr></thead><tbody>${PAPER.down.map(r=>`<tr><td>${esc(r[0])}</td><td class="n">${esc(r[1])}</td><td class="n">${esc(r[2])}</td><td class="n">${esc(r[3])}</td></tr>`).join('')}</tbody></table>
+ <div class="cap">GPT-4o-mini 生成、RAGAS 评测，10-K 全部 80 条查询；上下文变小，生成质量持平。<span class="src">§6.7 · PDF p.4</span></div>`;
+}
+function numbersHtml(){
+ return `${choices(['按方法对比','按语料对比','下游生成'],state.numView,'numview')}<div id="numOut" aria-live="polite" style="margin-top:2px">${numBody()}</div>
+ <div class="only-pro" style="margin-top:6px"><div class="pro-note" style="font-size:12.5px;line-height:1.55;padding:7px 12px">配对自助法（B=10,000）：块量差均值 −2.32 块（95% CI [−2.57, −2.09]，p&lt;0.0001，d=−1.49）；召回差均值 −0.039（CI [−0.058, −0.022]，d=−0.33）。消融（Table 4）：λ=0 时块量回升——TCP 7.90→8.35、GDPR 8.10→8.68、10-K 7.47→7.95、并购 7.88→8.25。迁移：BGE 降块 12.7% @0.913，zembed-1 降块 17.2% @0.956。<span class="src">§6.3–6.5 · PDF p.3–4</span></div></div>`;
+}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel('本篇 · SCAR','检索时选择性扩展邻块：S 超过 γ·cos(q,c) 才并入；training-free。块量 −22.9%、召回 −3.9 个百分点（Table 2）。')}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}。属于索引时构造结构的路线，与检索时扩块互补。</p>${relatedLink()}${tip('按该论文摘要转述；沿用其研究范围。')}</div>`;
+ return `<div class="answer"><h3>对照时先对齐三件事</h3><p>干预环节：检索时扩块对索引时建树。是否训练：SCAR 免训练，SproutRAG 学习注意力。指标口径：召回定义与块量统计方式。对齐之后才能解释差异；两篇数字不能直接相加。</p>${relatedLink()}${tip('本段为本课推断。')}</div>`;
+}
+const originalCases={
+ 25:['争议问题是否有充分支持？','论文以阿斯巴甜与癌症关联等争议问题说明证据冲突。','比较真实网页中的事实、论证风格与相关性，观察模型回答变化。','Introduction / 摘要'],
+ 35:['虚构咖啡机目录中的产品如何排序？','论文分别观察很少被推荐与通常位列次选的目标产品。','控制商品目录后比较异常附加文本对首选概率的影响。','摘要 / Figure 1'],
+ 38:['消费商品推荐为何出现排序偏差？','来源正文被放入模型上下文，名称与位置也可能影响输出。','分别控制产品名、内容和位置，再比较推荐排序分布。','摘要 / Figure 1'],
+ 51:['数值行命中了，表头与汇率注释却在别的块里，怎么取证？','论文的界定：答案证据 E = {c_i, c_{i+1}} 被边界切开而检索器只命中 c_i；§2 举的两类典型是财务表的表头与数据行、法律定义的前后半句。','命中后逐邻块评估：S = cos(q,n) − λ·b(c,n) 超过 γ·cos(q,c)（λ=0.1、γ=0.80）才并入上下文，对照静态窗口与父检索的无条件扩展。','§2 Problem Statement · §4.2 · PDF p.1–2（块内文案为本课示意）'],
+ 52:['合同的责任限制条款包括哪些内容？','句子级检索可能只取得损害类型，漏掉责任上限与例外。','层次节点保留完整条款，帮助同时回答责任限制和例外。','论文末尾 qualitative example'],
+ 58:['付费关联评测被答案采纳后需披露什么？','引文能够支持产品主张，但付费关联可能改变读者解释。','分别检查关系证据、答案采用、重要性和披露；缺证保持未决。','Introduction'],
+ 63:['背包是否符合短途旅行和工作装备需求？','卖方页面可能掩盖缺陷，让目标背包进入推荐集合。','以用户约束与效用评价结果，比较来源改写和防御前后。','Figure 1 / 摘要']};
+function caseHtml(){const c=originalCases[PAPER.id];return `<div class="kicker">${c?'论文原例的中文转述 · 块内文案为本课示意':'依据方法构造的教学示意，尚未执行效果试验'}</div><p class="intro">${esc(c?c[0]:PAPER.query)}</p><div class="two-docs">${panel('问题与输入',c?c[1]:PAPER.before)}${panel('操作与检查',c?c[2]:PAPER.after)}</div><div class="callout" style="margin-top:14px">对应发现：${esc(PAPER.findings[0])}；${esc(PAPER.findings[2])}。第 11 页实验室可逐步重演。</div>${tip(c?'出处：'+c[3]+'。本页未为案例补造提升幅度。':'原文完整案例请沿原文查看；本页仅解释方法，未将示意写成论文实测案例。')}`;}
+const ROLES=['知识库与内容运营','RAG 工程与数据','研究与审核'];
+const ROLE_WHY=[
+ '知识库里财报表格与条款定义最容易跨块断开（F1）。',
+ '参数与指标口径决定复现成败（F2、F3）。',
+ '证据强度与失效模式决定能下多大结论（F4）。'];
+const ROLE_TODO=[
+ ['盘点会跨块的证据：表格表头、法律定义、条款引用','把「块数与召回一起看」写进选型标准（−22.9% 块量对 −3.9pp 召回）','对高价值查询做小规模金标抽查，再决定是否切换'],
+ ['复现论文设置：600 字符 + 60 重叠、k=5、λ=0.1、γ=0.80 起步','在自家语料测块量与召回两条曲线，报配对差值与置信区间','换嵌入模型时先复测门槛，再决定沿用默认值'],
+ ['核对效应量：块量 d=−1.49，召回 d=−0.33','抽查薄延续案例（表值离开表头）是否被闸门跳过','与《注意力引导的分块树》做同口径对照']];
+const ROLE_AVOID=[
+ '只比较 token 节省就宣布方案更优；召回变化必须同报。',
+ '把重排器 top-8（召回 0.854）当作与 SCAR（0.928）等价的省块替代。',
+ '把单一语料的下游结果（10-K）外推为所有语料的生成质量结论。'];
+function personaHtml(){return `${choices(ROLES,state.role,'role')}<div class="columns"><div><h3>${esc(ROLES[state.role])}</h3><p style="margin-top:12px">为什么适合：${esc(ROLE_WHY[state.role])}</p><div class="callout warn">避免：${esc(ROLE_AVOID[state.role])}</div></div><div><ul class="fact-list">${ROLE_TODO[state.role].map(s=>`<li>${esc(s)}<small>本课应用推断 · 可追溯至 F1–F4</small></li>`).join('')}</ul></div></div>`;}
+const MATURE=[
+ ['检索运行追踪','每查询记录：命中块、扩展决策、上下文块数与金标命中','检索种子块 → 邻块评估'],
+ ['技术基准卡','记录 λ、γ、r、嵌入模型与召回/块量基线（如 γ=0.80）','按相对阈值扩展'],
+ ['系统变更记录','换分块器或嵌入模型时的复测差值与结论范围','对照检查']];
+function matureHtml(){return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${MATURE.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:18px">采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i<=1?'来自论文 §7 自述与 §6.4 统计。':'本课迁移审查提示，需结合原文进一步核验。')}`;}
+function findingOut(ix,v){
+ const body=v===0?PAPER.finding_details[ix]:v===1?'实践含义（本课推断）：'+PAPER.finding_apps[ix]:'适用条件：'+PAPER.finding_conds[ix];
+ return `<p>${esc(body)}</p><div class="caption">${esc(PAPER.finding_srcs[ix])}${v===1?'；行动建议需在目标语料复测。':''}</div>`;
+}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、反常发现、指标含义、适用边界与证据强弱。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;
+}
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors)} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')} · ${ext(PAPER.pdf,'本地PDF')}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('收益与代价一起读：块量 −22.9%，召回 −3.9 个百分点。按 ← → 翻页，M 切换深度，N 查看讲稿。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>邻块该不该进上下文，由什么决定？</li><li>省下的块量对应多大召回代价？</li><li>相对阈值为何能跨嵌入模型迁移？</li><li>哪些情况会把需要的证据挡在门外？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>命中块只有数值行；表头块与注释块被分块边界切到别处。</p>${tip('教学情境：语料类型取自论文 §2 的表头/数据行示例，块内文案为本课示意。')}</div><div>${choices(['常见做法：只信命中块','SCAR：评估邻块再定'],0,'scene')}<div class="answer" id="sceneOut" aria-live="polite"><h3>常见做法：只信命中块</h3><p>上下文只有 C3：模型看得到 412 与 1,050，看不到「欧洲区」表头，也看不到汇率注释，回答容易张冠李戴。</p>${tip('检索器没有义务带回逻辑上连续的邻居。')}</div></div></div>`;
+ else if(view==='concept')h=`<div class="columns"><div><div class="kicker">三个角色</div>${choices(CONCEPTS.map(c=>c[0]),0,'concept')}<div class="answer" id="conceptOut" aria-live="polite">${conceptOut(0)}</div></div><div><div class="kicker">本篇要区分的量</div><ul class="fact-list">${PAPER.metrics.map((m,i)=>`<li><button type="button" class="term" data-term="metric${i}">${esc(m.name)}</button><small>${esc(m.plain)}</small></li>`).join('')}</ul><div class="only-pro pro-note" style="margin-top:12px">式(1) b = 1 − cos(e_c, e_n)；式(2) S = cos(e_q, e_n) − λ·b；式(3) 扩展条件 S 大于 γ·cos(e_q, e_c)。λ=0 时严格尺度不变。<span class="src">§4 · PDF p.1–2</span></div></div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(STEP_NOTES[state.step])}</p><div class="only-pro pro-note">式(1)–(3)：b = 1 − cos(e_c, e_n)；S = cos(e_q, e_n) − λ·b；扩展条件 S 大于 γ·cos(e_q, e_c)。超参数 λ=0.1、γ=0.80、r ∈ {1, 2}。<span class="src">§4–5.4 · PDF p.2</span></div></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按论文 §4 重排；箭头表达决策顺序，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['索引与检索','SCAR 扩展','生成与评估'],1,'flow')}<div id="flowOut" aria-live="polite">${flowHtml(2)}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric')h=`<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite">${metricOut(state.metric)}</div></div><div><div class="kicker">指标解释的检查次序</div><ul class="fact-list"><li>测量对象<small>${esc(PAPER.setting)}</small></li><li>对应结论<small>块量 −22.9% 与召回 −3.9 个百分点同报（Table 2）</small></li><li>禁止越界<small>忠实性仅在 10-K 上验证；迁移需复测</small></li></ul></div></div>`;
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">研究设计 · ${esc(PAPER.kind)}</div><p class="intro">四个结构性语料，每语料 80 条查询，五个基线。</p><table class="t tight"><thead><tr><th>语料</th><th>领域</th><th>块数</th></tr></thead><tbody><tr><td>TCP（RFC 9293）</td><td>技术</td><td class="n">273</td></tr><tr><td>GDPR</td><td>法律</td><td class="n">797</td></tr><tr><td>Microsoft 10-K</td><td>财务</td><td class="n">654</td></tr><tr><td>并购协议</td><td>合同</td><td class="n">461</td></tr></tbody></table><div class="cap">递归切分：目标 600 字符 + 60 字符重叠；结构层级前缀后嵌入；检索 k=5 余弦。<span class="src">Table 1 · §5.1–5.2 · PDF p.2</span></div><div style="margin-top:8px">${PAPER.baselines.map(b=>`<span class="tag">${esc(b)}</span>`).join('')}</div></div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">给你的复验方案做检查 · 本课推断</div><div class="check-list">${['金标可复核：320 条查询、三人标注 κ=0.55–0.79、91% 合格','分块器一致：600 字符 + 60 重叠 + 结构前缀，换分块器需重测','检索参数一致：k=5、余弦、3072 维嵌入','双向报告：块量与召回一起报，附置信区间'].map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${s}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'四项齐备，可以进入复测':'继续补齐对照条件'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选用于检查方案完整性，无法自动证明因果识别成立。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button type="button" class="choice" data-action="method" data-value="${i}" aria-pressed="${i===0}">${esc(s)}</button>`).join('')}</div><div class="columns"><div class="answer" id="methodOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(STEP_NOTES[0])}</p><div class="callout">设计性质：门槛随种子相关性浮动，弱命中降低扩展门槛。</div></div><div><div class="kicker">保持不变的约束</div><ul class="fact-list"><li>training-free：检索时单次决策，不训练<small>与任何索引时分块策略正交组合（§3）</small></li><li>λ=0.1、γ=0.80 全语料固定<small>[0.05, 0.15] 区间内结果相近（§6.5）</small></li><li>半径 r ∈ {1, 2}<small>±2 时：9.2 块对窗口 14.4 块（Table 3）</small></li></ul></div></div>`;
+ else if(view==='lab')h=labHtml();
+ else if(view==='numbers')h=numbersHtml();
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);h=`<div class="ev" style="margin-bottom:12px">F${ix+1} · 证据强度 <span class="str-m">${esc(PAPER.strength)}</span> · ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite">${findingOut(ix,0)}</div></div><div><div class="kicker">如何核查这一发现</div><ul class="fact-list">${PAPER.finding_check[ix].map(c=>`<li>${esc(c[0])}<small>${esc(c[1])}</small></li>`).join('')}</ul><button type="button" class="btn" data-go="12" style="margin-top:12px">看证据读数 →</button></div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes')h=`<div class="flips">${PAPER.quotes51.map((q,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(q[0])}</b><span class="flip-back">${esc(q[1])}<br>${esc(q[2])}</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','concept','method','flow','metric','proof','limit','numview','nummetric','labS','compare'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene')$('#sceneOut').innerHTML=v?'<h3>SCAR：评估邻块再定</h3><p>表头块 C2 得分 0.692 过闸（γ=0.80），与种子块一起进上下文；薄注释块 C4 得分 0.524 被挡——省了开销，也可能漏掉汇率归因。</p><div class="caption">第 11 页实验室可拖动 γ 观察这一取舍。</div>':'<h3>常见做法：只信命中块</h3><p>上下文只有 C3：模型看得到 412 与 1,050，看不到「欧洲区」表头，也看不到汇率注释，回答容易张冠李戴。</p><div class="caption">检索器没有义务带回逻辑上连续的邻居。</div>';
+ else if(a==='concept')$('#conceptOut').innerHTML=conceptOut(v);
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flowHtml([0,2,4][v]);
+ else if(a==='metric'){state.metric=v;$('#metricOut').innerHTML=metricOut(v);}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='method')$('#methodOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(STEP_NOTES[v])}</p><div class="callout">核对发现：${esc(PAPER.findings[v])}。</div>`;
+ else if(a==='labS'){state.labS=v;box.innerHTML=draw('lab');}
+ else if(a==='numview'){state.numView=v;$('#numOut').innerHTML=numBody();}
+ else if(a==='nummetric'){state.numMetric=v;$('#numOut').innerHTML=numBody();}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);$('#findingOut'+ix).innerHTML=findingOut(ix,v);}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(PAPER.findings.map(t=>'· '+t+'。').join('\n')+'\n收益与代价：块量 −22.9%，召回 −3.9 个百分点\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// γ slider: update gate decisions and the chunk strip without rebuilding the slider itself.
+document.addEventListener('input',e=>{
+ if(!e.target||e.target.id!=='xGamma')return;
+ state.gamma=+e.target.value;
+ const st=labState();
+ const out=$('#xGammaVal');if(out)out.textContent=`γ=${state.gamma.toFixed(2)} · 门槛 ${st.thr.toFixed(3)}`;
+ const box=$('#xLabOut');if(box)box.innerHTML=labBody(st);
+ const page=e.target.closest('.page');if(page)checkOverflow(pages.indexOf(page));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

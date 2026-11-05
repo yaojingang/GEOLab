@@ -46,12 +46,19 @@ Web-based chat clients usually cannot manage local files. Use the [online homepa
 | CN-GEO raw citation records | 214,119 |
 | Chinese AI platform and interface codes | 12 |
 | Cross-platform experimental prompts | 602 |
-| GEO / AEO / AI Search paper index | 70 papers, including 65 PDFs in the repository |
+| GEO / AEO / AI Search paper index | 122 entries across 18 topics; 65 PDFs in the repository |
 | Online GEO knowledge assessment | 30 questions, 100 points, six diagnostic dimensions |
 
 The paper library added 16 entries on October 25, 2026: 11 recent papers and five previously omitted papers. Sources, versions, licenses, and reading recommendations are documented in the [batch update notes](./02-papers/00_资料说明/2026-10-25_GEO论文更新记录.md).
 
 [Take the GEO assessment](https://ai.laoyao.cn/geo/) · [Read the CN-GEO analysis](https://yaojingang.github.io/GEOLab/03-datasets/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [Read the three-minute experimental summary](./01-experiments/QUICK_REPORT.md) · [Browse the paper catalog](https://yaojingang.github.io/GEOLab/02-papers/) · [Open the homepage](https://yaojingang.github.io/GEOLab/)
+
+
+## Interactive paper learning map
+
+[Open the learning map](https://yaojingang.github.io/GEOLab/02-papers/interactive-guides/) · [Page inventory and source](./02-papers/interactive-guides/)
+
+The map indexes 122 papers and provides 121 interactive courses, with 2,783 whiteboard pages across 18 topics and five learning paths. Courses include plain and professional modes, speaker notes, quizzes and local learning progress. One entry currently contains bibliographic information only.
 
 ## Research questions
 
@@ -76,7 +83,7 @@ Visibility in AI search involves several stages. Content can enter the retrieval
 | --- | --- |
 | Understand the research findings | [CN-GEO online analysis](https://yaojingang.github.io/GEOLab/03-datasets/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [Cross-platform experimental summary](./01-experiments/QUICK_REPORT.md) |
 | Use the data or extend the analysis | [CN-GEO dataset overview](./03-datasets/) · [Guide to the cleaned data](./03-datasets/data/清洗后数据使用说明.md) |
-| Read papers or cite the research | [Two empirical research tracks](#two-empirical-research-tracks) · [70-paper catalog](https://yaojingang.github.io/GEOLab/02-papers/) |
+| Read papers or cite the research | [Two empirical research tracks](#two-empirical-research-tracks) · [122-entry catalog](https://yaojingang.github.io/GEOLab/02-papers/) |
 | Find industry white papers and platform guides | [White paper directory and collection guide](./04-whitepapers/) |
 | Read research articles and practical analyses | [Research article directory and collection guide](./05-articles/) |
 | Review experiments and processing methods | [Cross-platform pipeline](./01-experiments/03-pipeline/) · [CN-GEO build scripts](./03-datasets/scripts/) |
@@ -113,7 +120,7 @@ The paper analyzes eight Web / App interfaces across four Chinese large language
 
 ## Paper library
 
-The library indexes 70 papers across 10 topics. The repository stores 65 PDFs and provides original-source links for the other five papers. Topics include GEO foundations, optimization methods, measurement, empirical AI search research, AEO theory, risks and manipulation, vertical and multimodal applications, Agentic Search, RAG, and search evaluation and governance.
+The library indexes 122 entries across 18 topics, with 121 interactive courses and one bibliography-only entry. The repository retains 65 existing PDFs; additional reading copies use original-source links. Topics include GEO foundations, optimization methods, measurement, empirical AI search research, AEO theory, risks and manipulation, vertical and multimodal applications, Agentic Search, RAG, and search evaluation and governance.
 
 - [Online search and filtering](https://yaojingang.github.io/GEOLab/02-papers/)
 - [Complete paper list](./02-papers/README.md)

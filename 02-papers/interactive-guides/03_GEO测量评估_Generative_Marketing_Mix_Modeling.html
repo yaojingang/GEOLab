@@ -1,0 +1,838 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>从答案曝光到业务归因 · 论文课堂</title><meta name="description" content="GMMM 结合问题量、引擎份额与注意概率构造曝光，再讨论业务效果识别"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="2609.11915v1"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* x- components for this course (opt-69) */
+.x-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
+.x-kv>div:nth-child(odd){color:var(--ink-3);font-size:12.5px;padding-top:2px}
+.x-kv>div:nth-child(even){color:var(--ink-2)}
+.x-bars{display:flex;flex-direction:column;gap:8px}
+.x-bar{display:grid;grid-template-columns:132px 1fr 64px;gap:10px;align-items:center;font-size:13px}
+.x-bar>span{color:var(--ink-2);text-align:right;line-height:1.3;overflow-wrap:anywhere}
+.x-bar>b{font-family:var(--mono);font-weight:600;font-size:12px;white-space:nowrap;text-align:right}
+.x-track{position:relative;height:18px;background:var(--tint);border-radius:3px;overflow:hidden}
+.x-fill{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:3px;transition:width .3s}
+.x-fill.alt{background:var(--c3)}
+.x-fill.pos{background:var(--pos)}
+.x-chain{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
+.x-chain .x-op{align-self:center;color:var(--ink-3);font-size:15px}
+.x-chain .x-f{flex:1;min-width:84px;border:1px solid var(--line-2);border-radius:8px;padding:7px 8px;text-align:center}
+.x-chain .x-f small{display:block;font-size:10.5px;color:var(--ink-3);letter-spacing:.04em;white-space:nowrap}
+.x-chain .x-f b{font-family:var(--mono);font-size:14.5px}
+.x-lab{display:grid;grid-template-columns:1.02fr 1fr;gap:26px;align-items:start}
+.x-lab .x-ctl{border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.x-ctlrow{margin-bottom:10px}
+.x-ctlrow label{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--ink-2);margin-bottom:2px}
+.x-ctlrow label b{font-family:var(--mono);font-weight:600;font-size:12.5px;white-space:nowrap}
+.x-stepper{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.x-stepper button{text-align:center;font-size:13px;padding:9px 6px!important}
+.x-stepper button .xn{display:block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+.x-flow3{display:flex;flex-direction:column;gap:8px}
+.x-flow3 .x-node{border:1px solid var(--line-2);border-radius:10px;padding:9px 14px;font-size:14px;display:flex;gap:10px;align-items:baseline}
+.x-flow3 .x-node.active{border-color:var(--accent);background:var(--accent-tint)}
+.x-flow3 .x-node .xt{font-family:var(--mono);font-size:11px;color:var(--ink-3);flex:none}
+.x-formula{font-family:var(--serif);font-size:16px;text-align:center;overflow-x:auto;padding:4px 0;white-space:nowrap}
+.x-eq{font-family:var(--serif);font-size:19px;text-align:center;padding:9px 0 3px;border-top:1px dashed var(--line-2);margin-top:8px;color:var(--ink)}
+.x-eq b{font-family:var(--mono);font-size:23px;font-weight:700}
+@media(max-width:900px){.x-lab{grid-template-columns:1fr}.x-stepper{grid-template-columns:1fr 1fr}.x-bar{grid-template-columns:96px 1fr 56px;font-size:12.5px}.x-chain .x-f{min-width:72px}}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 03 GEO测量评估</div>
+    <h1>从答案曝光到业务归因</h1>
+    <div class="en">2026 · 理论框架</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">从答案曝光到业务归因</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">出现率要乘上问题量、引擎份额与注意概率，才成为营销模型里的曝光<span class="src">式 (6) · PDF p.6</span></div></div><div class="notes">这节课讲 GMMM：一篇把「AI 答案里的品牌出现」接进营销组合模型的理论框架。先记住一个结构：出现率要乘上问题量、引擎份额和注意概率，才叫曝光。英文和日文结果来自模拟，真实销售与注意数据仍需采集，这个边界会贯穿全课。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">四个问题带你走完从曝光到归因</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">先看曝光怎么算，再看证据与识别，最后落到岗位与边界<span class="src">§1.1 · PDF p.2</span></div></div><div class="notes">课程按导入、原理、测量、方法、发现、应用、复盘展开。前四章建立「曝光怎么算」，第五章逐条看证据，第六章落到岗位动作，第七章讨论边界。第 11 页的曝光计算器是全课的核心交互。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">提及率要经过三次换算，才成为营销模型的曝光</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">出现比例 → ×问题量 → ×引擎份额 → ×注意概率 → 预期曝光<span class="src">§1 · PDF p.2</span></div></div><div class="notes">品牌提及率是样本里的比例，营销模型需要的是市场曝光。切换两种做法：直接把提及率塞进模型，会漏掉问题量、份额和注意概率三次换算；GMMM 的做法就是补上这三步，再沿用 MMM 已有的变换。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">两个新频道进入 MMM：答案曝光与赞助曝光</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">两个输入按市场与期间构造，再沿用 MMM 的变换与响应<span class="src">§3.1–3.3 · PDF p.6–8</span></div></div><div class="notes">四张概念卡按顺序点：传统媒体输入由平台直接记录，GEO 与 GEM 曝光要构造，源状态 Z 记录改动在不在场。注意 GEO 曝光在零改动时通常也大于零，所以效应是两条序列的差，起点通常高于零。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">先构造曝光，再做 MMM 已有的变换与响应</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">五步对应论文 Figure 1：采集 → 概率 → 曝光 → 变换 → 序列对比<span class="src">Figure 1 · PDF p.10</span></div></div><div class="notes">五步流程对应论文 Figure 1：先定属性采集回答，估出现与注意概率，加权成曝光，再做 MMM 已有的变换与响应估计，最后对比完整干预序列。专业层给到了每步的公式编号，可按 M 查看。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">测量与识别是新增工作，变换与响应沿用 MMM</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">高亮三层定位：新增在测量层与识别层<span class="src">§3–§4 · PDF p.6–14</span></div></div><div class="notes">高亮三层看研究位置：测量层和识别层是这篇论文新增的工作，中间的变换与响应沿用 MMM 传统。这个定位也解释了为什么它的证据读数是出现率与模拟 RMSE，而不是生产环境的销量弹性。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">四个量各有口径：曝光、赞助、注意与总效应</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">每个量先核对象、单位与分母，再谈解释<span class="src">§2–§4 · PDF p.4–15</span></div></div><div class="notes">四个指标各有口径：曝光是被注意的期望条数，GEM 输入同样乘注意概率，注意概率靠用户研究，总效应比较完整序列。专业层有公式与出处；读任何数字前先核对对象、单位与分母。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">2,240 条回答估出现率，模拟检验估计量</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">采集估计出现率，模拟检验估计量——两层证据分工<span class="src">§5.1–5.2 · PDF p.16–17</span></div></div><div class="notes">左侧切换两组设置：采集侧是 2,240 条真实回答，56 题、两模型各 20 次、单窗口四区组；模拟侧是 5 市场 × 36 期，干预从第 19 或 23 期开始。两层证据分工不同，不能混着读。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">复验方案先过四项对照检查</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">四项检查对应测量要求；识别还取决于假设与设计<span class="src">§3–§4 · 本课推断</span></div></div><div class="notes">这四项检查对应论文的测量要求：属性一致、两种源状态、市场量与注意数据、完整序列对比。勾满四项只是具备复验要素，因果识别还要回到可交换性、正性这些假设本身。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">方法分三步：估计概率、构造曝光、对比序列</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">三步各有检查点，分别对应发现 F1、F2、F4<span class="src">§3 · §5 · PDF p.6–18</span></div></div><div class="notes">方法拆成三步：估计概率、构造曝光、对比序列。每步的「要检查」都对应一条发现；专业层注明了估计判据与采样配置。翻到第 11 页可以亲手做乘法链实验。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">调任一参数，看曝光怎样随乘法链变化</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">曝光 = N × ω × π × λ；同一出现率在不同市场差数倍<span class="src">式 (6) · PDF p.6 · 示意</span></div></div><div class="notes">这是全课的核心交互。四个滑杆相乘得到曝光：调任一参数，大数字与乘法链同步变化。再看对照市场：问题量更大、注意更低，同一出现率下曝光可以差数倍——这就是只报提及率的代价。数值为示意。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">出现率有实测读数，业务效果仍靠模拟</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">出现率有实测，业务效果只有模拟读数<span class="src">Table 1–3 · PDF p.16–19</span></div></div><div class="notes">出现率有实测：Table 1 的四个读数画出语言反转。估计精度来自模拟：Table 2 显示估计 carryover 与饱和贡献了主要改进。业务效果没有生产估计，读数要分两层看。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">出现比例要乘上三组市场量，才成为曝光</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">面板率只是样本比例，三次加权后才进模型<span class="src">式 (6) · PDF p.6</span></div></div><div class="notes">发现 F1 是全课的出发点：面板出现率只是样本比例。右侧示意里，同一个 27.8% 在三种市场配置下曝光相差 50 多倍。要成为媒体输入，必须完成问题量、份额、注意概率三次加权。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">语言一换，两个模型的出现率排序反转</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">英语 GPT-4o +6.79pp，日语 Luna +18.75pp<span class="src">Table 1 · 附录 A · PDF p.16、28</span></div></div><div class="notes">发现 F2 有真实采集证据：英语里 GPT-4o 领先 6.79 个百分点，日语里 Luna 反超 18.75 个百分点。语言一换排序反转，问题构成或系统份额变化时，同一出现率对应的曝光含义随之改变。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">没被注意的出现，计入不了有效触达</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">注意概率要单独测量；GEM 输入同样乘它<span class="src">式 (9)–(13) · PDF p.7</span></div></div><div class="notes">发现 F3 看注意环节：出现之后还要被看见。右侧漏斗示意从提问到被注意的逐级衰减；GEM 赞助展示同样要乘注意概率。模拟里每格 50 条注意观测，是论文给出的测量配置。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">效应识别依赖完整序列与明确假设</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">估计变换参数把向量 RMSE 从 1.207 降到 0.945<span class="src">式 (5) · Table 2 · PDF p.5、18</span></div></div><div class="notes">发现 F4 回到识别：carryover 让单期回归覆盖不了效应，ΔG 必须比较完整序列。Table 2 显示估计变换参数把向量 RMSE 从 1.207 降到 0.945；cut 与 joint 之间没有一致优势。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">引流数据测的是进站事件，不能直接当曝光</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">立即比值 1.842，但缺曝光构造所需的三组测量<span class="src">附录 F · Table 17 · PDF p.45–46</span></div></div><div class="notes">相关研究是引流自然实验：GMMM 作者在附录 F 复用了它的公开数据，立即比值 1.842，但缺问题量、回答与注意观测，构造不了曝光。引流测「进站」，曝光测「看到并注意」，事件口径不同。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">Glasp 采集：语言一换，出现率排序反转</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">56 题 × 2 模型 × 20 次 = 2,240 条真实回答<span class="src">§5.1 · Table 1 · PDF p.16</span></div></div><div class="notes">这是论文自己的采集案例：56 个推荐问题、两个模型、强制搜索。结果出现语言反转，还给了首次提及排名。它示范了「属性出现」这一步怎么测；后面三步仍需市场数据。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">先建曝光台账，再谈归因</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">三个角色的清单分别对应 F2、F4、F1<span class="src">本课推断 · 依据发现页</span></div></div><div class="notes">三个角色的清单都从发现出发：分析岗建曝光台账，数据岗补两种源状态与变换估计，审核岗查识别条件与事件口径。建议属于本课推断，落地前要按目标场景做对照试验。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">现有 MMM 工作流可以直接承接两个新输入</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">四种形态承接四步；序列对比用实验设计文档承接<span class="src">本课推断 · §3</span></div></div><div class="notes">成熟工作形态可以承接新方法：出现率看板、注意研究、曝光台账、MMM 模型卡。映射关系是本页推断，先小范围复验再扩大应用。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">模拟证据与换算条件决定应用尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">两条高危：模拟证据、面板率换算条件<span class="src">§5–§6 · PDF p.17–22</span></div></div><div class="notes">六条边界按影响排序。两条高危：结论止步于模拟、面板率与曝光之间的换算条件。中危三条讲采集窗口、教学推断与对照数据，最后一条提醒未逐表重算的指标。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">六条各带依据与用法，复制附出处<span class="src">Table 1–2 · 式 (5)–(6)</span></div></div><div class="notes">六张卡片是全课的浓缩。正面是结论，背面是依据与用法；复制按钮会把六条与出处一起带上，方便带回团队。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">五题覆盖结论、反常、口径、方法与边界<span class="src">全课 · 复习页见每题反馈</span></div></div><div class="notes">五道题覆盖核心结论、反常发现、指标口径、方法贡献与研究边界。答错会给出复习页码，回看对应页面再作答一遍。</div></section>
+<!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>Generative Marketing Mix Modeling: A Causal Inference Framework Linking GEO and GEM to Business Impact</p><p>2026 · 2609.11915v1</p><p><a href="https://arxiv.org/pdf/2609.11915v1" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper69,
+  author = {Masahiro Kato and Daiki Honma and Taka Kato},
+  title = {Generative Marketing Mix Modeling: A Causal Inference Framework Linking GEO and GEM to Business Impact},
+  year = {2026},
+  url = {https://arxiv.org/pdf/2609.11915v1}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地 PDF 署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：ee9fa5faed3ed02210b1ae816d39079c47362e4eefecc7a145dff70e41abeb89</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={
+ id:69, zh:"从答案曝光到业务归因", kind:"理论框架",
+ question:"品牌提及率怎样连接销售看板？",
+ claim:"GMMM 结合问题量、引擎份额与注意概率构造曝光，再讨论业务效果识别",
+ steps:["指定属性并采集回答","估计出现与注意概率","加权构造预期曝光","变换并估计响应","对比完整干预序列"],
+ findings:["出现比例要乘上三组市场量，才成为媒体曝光","语言一换，两个模型的出现率排序反转","没被注意的出现，计入不了有效触达","效应识别依赖完整序列与明确假设"],
+ metrics:[
+  {name:"预期曝光 E^G",plain:"某市场某期内，属性出现且被注意的回答期望条数：问题量 × 系统份额 × 出现概率 × 注意概率。",
+   formula:"E<sup>G</sup><sub>it</sub>(z) = Σ<sub>q</sub> N<sub>iqt</sub> Σ<sub>p</sub> ω<sub>ipt</sub> π<sub>qpt</sub>(z) λ<sub>qpt</sub>",
+   pro:"式 (6)。对问题簇 q 与生成系统 p 双重求和；N 为问题量，ω 为系统份额且 Σω=1，π 为出现概率，λ 为条件注意概率。对比 z=1 与 z=0 时固定 N 与 ω，并假设改动不改变出现后的注意概率。",
+   srcL:"式 (6) · §3.1",srcP:6},
+  {name:"GEM 赞助曝光 E^P",plain:"用户注意到的赞助展示期望条数：投放量期望 × 注意概率。花费先换算成展示，再乘注意。",
+   formula:"E<sup>P</sup><sub>it</sub> = μ<sup>P</sup><sub>it</sub> · ρ<sup>P</sup><sub>it</sub>，log μ<sup>P</sup> = φ₀ + φ<sub>S</sub> log S + φ<sub>D</sub> D + φ<sub>R</sub> R",
+   pro:"式 (11)–(13)。投放量服从 Poisson(μ^P) 且 φ_S>0；条件注意概率 ρ^P 由用户研究用 binomial 模型估计。已知实际投放量时可直接用 L·ρ。",
+   srcL:"式 (11)–(13) · §3.2",srcP:7},
+  {name:"注意概率 λ",plain:"回答里出现品牌名之后，用户真正注意到的条件概率，需要用户研究测量。",
+   formula:"C<sub>qpt</sub> | λ<sub>qpt</sub> ~ Binomial(n<sub>qpt</sub>, λ<sub>qpt</sub>)，logit(λ) = D′ξ + v<sub>q</sub>",
+   pro:"式 (9)–(10)。C 为 n 次出现中被注意的次数；分层 logistic 给问题簇随机效应 v_q。模拟给每个「问题簇 × 系统 × 期」格子 50 条注意观测。",
+   srcL:"式 (9)–(10) · §3.1、§5.2",srcP:"7、17"},
+  {name:"GEO 总效应 ΔG",plain:"同一评估窗口下，有 GEO 与无 GEO 两条完整干预序列的业务响应期望之差。",
+   formula:"Δ<sub>G</sub> = V(1,1) − V(0,1)，V(a<sub>G</sub>,a<sub>P</sub>) = Σ<sub>i,t∈T<sub>E</sub></sub> E[Y<sub>it</sub>(a<sub>G</sub>,a<sub>P</sub>)]",
+   pro:"式 (4)–(5)。carryover 使单期回归覆盖不了这个对比。线性响应下可分解为源状态项 β_D、输入项 β_G 与交互项 β_GP（式 (27)）；模拟取 (β_D,β_G,β_P,β_GP)=(0.55, 4.00, 2.20, 0.50)。",
+   srcL:"式 (4)–(5)、(27)、(28)",srcP:"5、15、17"}],
+ setting:"因果识别条件推导与英日商品推荐模拟",
+ boundary:"英文和日文结果来自模拟，尚未验证真实销售因果效果",
+ query:"品牌提及率怎样连接销售看板？",
+ before:"直接用提及率预测收入增幅",
+ after:"补充需求量、注意概率、滞后与外部混杂控制",
+ finding_details:[
+  "面板出现率只回答「回答里有没有提到」，缺少市场问题总量、引擎份额与注意概率，还只是样本比例；进入 MMM 前要完成式 (6) 的三次加权，并按目标市场赋权。",
+  "英语里 GPT-4o 领先 6.79 个百分点，日语里 Luna 反超 18.75 个百分点；问题构成或系统份额一变，同一出现率对应的曝光人次随之改变，面板率掩盖了这个反转。",
+  "出现之后还要被看见：条件注意概率 λ 由用户研究估计，GEM 输入同样要乘注意概率；模拟给每个「问题簇 × 系统 × 期」格子 50 条注意观测作为测量配置。",
+  "carryover 让单期回归覆盖不了效应：ΔG 对比完整序列，识别依赖一致性、可交换性、正性等假设；估计变换参数把向量 RMSE 从 1.207 降到 0.945，cut 与 joint 无一致优势。"],
+ routeQ:["出现比例要经过哪几步换算，才能变成曝光？","语言与市场一换，出现率的含义怎样变？","业务效果的识别需要哪些条件与数据？","结论目前止步于哪里，复验要补什么？"],
+ units:[
+  {t:"传统媒体输入",plain:"展示、点击等记录由平台直接记下，每个市场每期都有数，MMM 直接使用。",
+   pro:"式 (1)–(2)：H 由 carryover 与 Hill 变换得到，g(μ)=b(W;γ)+Σβ_m H_m + 交互项。",srcL:"式 (1)–(2) · §2.1",srcP:4},
+  {t:"GEO 曝光 E^G",plain:"答案里出现且被注意的期望条数，由四个量加权相乘而来；没有改动时通常也大于零。",
+   pro:"式 (6)：对问题簇与系统求和；GEO 改变出现概率 π(z)，对比两种源状态时固定 N 与 ω。",srcL:"式 (6) · §3.1",srcP:6},
+  {t:"GEM 赞助曝光 E^P",plain:"花钱买到的赞助展示中，用户真正注意到的期望条数；由投放模型与注意研究拼出。",
+   pro:"式 (13)：E^P=μ^P·ρ^P；投放量用 Poisson 模型与花费挂钩，注意概率用 binomial 估计。",srcL:"式 (11)–(13) · §3.2",srcP:7},
+  {t:"源状态 Z",plain:"指定的来源改动在不在场，取 0 或 1；它的系数 β_D 容纳曝光之外的传导路径。",
+   pro:"式 (3)：含 β_D Z 与交互 β_GP H^G H^P；模拟取 (0.55, 4.00, 2.20, 0.50)。",srcL:"式 (3)、(28)",srcP:"4、17"}],
+ catalog_title:"Generative Marketing Mix Modeling: A Causal Inference Framework Linking GEO and GEM to Business Impact",
+ title:"Generative Marketing Mix Modeling: A Causal Inference Framework Linking GEO and GEM to Business Impact",
+ authors:"Masahiro Kato; Daiki Honma; Taka Kato",
+ year:"2026", category:"03_GEO测量评估",
+ url:"https://arxiv.org/pdf/2609.11915v1",
+ file:"03_GEO测量评估_Generative_Marketing_Mix_Modeling.html",
+ pdf:"../03_GEO测量评估/03_GEO测量评估_Generative_Marketing_Mix_Modeling.pdf",
+ kind_note:"概念与推导，暂无生产效果估计",
+ extra:"英日商品推荐结果来自模拟；真实销售、注意概率与混杂变量仍需采集。",
+ evidence:[
+  {label:"摘要与研究目标",page:1,text:"Generative artificial intelligence changes how firms reach customers, but standard marketing data do not record how often users see and notice a firm’s name in generated answers. We develop Generative Marketing Mix Modeling (GMMM) to estimate the causal effects of Generative Engine Optimization (GEO) and Generative Engine Marketing (GEM). For GEO, GMMM combines repeated generated answers with question counts, shares of use across generative systems, and notice probabilities. For GEM, it combines records of sponsored placements with notice probabilities. GMMM compares expected business responses under alternative treatment sequences and establishes sufficient conditions for identifying the resulting effects. We investigate the empirical performance of the proposed method using simulated answers to product recommendation in English and Japanese. Keywords: marketing mix modeling; generative engine optimization; generative engine marketing; causal inference; measurement error; channel attribution; Bayesian inference 1 Introduction Marketing mix modeling (MMM) relates an aggregate response, such as sales or conversions, to media inputs observed across markets and periods. Two features of advertising motivate the transformations used in MMM. An advertisement can affect the response after the period in which it is shown, so a carryover function combines current and past inputs. Th"},
+  {label:"方法与评估",page:19,text:"Vector RMSE Effect RMSE (%) Coverage Controlled: JA = 1, σY = 0.4 Plug-in (estimated) 0.667 Cut (estimated) 0.687 Joint 0.657 Two-stage (prior) 0.918 Oracle 0.493 6.000 6.010 6.046 7.075 5.723 0.958 0.950 0.950 0.975 0.950 Controlled: JA = 1, σY = 1.2 Plug-in (estimated) 0.975 Cut (estimated) 0.943 Joint 0.974 Two-stage (prior) 1.020 Oracle 0.886 17.450 17.519 17.545 17.882 17.236 0.967 0.975 0.975 0.967 0.950 Controlled: JA = 5, σY = 0.4 Plug-in (estimated) 0.639 Cut (estimated) 0.642 Joint 0.636 Two-stage (prior) 0.897 Oracle 0.493 5.912 5.930 5.923 7.070 5.723 0.967 0.967 0.975 0.958 0.950 Controlled: JA = 5, σY = 1.2 Plug-in (estimated) 0.956 Cut (estimated) 0.953 Joint 0.963 Two-stage (prior) 1.027 Oracle 0.886 17.513 17.442 17.479 17.858 17.236 0.975 0.975 0.975 0.975 0.950 Estimated occurrence probabilities: JA = 5, σY = 1.2 Plug-in (estimated) 0.931 17.359 Cut (estimated) 0.912 17.326 Joint 0.939 17.480 Two-stage (prior) 0.974 18.099 Oracle 0.821 16.984 0.942 0"},
+  {label:"讨论与研究边界",page:23,text:"GMMM extends MMM to settings in which the media inputs associated with generative AI are not recorded directly. Under each source state, the GEO input is the expected number of generated answers in which a specified property occurs and is noticed; GEO changes this count but need not create it from zero. The GEM input is the expected number of sponsored placements that users notice. Both inputs are defined for each market and period before carryover and the Hill transformation are applied. The treatment effect of GEO is the total effect of the specified source modification under two complete treatment sequences. The identification results allow the treatment effect to be determined in some designs even when its component coefficients cannot be recovered separately. They also identify the conditions under which a sequence of occurrence probabilities differs from a market count only by scale. In the simulations, estimating carryover and saturation explains most of the improvement in coef"}],
+ table:{label:"Table 1 / 模拟设计 原文抽取",page:16,text:"Table 1: Occurrence of Glasp in the Collected Answers\n Model           English Japanese Panel Rate Posterior Mean (95% Interval) Mean Rank Rank 1 (%)\n GPT-4o             35.4      20.2        27.8          28.8 [27.0, 30.7]              1.62           60.5\n GPT-5.6 Luna       28.6      38.9        33.8          34.5 [32.8, 36.3]              1.94           39.4\n  English, Japanese, and Panel Rate are percentages of answers that contain Glasp. Panel Rate averages\n  the 56 observed rates with equal weights. Posterior means and intervals average the distributions for\n  the 56 questions in (32). Mean Rank is the rank at the first occurrence of Glasp among 11 candidate\n  brands, conditional on its occurrence.\n\n5.2      Simulation Design\nThe simulations compare estimators on the same panels and with the same construction of\nE G and E P . Five geographic markets each contain six product clusters and are observed for\n36 periods. Two clusters begin the GEO treatment in period 19 and two begin in period 23,\nwhile two never receive it. Every product cluster contains two question clusters observed\non two generative systems. The resulting data contain 1,080 observations across units and\nperiods but only six units of treatment assignment within each market. The response follows\n(3) with\n\n                             (βD , βG , βP , βGP ) = (0.55, 4.00, 2.20, 0.50).                        (28)"},
+ version:"2609.11915v1", sha256:"ee9fa5faed3ed02210b1ae816d39079c47362e4eefecc7a145dff70e41abeb89",
+ stats:[
+  {v:"2,240",name:"条完整回答 · 2 模型 × 56 问 × 20 次",source:"§5.1 · PDF p.16",context:"每条回答至少完成一次网页搜索；出现判定只看固定词典里的 Glasp 拼写，不论情感。"},
+  {v:"33.8% 对 27.8%",name:"Luna 对 GPT-4o 的回答出现率",source:"Table 1 · PDF p.16",context:"面板率按 56 题等权平均；后验均值 34.5% 对 28.8%，差 5.70pp [3.12, 8.27]。"},
+  {v:"+18.75pp",name:"日语问题中 Luna 对 GPT-4o 的领先幅度",source:"附录 A · PDF p.28",context:"英语方向相反：GPT-4o 领先 6.79pp。语言一换，两个模型的排序反转。"},
+  {v:"36 期",name:"模拟观测期数 · 5 市场 × 6 产品簇",source:"§5.2 · PDF p.17",context:"两簇第 19 期开始干预、两簇第 23 期、两簇从不；共 1,080 条观测。"}],
+ related:{id:15, zh:"区分优化与平台增长", title:"Disentangling Answer Engine Optimization from Platform Growth: A Log-Based Natural Experiment on ChatGPT Referral Traffic", url:"./03_GEO测量评估_AEO_Natural_Experiment_ChatGPT_Referral_Traffic.html", pdf:"../03_GEO测量评估/03_GEO测量评估_AEO_Natural_Experiment_ChatGPT_Referral_Traffic.pdf", claim:"同域对照显示平台增长占据重要部分，干预效果仍受短前期与安慰剂检验限制"},
+ strength:"弱", strength_why:"本课保守评级：概念与识别条件未经生产实测，采集证据限于一个窗口与两个模型。",
+ limitations:[
+  ["高","结论目前止步于模拟","英文和日文商品推荐场景由模拟生成：出现概率、注意观测与业务响应都按设定产生。真实销售、真实注意与混杂变量仍需采集后按同口径复验。","§5.2 · PDF p.17"],
+  ["高","面板率与曝光之间隔着三次加权","27.8% 这类面板率按 56 题等权平均。只有当问题量、份额与注意概率在市场与期间只差常数倍时，出现率序列才与曝光只差尺度（式 (25)）；比例关系一变，换算会改变结论。","命题 4.3 · PDF p.12"],
+  ["中","采集窗口与引擎版本单一","全部回答在 2026-09-03 至 09-04 一个窗口内采完，GPT-4o 返回 gpt-4o-2024-08-06。引擎或界面更新、题板变化时，需重新执行同口径测量。","附录 A · PDF p.27–28"],
+  ["中","应用页为教学推断","行动清单、成熟形态与对照启发由本课编写，原论文未测量其效果。采用前按目标场景设计对照试验，先小范围验证。","本课编写"],
+  ["中","对照数据不能直接当曝光","附录 F 复用引流自然实验：立即比值 1.842 [1.306, 2.599]，但该数据缺问题量、回答与注意观测，构造不了曝光；安慰剂秩 0.150 也提示需谨慎解读。","附录 F · PDF p.45–46"],
+  ["低","未逐表重算的指标","课程引用的表格数值按版面抽取核对；派生换算已注明方式。未经逐格重算的指标请以 PDF 原表为准。","本课审查提示"]],
+ quotes:[
+  {q:"提及率先要换算成曝光，才能进营销模型。",basis:"式 (6)：出现率要乘问题量、系统份额与注意概率。",use:"把「出现比例」改名「预期曝光」之前，先补齐三组市场量。"},
+  {q:"曝光 = 问题量 × 份额 × 出现率 × 注意率。",basis:"式 (6) 的单市场特例；四个因子相乘，缺一不可。",use:"汇报时同时给出四个因子，避免只报出现率。"},
+  {q:"GEO 改变出现概率，起点通常高于零。",basis:"§3.1：零改动时 E^G 一般为正；效应是两条序列之差。",use:"评估时保留未改动基线，别把全部曝光记给改动。"},
+  {q:"效应比较的是完整干预序列。",basis:"式 (5)：ΔG=V(1,1)−V(0,1)；carryover 跨期传导。",use:"实验按完整序列对比设计，别用单期回归系数下结论。"},
+  {q:"语言一换，出现率排序会反转。",basis:"Table 1：英语 GPT-4o 高 6.79pp，日语 Luna 高 18.75pp。",use:"跨市场复用时按语言与用例分别估计出现率。"},
+  {q:"估计 carryover 与饱和，贡献主要精度提升。",basis:"Table 2：向量 RMSE 从 1.207 降到 0.945。",use:"先估计变换参数，再比较测量层不确定度的处理。"}],
+ quiz:[
+  {q:"GMMM 里 GEO 输入（预期曝光）由哪些量构成？",
+   o:["页面排名 × 域名权重 × 点击率","问题量 × 系统份额 × 出现概率 × 注意概率","花费 × 展示量 × 转化率","引用数 × 情感得分 × 排名"],
+   a:1,e:"式 (6)：E^G 对问题簇与系统求和 N×ω×π(z)×λ；出现之后还要被注意才计入曝光。",p:7},
+  {q:"采集数据里哪个反常发现值得记住？",
+   o:["两个模型在英语与日语下的出现率排序反转","出现率随采集区组持续漂移","日语问题全部得不到推荐","Glasp 只出现在英语回答里"],
+   a:0,e:"Table 1：英语 GPT-4o 高 6.79pp，日语 Luna 高 18.75pp；总面板率 33.8% 对 27.8% 掩盖了这个反转。",p:14},
+  {q:"把「面板率 27.8%」直接当某市场某期的曝光，问题出在哪？",
+   o:["它按 56 题等权平均，还没乘问题量、份额与注意概率","它是日语问题的出现率，不适用英语","它是后验均值，应改用原始计数 311/1,120","它只统计了首次出现的回答"],
+   a:0,e:"面板率是固定题板的等权平均；要变成式 (6) 的曝光，需按目标市场的问题分布加权并乘注意概率（发现 F1 与命题 4.3）。",p:13},
+  {q:"模拟中哪一步估计对系数恢复的改进贡献最大？",
+   o:["用响应数据更新测量参数（joint 对 cut）","把重复次数从 120 增加到 600","估计 carryover 与饱和变换参数","把每格回答数从 5 增到 20"],
+   a:2,e:"Table 2：估计变换参数把向量 RMSE 从 1.207 降到 0.945；cut 与 joint 之间无一致优势（Table 3：cut 17.326% 对 joint 17.480%）。",p:16},
+  {q:"把 GMMM 用于真实业务前，哪项属于必须补齐的测量？",
+   o:["把模拟里的 β 系数直接搬到自己的数据上","采集市场问题量、系统份额与注意概率等观测","用面板率替代所有市场权重","只保留出现率一列以简化模型"],
+   a:1,e:"边界页：英日结果来自模拟；真实销售、注意概率与问题量、份额等观测都需按同一口径采集后再复验。",p:21}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{
+ geo:{t:"GEO",d:"改善来源在生成式答案中的可见性及归功的研究与实践。"},
+ gem:{t:"GEM",d:"为生成式答案中的赞助展示付费的营销动作。"},
+ mmm:{t:"MMM",d:"营销组合模型：把销售或转化等汇总响应与各媒体投入放在一起估计。"},
+ rag:{t:"RAG",d:"先检索外部资料，再以资料支持模型生成。"},
+ baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},
+ causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},
+ carryover:{t:"carryover",d:"广告效果延续到后续期间；几何滞后把当前与历史输入加权合并。"},
+ hill:{t:"Hill 变换",d:"饱和函数 H=κA^κ/(A^κ+θ^κ)：输入到 θ 时取一半强度。"},
+ notice:{t:"注意概率",d:"出现之后用户真正注意到该属性的条件概率，用用户研究估计。"},
+ cut:{t:"cut 后验",d:"测量参数的分布由测量数据固定，响应数据不反向更新。"},
+ gformula:{t:"g-公式",d:"在一致性、可交换性、正性等假设下识别完整干预序列效应的方法。"},
+ transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=o=>`<span class="src">${esc(o.label)}${o.page?` · PDF p.${esc(String(o.page))}`:''}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const fmtInt=v=>Math.round(v).toLocaleString('en-US');
+const state={step:0,metric:0,num:0,lim:0,role:0,proof:0,q:0,answers:[],checks:new Set(),scene:0,unit:0,design:0,method:0,compare:0,flow:0,flips:new Set(),labPreset:'base',lab:{N:40000,W:.35,P:.278,L:.6}};
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function xbars(rows,mx){const m=mx||Math.max(...rows.map(r=>r[1]));return `<div class="x-bars">${rows.map(r=>`<div class="x-bar"><span>${esc(r[0])}</span><div class="x-track"><div class="x-fill${r[3]?' '+r[3]:''}" style="width:${Math.max(1.2,r[1]/m*100).toFixed(1)}%"></div></div><b>${esc(r[2])}</b></div>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+/* ---- 第 1 章 ---- */
+function coverHtml(){return `<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">品牌在 AI 答案里被提到了，营销模型里却没有这笔曝光——GMMM 先完成换算，再谈归因。</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:8px">${esc(PAPER.authors.split('; ').join(' · '))} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')} · ${ext(PAPER.pdf,'本地 PDF')}</div><div class="choice-row" style="margin-top:16px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换专业层，N 查看讲稿。进度自动保存在当前浏览器。')}</div><div class="number-grid">${PAPER.stats.map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div><div class="caption">${esc(s.context)} <span class="src">${esc(s.source)}</span></div></div>`).join('')}</div></div>`;}
+function routeHtml(){return `<div class="columns"><div><ol class="fact-list">${PAPER.routeQ.map(q=>`<li>${esc(q)}</li>`).join('')}</ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;}
+function sceneView(v){
+ if(v===0)return `<div class="answer"><h3>常见做法</h3><p>直接把提及率当作媒体输入放进 MMM，或按比例折算收入增幅。</p><div class="warning">缺口：市场问题总量、引擎份额与注意概率都没有进入口径；跨市场、跨语言不可比。</div>${tip('教学示意，尚未进行实际效果测量。')}</div>`;
+ return `<div class="answer"><h3>研究启发 · 三次换算</h3><div class="x-flow3" style="margin-top:8px"><div class="x-node"><span class="xt">起点</span><span>出现率 27.8% · 答案里出现 Glasp 的比例（Table 1 实测）</span></div><div class="x-node active"><span class="xt">换算</span><span>× 问题量 → × 引擎份额 → × 注意概率 = 预期曝光</span></div><div class="x-node"><span class="xt">进模型</span><span>carryover + Hill 变换 → 与销售同表估计 → 对比完整序列 ΔG</span></div></div>${tip('出现率为 Table 1 面板率（PDF p.16）；其余为方法示意，未附加实测收益。')}</div>`;}
+function sceneHtml(v){return `<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>同一块提及率数据，两种用法给出两种口径。切换右侧看差别。</p>${tip('示意情境；出现率取实测面板率 27.8%。')}</div><div>${choices(['常见做法','研究启发'],v,'scene')}<div id="sceneOut" aria-live="polite" style="margin-top:4px">${sceneView(v)}</div></div></div>`;}
+/* ---- 第 2 章 ---- */
+function unitView(v){const u=PAPER.units[v];return `<div class="answer"><h3>${esc(u.t)}</h3><p>${esc(u.plain)}</p><div class="only-pro pro-note">${esc(u.pro)} ${src({label:u.srcL,page:u.srcP})}</div></div>`;}
+function unitHtml(v){return `${choices(PAPER.units.map(u=>u.t),v,'unit')}<div class="columns" style="margin-top:6px"><div id="unitOut" aria-live="polite">${unitView(v)}</div><div><div class="kicker">读任何一个量之前</div><ul class="fact-list"><li>测量对象<small>市场 × 期间 × 问题簇 × 系统，四层对齐</small></li><li>计量单位<small>出现且被注意的回答条数期望</small></li><li>零点含义<small>零改动时 E^G 通常仍大于零</small></li></ul></div></div>`;}
+const XSTEPS=[
+ {t:"指定属性并采集回答",plain:"先定下要记录的属性（如品牌名出现），再反复向生成系统提交同一组问题，保存完整回答。",pro:"采集：56 题（28 英 + 28 日）× 2 模型 × 20 次 = 2,240 条；同一系统指令并强制网页搜索；4 区组单窗口完成。",srcL:"§5.1 · PDF p.16、27"},
+ {t:"估计两类概率",plain:"出现概率从重复回答里估，注意概率从用户研究里估；两层都分层建模，问题簇带随机效应。",pro:"式 (7)–(8)：logit(π)=A′α+u_q；式 (9)–(10)：C|λ~Binomial(n,λ)，logit(λ)=D′ξ+v_q。模拟每格 50 条注意观测。",srcL:"式 (7)–(10) · PDF p.7、17"},
+ {t:"加权构造曝光",plain:"出现率乘上市场问题量、各系统使用份额与注意概率，得到某市场某期的曝光期望条数。",pro:"式 (6)：E^G_it(z)=Σ_q N_iqt Σ_p ω_ipt π_qpt(z)λ_qpt；GEM 侧式 (13)：E^P=μ^P·ρ^P。",srcL:"式 (6)、(13) · PDF p.6–7"},
+ {t:"变换并估计响应",plain:"曝光先做 <button type=\"button\" class=\"term\" data-term=\"carryover\">carryover</button> 与 <button type=\"button\" class=\"term\" data-term=\"hill\">Hill</button> 饱和变换，再与传统媒体、源状态一起进入响应模型。",pro:"式 (14) 归一化几何滞后；式 (15) Hill；式 (3) 含 β_D Z 与交互 β_GP；模拟取 (0.55, 4.00, 2.20, 0.50)。",srcL:"式 (3)、(14)–(15) · PDF p.4、8、17"},
+ {t:"对比完整干预序列",plain:"把有改动与无改动两条完整序列各自跑完，比较业务响应期望，得到总效应 ΔG。",pro:"式 (5)：ΔG=V(1,1)−V(0,1)；识别条件见命题 4.2（秩条件）与定理 4.4（<button type=\"button\" class=\"term\" data-term=\"gformula\">g-公式</button>）。",srcL:"式 (5) · PDF p.5、11、14"}];
+function pipelineHtml(){const i=state.step,s=XSTEPS[i];
+ return `<div class="x-stepper">${XSTEPS.map((st,j)=>`<button type="button" class="choice" data-action="step" data-value="${j}" aria-pressed="${j===i}"><span class="xn">${j+1} / 5</span>${esc(st.t)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(s.t)}</h3><p>${s.plain}</p><div class="only-pro pro-note">${esc(s.pro)} ${src({label:s.srcL.split(' · PDF')[0],page:s.srcL.split('PDF p.')[1]})}</div></div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="prevStep" ${i===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${i===XSTEPS.length-1?'disabled':''}>下一步</button></div><div class="caption">流程按论文 Figure 1 重组；箭头表达研究逻辑，不代表时间成本。<span class="src">${esc(s.srcL)}</span></div>`;}
+const XFLOWS=[
+ {t:"测量层 · 本课新增",d:"出现率 × 问题量 × 份额 × 注意 → E^G、E^P",s:"式 (6)、(13) · PDF p.6–7"},
+ {t:"模型层 · 沿用 MMM",d:"carryover、Hill 与响应系数估计照旧进行",s:"式 (14)–(15)、(3) · PDF p.8、4"},
+ {t:"识别层 · 本课新增",d:"ΔG 比较完整序列；秩条件与 g-公式给识别条件",s:"式 (5)、命题 4.2、定理 4.4 · PDF p.5、11–14"}];
+function boundaryFlow(v){return `<div class="x-flow3">${XFLOWS.map((s,i)=>`<div class="x-node ${i===v?'active':''}"><span class="xt">${i+1}</span><span><b>${esc(s.t)}</b><br><span class="small">${esc(s.d)}</span><span class="src" style="margin-left:6px">${esc(s.s)}</span></span></div>`).join('')}</div>`;}
+function boundaryHtml(v){return `${choices(['测量层','模型层','识别层'],v,'flow')}<div class="columns" style="margin-top:6px"><div id="flowOut" aria-live="polite">${boundaryFlow(v)}</div><div>${panel('能够支持',PAPER.claim)}<div style="height:12px"></div>${panel('适用边界',PAPER.boundary)}</div></div>`;}
+/* ---- 第 3 章 ---- */
+function metricView(v){const m=PAPER.metrics[v];return `<div class="answer"><h3>${esc(m.name)}</h3><p class="only-plain">${esc(m.plain)}</p><div class="only-pro"><div class="x-formula">${m.formula}</div><p style="font-size:14px">${esc(m.pro)}</p><div>${src({label:m.srcL,page:m.srcP})}</div></div></div>`;}
+function metricHtml(v){return `<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),v,'metric')}<div id="metricOut" aria-live="polite" style="margin-top:4px">${metricView(v)}</div></div><div><div class="kicker">读数前的口径检查</div><ul class="fact-list"><li>测量对象<small>市场 × 期间 × 问题簇 × 系统，四层都要对齐</small></li><li>单位与分母<small>E^G 是被注意条数的期望；份额满足 Σω=1</small></li><li>零点<small>零改动时 E^G 通常大于零；效应按两条序列之差计</small></li><li>禁止越界<small>${esc(PAPER.boundary)}</small></li></ul></div></div>`;}
+const XDESIGN=[
+ {t:"答案采集 · 实测",rows:[["问题板","56 题：28 英 + 28 日 · 7 个用例"],["调用","2 模型 × 每题 20 次 = 2,240 条"],["控制","同一系统指令 · 强制网页搜索"],["窗口","4 区组 · 2026-09-03 至 09-04 单窗口"],["判定","固定词典拼写出现 · 不论情感"]],srcL:"§5.1 · 附录 A",srcP:"16、27"},
+ {t:"蒙特卡洛模拟",rows:[["面板","5 市场 × 6 产品簇 × 36 期 = 1,080 观测"],["干预","2 簇第 19 期 · 2 簇第 23 期 · 2 簇从不"],["响应","β=(0.55, 4.00, 2.20, 0.50) · 式 (28)"],["测量","每格 50 条注意观测 · N 与 ω 视为已知"],["重复","120 次配对重复 × 5 条件"]],srcL:"§5.2 · §5.4",srcP:"17–18"}];
+function designView(v){const d=XDESIGN[v];return `<div class="answer"><h3>${esc(d.t)}</h3><div class="x-kv" style="margin-top:8px">${d.rows.map(r=>`<div>${esc(r[0])}</div><div>${esc(r[1])}</div>`).join('')}</div><div class="caption" style="margin-top:8px">${src({label:d.srcL,page:d.srcP})}</div></div>`;}
+function designHtml(v){return `<div class="columns"><div>${choices(XDESIGN.map(d=>d.t),v,'design')}<div id="designOut" aria-live="polite" style="margin-top:4px">${designView(v)}</div></div><div><div class="kicker">原文证据节选 · 点击切换</div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite" style="margin-top:4px">${sourceView(state.proof)}</div></div></div>`;}
+function controlHtml(){const items=['属性定义与研究问题一致','两种源状态都有观测','问题量、份额与注意概率有数据','按完整序列对比并报告区间覆盖'];
+ return `<div class="columns"><div><div class="kicker">复验方案四项检查 · 本课推断</div><div class="check-list">${items.map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${esc(s)}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'四项齐了，可以进入设计评审':'继续补齐比较条件'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选只检查方案完整性；因果识别还取决于一致性、可交换性与正性等假设（<button type="button" class="term" data-term="gformula">g-公式</button> · 定理 4.4 · PDF p.14）。</div><div class="only-pro pro-note">对应测量层：出现概率需两种源状态观测（§3.1 · PDF p.7）；注意概率需用户研究（式 (9)–(10)）；问题量与份额在模拟中视为已知，应用中可并入测量模型（§6.4 · PDF p.22）。</div></div></div>`;}
+/* ---- 第 4 章 ---- */
+const XMETHOD=[
+ {t:"估计概率",p:"出现概率用分层 logistic 从重复回答估计；注意概率用 binomial 从用户研究估计。",pro:"式 (7)–(10) · PDF p.7。只观测到单一源状态时，只能估计该状态的概率；识别改动效应需要两种源状态的观测（§7 · PDF p.23）。",chk:"单一源状态估不出改动效应（发现 F1 的测量侧）。"},
+ {t:"构造曝光",p:"把概率放进市场尺度：乘问题量、系统份额与注意概率，得到每市场每期的两条曝光。",pro:"式 (6)、(13)。模拟把 N 与 ω 视为已知；应用中可把两者并入测量模型传递不确定度（§6.4 · PDF p.22）。",chk:"面板率直接当曝光会漏掉三次加权（发现 F1）。"},
+ {t:"对比序列",p:"估计响应后替换完整干预序列计算 ΔG；plug-in、cut、joint 的差别只在测量不确定度的处理。",pro:"式 (16)–(21)；M=128、J=700、每方法 1,000 个条件样本（§5.4 · PDF p.18）。cut 固定测量分布，joint 允许响应数据更新。",chk:"变换参数估计贡献主要精度改进（发现 F4）。"}];
+function methodView(v){const m=XMETHOD[v];return `<div class="answer"><h3>${esc(m.t)}</h3><p>${esc(m.p)}</p><div class="only-pro pro-note">${esc(m.pro)}</div><div class="callout" style="margin-top:10px">要检查：${esc(m.chk)}</div></div>`;}
+function methodHtml(v){return `<div class="columns"><div>${choices(XMETHOD.map(m=>m.t),v,'method')}<div id="methodOut" aria-live="polite" style="margin-top:4px">${methodView(v)}</div></div><div><div class="kicker">保持不变的约束</div><ul class="fact-list"><li>事实与来源可追溯<small>属性判定规则固定（如固定词典）</small></li><li>口径跨期一致<small>同一问题板与系统定义</small></li><li>${esc(PAPER.boundary)}</li></ul><div class="only-pro pro-note" style="margin-top:10px">估计判据：J=J_M+J_Y+J_E+罚项（式 (16) · PDF p.8）；Bayesian 版本用 Laplace 逼近 q_L(η_M|D_M) 加 M=128、J=700 采样（式 (17)–(21) · PDF p.9、18）。</div></div></div>`;}
+/* ---- 招牌交互：曝光乘法链计算器（示意） ---- */
+const XLAB={cmp:{N:150000,W:.25,L:.45}};
+const XPRESET={base:{N:40000,W:.35,P:.278,L:.6},big:{N:150000,W:.25,P:.278,L:.5},low:{N:60000,W:.30,P:.278,L:.15}};
+function labCtl(){const s=state.lab;
+ const row=(k,label,val,min,max,step,dec)=>`<div class="x-ctlrow"><label><span>${label}</span><b id="labVal${k}">${val}</b></label><input type="range" data-xlab="${k}" min="${min}" max="${max}" step="${step}" value="${dec}" aria-label="${label}"></div>`;
+ return row('N','月问题量 N',fmtInt(s.N)+' 次',2000,200000,1000,s.N)
+  +row('W','引擎份额 ω',(s.W*100).toFixed(0)+'%',0,100,1,Math.round(s.W*100))
+  +row('P','出现概率 π',(s.P*100).toFixed(1)+'%',0,100,.1,Math.round(s.P*1000)/10)
+  +row('L','注意概率 λ',(s.L*100).toFixed(0)+'%',0,100,1,Math.round(s.L*100))
+  +`<div class="choice-row" style="margin-top:12px"><button type="button" class="choice" data-action="xlab" data-value="base" aria-pressed="${state.labPreset==='base'}">基准市场</button><button type="button" class="choice" data-action="xlab" data-value="big" aria-pressed="${state.labPreset==='big'}">大市场</button><button type="button" class="choice" data-action="xlab" data-value="low" aria-pressed="${state.labPreset==='low'}">低注意市场</button></div><div class="caption">π 的默认值与 Table 1 的 GPT-4o 面板率 27.8% 同量级；四组滑杆值均为示意。</div>`;}
+function labOut(){const s=state.lab,c=XLAB.cmp;
+ const E1=s.N*s.W*s.P*s.L,E2=c.N*c.W*s.P*c.L,mx=Math.max(E1,E2);
+ const f=(a,b)=>`<div class="x-f"><small>${a}</small><b>${b}</b></div>`;
+ return `<div class="answer" style="padding:14px 18px"><div class="kicker">乘法链 · 单市场预期曝光（示意）</div><div class="x-chain">${f('问题量 N',fmtInt(s.N))}<span class="x-op">×</span>${f('引擎份额 ω',(s.W*100).toFixed(0)+'%')}<span class="x-op">×</span>${f('出现概率 π',(s.P*100).toFixed(1)+'%')}<span class="x-op">×</span>${f('注意概率 λ',(s.L*100).toFixed(0)+'%')}</div><div class="x-eq">= 预期曝光 E ≈ <b>${fmtInt(E1)}</b> 人次 / 月</div><div class="x-bars" style="margin-top:12px"><div class="x-bar"><span>本市场</span><div class="x-track"><div class="x-fill" style="width:${(E1/mx*100).toFixed(1)}%"></div></div><b>${fmtInt(E1)}</b></div><div class="x-bar"><span>对照市场 · 同一 π</span><div class="x-track"><div class="x-fill alt" style="width:${(E2/mx*100).toFixed(1)}%"></div></div><b>${fmtInt(E2)}</b></div></div><div class="caption">对照市场固定为 N=150,000、ω=25%、λ=45%；出现率与本市场相同。倍数 = (N×ω×λ) 之比，与出现率无关——这是只报提及率会丢掉的信息。示意数值按式 (6) 的单市场特例计算。${src({label:'式 (6)',page:6})}</div><div class="only-pro pro-note">完整式 (6)：E<sup>G</sup><sub>it</sub>(z)=Σ<sub>q</sub>N<sub>iqt</sub>Σ<sub>p</sub>ω<sub>ipt</sub>π<sub>qpt</sub>(z)λ<sub>qpt</sub>，此处取单问题簇、单系统的特例。模拟把 N 与 ω 视为已知（§5.2）；命题 4.3：当 N×ω×λ 在市场与期间只差常数倍时，曝光序列与出现概率序列只差尺度，由 Hill 中点 θ 吸收（PDF p.12）。</div></div>`;}
+function labHtml(){return `<div class="x-lab"><div class="x-ctl" id="labCtlBox">${labCtl()}</div><div id="labOut" aria-live="polite">${labOut()}</div></div>`;}
+/* ---- 证据读数 ---- */
+function numbersView(v){
+ if(v===0){const rows=[['GPT-4o · 英语',35.4,'35.4%',''],['Luna · 英语',28.6,'28.6%','alt'],['GPT-4o · 日语',20.2,'20.2%',''],['Luna · 日语',38.9,'38.9%','alt']];
+  return xbars(rows,40)+`<div class="caption">${src({label:'Table 1',page:16})} 回答含 Glasp 的比例 · 零点起算。后验差：英语 GPT-4o +6.79pp [2.90, 10.02]；日语 Luna +18.75pp [14.11, 21.57]（附录 A · PDF p.28）。出现率为采集实测；业务效果仍来自模拟。</div>`;}
+ if(v===1){const rows=[['变换固定在先验',1.207,'1.207',''],['估计变换 · plug-in',0.945,'0.945','alt'],['估计变换 · joint',0.950,'0.950','alt'],['已知真值（参考）',0.882,'0.882','pos']];
+  return xbars(rows,1.3)+`<div class="caption">${src({label:'Table 2',page:18})} 向量 RMSE · 120 次配对重复 · 5 答/格。效应 RMSE 17.4–17.6%：估计出现率设计下 cut 17.326% 对 joint 17.480%（Table 3 · PDF p.19），无一致排序。</div>`;}
+ const t=PAPER.table;return `<div class="source-text table" lang="en">${esc(t.text)}</div>${src(t)}${tip('版面抽取节选，换行可能影响列对齐；完整表格及脚注以 PDF 为准。')}`;}
+function numbersHtml(v){return `<div class="columns"><div>${choices(['出现率读数 · Table 1','估计精度 · Table 2','原文表格节选'],v,'number')}<div id="numberOut" aria-live="polite" style="margin-top:6px">${numbersView(v)}</div></div><div><div class="answer"><div class="kicker">证据类型 · ${esc(PAPER.kind)}</div><h3>读数分两层</h3><p>出现率有 2,240 条真实回答支撑；业务效果 ΔG 只有模拟读数，暂无生产环境估计。</p></div><div class="callout" style="margin-top:12px">${esc(PAPER.extra)}</div><ul class="fact-list" style="margin-top:12px"><li>实测层<small>出现率与首次提及排名 · Table 1 · PDF p.16</small></li><li>模拟层<small>RMSE 与区间覆盖 · Table 2–4 · PDF p.18–20</small></li></ul></div></div>`;}
+/* ---- 第 5 章 发现 ---- */
+const FSRC=[{label:'式 (6) · §1',page:'2、6'},{label:'Table 1 · 附录 A',page:'16、28'},{label:'式 (9)–(13) · §5.2',page:'7、17'},{label:'式 (5) · Table 2–4',page:'5、18–20'}];
+const FEXTRA=[
+ ["实践含义（本课推断）：把出现比例升级为曝光台账——按市场与期间记录问题量、份额、出现率与注意率，再进 MMM。","适用条件：三组市场量按同一目标口径采集；式 (25) 的常数倍条件不满足时，出现率序列代表不了曝光。"],
+ ["实践含义（本课推断）：按语言与用例分列出现率，权重改用目标市场的问题分布。","适用条件：Table 1 覆盖一个采集窗口与两个模型；引擎、界面或题板变更后需按同口径复测。"],
+ ["实践含义（本课推断）：安排小型用户研究测注意概率；GEM 投放效果同样要乘注意概率。","适用条件：假设改动不改变出现后的注意概率；模拟中每格 50 条注意观测是最低配置参考。"],
+ ["实践含义（本课推断）：先估计 carryover 与饱和，再比较测量层不确定度的处理方式。","适用条件：识别依赖一致性、可交换性、正性等假设；组件误差符号可能相反、部分抵消。"]];
+const FPRO=[
+ "式 (6)：E^G_it(z)=Σ_q N_iqt Σ_p ω_ipt π_qpt(z)λ_qpt。对比 z=1 与 z=0 固定 N、ω；假设改动不改变出现后的注意概率，故 λ 无 z 参数（§3.1 · PDF p.6）。",
+ "Table 1（PDF p.16）：GPT-4o 英语 35.4 / 日语 20.2 / 面板 27.8，后验 28.8 [27.0, 30.7]；Luna 28.6 / 38.9 / 33.8，后验 34.5 [32.8, 36.3]。首次提及排名 1.62 对 1.94，Rank 1 占比 60.5% 对 39.4%。",
+ "出现与注意概率分别用分层 logistic 与 binomial 估计（式 (7)–(10) · PDF p.7）；模拟每格 50 条注意观测，N 与 ω 视为已知（§5.2 · PDF p.17）。",
+ "命题 4.2：变换固定后，四个系数由残差 Gram 矩阵 G_η 非奇异识别；ΔG 可在系数不可分时仍被识别（Corollary 4.5）。Table 4（PDF p.20）：源状态组件 RMSE 32.5%、输入组件 47.8%，误差相关 −0.626，总效应误差可被部分抵消。"];
+function fvisHtml(ix){
+ if(ix===0)return xbars([['市场甲 · 4 万×35%×60%',2335,'2,335',''],['市场乙 · 15 万×25%×50%',5213,'5,213','alt'],['市场丙 · 8 千×15%×30%',100,'100','']],5213)+`<div class="caption">同一出现率 27.8% 在三种市场配置下的月曝光（人次 · 示意）：最高与最低差约 52 倍。出现率取 Table 1 面板率；市场配置为本页示意。</div>`;
+ if(ix===1)return xbars([['GPT-4o · 英语',35.4,'35.4%',''],['Luna · 英语',28.6,'28.6%','alt'],['GPT-4o · 日语',20.2,'20.2%',''],['Luna · 日语',38.9,'38.9%','alt']],40)+`<div class="caption">${src({label:'Table 1',page:16})} 回答含 Glasp 的比例 · 零点起算。语言反转：英语 GPT-4o +6.79pp [2.90, 10.02]；日语 Luna +18.75pp [14.11, 21.57]（附录 A · PDF p.28）。</div>`;
+ if(ix===2)return xbars([['月提问',40000,'40,000',''],['有回答 ×35%',14000,'14,000',''],['出现 ×27.8%',3892,'3,892','alt'],['被注意 ×60%',2335,'2,335','pos']],40000)+`<div class="caption">单市场注意漏斗（示意）：只有最后一行计入曝光。GEM 赞助展示同样乘注意概率：E^P=μ^P×ρ^P（式 (13) · PDF p.7）。</div>`;
+ return xbars([['变换固定在先验',1.207,'1.207',''],['估计变换 · plug-in',0.945,'0.945','alt'],['估计变换 · joint',0.950,'0.950','alt'],['已知真值（参考）',0.882,'0.882','pos']],1.3)+`<div class="caption">${src({label:'Table 2',page:18})} 向量 RMSE · 120 次配对重复 · 5 答/格：估计变换把 1.207 降到 0.945。效应 RMSE 17.4–17.6% 内 cut 与 joint 无一致排序（Table 3 · PDF p.19）。</div>`;}
+function findingHtml(ix){return `<div class="ev" style="margin-bottom:12px">发现 F${ix+1} · ${src(FSRC[ix])} · 证据强度 <span class="${PAPER.strength==='弱'?'str-l':'str-m'}">${esc(PAPER.strength)}</span> · ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite"><p>${esc(PAPER.finding_details[ix])}</p><div class="caption">结合本篇研究设计理解这条发现。</div></div></div><div>${fvisHtml(ix)}<div class="only-pro pro-note" style="margin-top:10px">${esc(FPRO[ix])}</div><button type="button" class="btn" data-go="8" style="margin-top:10px">回到原文证据 →</button></div></div>`;}
+function compareView(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div><div class="caption" style="margin-top:10px">GMMM 需要四组测量：重复回答、问题量、系统份额、注意观测；业务响应另需同期数据。缺任何一组，就退回单独的证据层。</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p><p>GMMM 作者在附录 F 复用其公开周度数据：立即比值 1.842 [1.306, 2.599]，参与型会话 2.388 [1.487, 3.833]；但该数据缺问题量、回答与注意观测，构造不了曝光输入。</p>${relatedLink()}${tip('立即比值与安慰剂秩见 Table 17 · PDF p.46。')}</div>`;
+ return `<div class="answer"><h3>对照时核对三件事</h3><ul class="fact-list" style="margin-top:8px"><li>事件口径<small>引流测「点击进站」；GMMM 曝光测「看到并注意」——用户可以读答案而不点链接</small></li><li>测量数据<small>问题量、份额、注意观测是否齐备；缺一则进不了式 (6)</small></li><li>稳健性<small>附录 F 的安慰剂秩 0.150（19 个前期候选日）提示单靠断点要谨慎</small></li></ul>${relatedLink()}${tip('本段为教学推断；两篇论文的数字不宜直接相加。')}</div>`;}
+function compareHtml(v){return `${choices(['本篇研究','相关研究','对照启发'],v,'compare')}<div id="compareOut" aria-live="polite" style="margin-top:10px">${compareView(v)}</div>`;}
+/* ---- 第 6 章 ---- */
+const originalCases={
+ 69:["56 个产品推荐问题里，Glasp 被提起了多少次？","向 GPT-4o 与 GPT-5.6 Luna 提交同一题板：28 个英语 + 28 个日语问题，覆盖 7 个用例；同一系统指令并强制网页搜索，每题每模型 20 次，合计 2,240 条完整回答。","按固定词典记录 Glasp 拼写是否出现（不论情感）：4 区组随机化、单窗口完成；同时记录首次提及在 11 个候选品牌中的排名。","§5.1 · Table 1 · PDF p.16"]};
+function caseHtml(){const c=originalCases[PAPER.id];return `<div class="kicker">论文原例的中文转述 · 答案采集（§5.1）</div><p class="intro">${esc(c[0])}</p><div class="two-docs">${panel('问题与输入',c[1])}${panel('操作与检查',c[2])}</div><div class="callout" style="margin-top:14px"><b>读数：</b>Luna 33.8% 对 GPT-4o 27.8%（378 对 311 / 1,120）；后验差 5.70pp [3.12, 8.27]。英语 GPT-4o +6.79pp，日语 Luna +18.75pp，排序反转；首次提及排名 1.62 对 1.94。</div>${tip('出处：'+c[3]+'。本页未为案例补造提升幅度；注意概率与市场权重不在这次采集范围内。')}<div class="only-pro pro-note" style="margin-top:8px">采集细节：2,240 条全部完整、无重复 ID，共 3,140 次搜索调用；GPT-4o 返回 gpt-4o-2024-08-06（附录 A · PDF p.27）。</div>`;}
+function personaHtml(){const roles=['增长与营销分析','数据与测量','研究与审核'];
+ const why=[PAPER.findings[1],PAPER.findings[3],PAPER.findings[0]];
+ const todos=[
+  ['把出现率换算成曝光台账：按市场与期间记录问题量、份额、出现率与注意率（式 (6)）','按语言与用例分列出现率，权重用目标市场的问题分布（Table 1）','汇报时同时给出四个因子，避免只报出现率'],
+  ['采集两种源状态的回答，并尽量随机化 rollout','估计 carryover 与 Hill 参数：向量 RMSE 1.207 → 0.945（Table 2）','报告 ΔG 的区间覆盖与组件误差（Table 3–4）'],
+  ['核对秩条件与 g-公式假设（命题 4.2 · 定理 4.4）','检查 N 与 ω 的已知假设，必要时并入测量模型（§6.4）','与引流类研究对照事件口径（附录 F · PDF p.45）']];
+ const FREF=[2,4,1];
+ return `${choices(roles,state.role,'role')}<div class="columns"><div><h3>${esc(roles[state.role])}</h3><p style="margin-top:10px">为什么适合：${esc(why[state.role])}。</p><div class="callout warn">避免：把示意或模拟数值当成真实收益，或跳过未改动基线直接汇报改动后的曝光。</div></div><div><ul class="fact-list">${todos[state.role].map(s=>`<li>${esc(s)}<small>对应 F${FREF[state.role]} · 本课应用推断</small></li>`).join('')}</ul></div></div>`;}
+function matureHtml(){const rows=[
+ ['出现率监测看板','出现率 × 语言 × 用例；固定词典判定记录','重复采集回答（步骤 1）'],
+ ['注意概率用户研究','出现样本内的注意报告；binomial 记录（每格 50 条为模拟配置）','估计注意概率（步骤 2）'],
+ ['曝光与干预台账','每市场每期：N、ω、π、λ、源状态 Z','构造曝光（步骤 3）'],
+ ['MMM 模型卡','carryover 滞后、Hill 中点、系数与区间覆盖','变换与响应（步骤 4）']];
+ return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的字段</th><th>对应研究环节</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:14px">第 5 步「对比完整干预序列」没有现成表单：用实验设计文档承接，写明两条序列与评估窗口。</div>`;}
+/* ---- 第 7 章 ---- */
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3 style="margin-top:8px">${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i===0?'来自论文的模拟设置与研究边界。':'本课审查提示，需结合原文进一步核验。')}<div class="caption"><span class="src">${esc(l[3])}</span></div>`;}
+function quotesHtml(){return `<div class="flips">${PAPER.quotes.map((q,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(q.q)}</b><span class="flip-back">依据：${esc(q.basis)}<br>用法：${esc(q.use)}</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制六条要点与出处</button></div>`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、反常发现、指标口径、方法贡献与研究边界。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;}
+function draw(view){
+ let h='';
+ if(view==='cover')h=coverHtml();
+ else if(view==='route')h=routeHtml();
+ else if(view==='scene')h=sceneHtml(state.scene);
+ else if(view==='concept')h=unitHtml(state.unit);
+ else if(view==='pipeline')h=pipelineHtml();
+ else if(view==='boundary')h=boundaryHtml(state.flow);
+ else if(view==='metric')h=metricHtml(state.metric);
+ else if(view==='design')h=designHtml(state.design);
+ else if(view==='control')h=controlHtml();
+ else if(view==='method')h=methodHtml(state.method);
+ else if(view==='lab')h=labHtml();
+ else if(view==='numbers')h=numbersHtml(state.num);
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);h=findingHtml(ix);}
+ else if(view==='compare')h=compareHtml(state.compare);
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes')h=quotesHtml();
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;
+ const a=b.dataset.action,raw=b.dataset.value??'',vi=+raw||0;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','unit','design','method','flow','compare','number','metric','limit'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene'){state.scene=vi;$('#sceneOut').innerHTML=sceneView(vi);}
+ else if(a==='unit'){state.unit=vi;$('#unitOut').innerHTML=unitView(vi);}
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?vi:Math.max(0,Math.min(XSTEPS.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow'){state.flow=vi;$('#flowOut').innerHTML=boundaryFlow(vi);}
+ else if(a==='metric'){state.metric=vi;$('#metricOut').innerHTML=metricView(vi);}
+ else if(a==='design'){state.design=vi;$('#designOut').innerHTML=designView(vi);}
+ else if(a==='proof'){state.proof=vi;$('#proofOut').innerHTML=sourceView(vi);}
+ else if(a==='check'){state.checks.has(vi)?state.checks.delete(vi):state.checks.add(vi);box.innerHTML=draw('control');}
+ else if(a==='method'){state.method=vi;$('#methodOut').innerHTML=methodView(vi);}
+ else if(a==='xlab'){const pr=XPRESET[raw]||XPRESET.base;Object.assign(state.lab,pr);state.labPreset=raw||'base';$('#labCtlBox',box).innerHTML=labCtl();$('#labOut',box).innerHTML=labOut();}
+ else if(a==='number'){state.num=vi;$('#numberOut').innerHTML=numbersView(vi);}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);$('#findingOut'+ix).innerHTML=`<p>${esc(vi===0?PAPER.finding_details[ix]:FEXTRA[ix][vi-1])}</p><div class="caption">${vi===1?'实践含义为本课推断，需按目标场景验证。':vi===2?'条件来自论文的设置与命题，超出即需重验。':'结合本篇研究设计理解这条发现。'}</div>`;}
+ else if(a==='compare'){state.compare=vi;$('#compareOut').innerHTML=compareView(vi);}
+ else if(a==='role'){state.role=vi;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=vi;$('#limitOut').innerHTML=limitHtml(vi);}
+ else if(a==='flip'){state.flips.has(vi)?state.flips.delete(vi):state.flips.add(vi);b.setAttribute('aria-pressed',state.flips.has(vi));}
+ else if(a==='copySummary')copyText(PAPER.quotes.map(q=>q.q).join('\n')+'\n依据与用法见课程要点卡片页\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.extra);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=vi;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${raw}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ const pi=pages.indexOf(p);if(pi>=0)checkOverflow(pi);
+});
+// Sliders of the exposure calculator update the output in place; arrow keys stay on the slider.
+document.addEventListener('input',e=>{
+ const r=e.target.closest('input[data-xlab]');if(!r)return;
+ const k=r.dataset.xlab;state.lab[k]=k==='N'?+r.value:+r.value/100;state.labPreset='';
+ const lesson=r.closest('.lesson');
+ const lab=$('#labVal'+k,lesson);if(lab)lab.textContent=k==='N'?fmtInt(+r.value)+' 次':(+r.value).toFixed(k==='P'?1:0)+'%';
+ const out=$('#labOut',lesson);if(out)out.innerHTML=labOut();
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button,.lesson .x-stepper button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

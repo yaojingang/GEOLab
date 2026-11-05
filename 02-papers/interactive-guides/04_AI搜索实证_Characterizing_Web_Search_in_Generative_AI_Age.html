@@ -1,0 +1,869 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>生成搜索的行为差异 · 论文课堂</title><meta name="description" content="多个生成系统具有不同的内外部知识依赖、来源多样性与运行稳定性"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="2510.11560v2"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .mini-table.tight td,.lesson .mini-table.tight th{padding:6px 8px;font-size:13.5px}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* ===== x- 本课程新增组件（跨系统行为画像与读数） ===== */
+.x-vrow{display:grid;grid-template-columns:120px 1fr 96px;gap:10px;align-items:center;padding:4px 0;font-size:13.5px}
+.x-track{position:relative;height:16px;background:var(--tint);border-radius:3px}
+.x-fill{position:absolute;top:2px;bottom:2px;left:0;border-radius:2px;background:var(--accent);transition:width .45s ease}
+.x-fill.alt{background:#9db4e8}
+.x-val{font-family:var(--mono);font-size:12px;text-align:right;color:var(--ink-2);white-space:nowrap}
+.x-chart{--xw:120px;--xv:96px;position:relative;padding-top:20px}
+.x-base-line{position:absolute;top:16px;bottom:0;border-left:1.5px dashed var(--ink);pointer-events:none}
+.x-base-lab{position:absolute;top:-16px;left:0;font-size:11px;color:var(--ink-2);transform:translateX(-50%);white-space:nowrap}
+.x-note{font-size:12.5px;color:var(--ink-3);line-height:1.6;margin-top:8px}
+.x-sysbtns{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 10px}
+.x-sysbtns button{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:4px 12px;font-size:13px}
+.x-sysbtns button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.x-chips{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.x-chips span{font-size:11.5px;border:1px solid var(--line-2);border-radius:5px;padding:2px 7px;background:#fff;color:var(--ink-2);font-family:var(--mono)}
+.x-chips span.hit{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.x-chips span.me{background:var(--mark);border-color:transparent;color:var(--ink)}
+.x-tl{display:grid;gap:8px;margin:10px 0}
+.x-tl .row{display:grid;grid-template-columns:56px 1fr 64px;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13.5px}
+.x-tl .when{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.x-tl .pol{font-size:12px;border-radius:999px;padding:1px 9px;text-align:center}
+.x-tl .pol.neg{background:var(--neg-tint);color:var(--neg)}
+.x-tl .pol.pos{background:var(--pos-tint);color:var(--pos)}
+.x-persona{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.x-persona button{border:0;border-right:1px solid var(--line);background:#fff;padding:10px 14px;text-align:left;font-size:14.5px;font-weight:600}
+.x-persona button:last-child{border-right:0}
+.x-persona button small{display:block;font-weight:400;font-size:12px;color:var(--ink-3)}
+.x-persona button[aria-pressed=true]{background:var(--ink);color:#fff}
+.x-persona button[aria-pressed=true] small{color:#c9c9c4}
+.x-lims{display:flex;flex-direction:column;gap:3px}
+.x-lims button{display:flex;gap:10px;align-items:center;border:1px solid transparent;background:none;border-radius:8px;padding:7px 10px;text-align:left;font-size:14.5px}
+.x-lims button:hover{background:var(--tint)}
+.x-lims button[aria-pressed=true]{border-color:var(--ink)}
+.x-lims .sev{font-size:11px;border-radius:4px;padding:0 6px;flex:none}
+.x-todo{list-style:none;margin:0;padding:0}
+.x-todo li{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:15px}
+.x-todo li::before{content:"→";color:var(--accent)}
+@media (max-width:900px){
+.x-vrow{grid-template-columns:86px 1fr 64px;font-size:12.5px}
+.x-chart{--xw:86px;--xv:72px}
+.x-persona{grid-template-columns:1fr}
+.x-persona button{border-right:0;border-bottom:1px solid var(--line)}
+.x-tl .row{grid-template-columns:1fr;gap:4px}
+}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+
+.lesson .fact-list.x-tight li{padding:6px 0}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 04 AI搜索实证</div>
+    <h1>生成搜索的行为差异</h1>
+    <div class="en">2026 · 实证测量</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<!-- ============ PAPER CONTENT · 每个 section.page 是一页白板 ============ -->
+
+<!-- 第 1 章 导入 -->
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title" style="font-size:40px;margin-top:4px">生成搜索的行为差异</h2><div style="font-family:Georgia,serif;font-style:italic;color:var(--ink-3);font-size:16px;margin-top:6px">Characterizing Web Search in the Age of Generative AI · 2026</div></div><div class="b-body split-r"><div class="lesson"><p class="lead">同一个问题问六个搜索系统：有的一口气检索 14 个网页，有的一次都不搜；隔两个月再问，AI 摘要引用的来源只剩 18%。这篇论文把「行为差异」变成了一组可测量、可复测的读数。</p><div class="muted" style="margin-top:10px">Elisabeth Kirsten 等 6 人 · UA Ruhr / 马普所 · arXiv:2510.11560v2</div><div class="muted"><a href="https://arxiv.org/pdf/2510.11560" target="_blank" rel="noopener">论文原站与署名</a> · <a href="../04_AI搜索实证/04_AI搜索实证_Characterizing_Web_Search_in_Generative_AI_Age.pdf">本地 PDF</a></div><div class="choice-row" style="margin-top:18px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div><p class="caption">按 ← → 翻页，M 切换专业层，N 查看讲稿。</p></div><div class="lesson"><div class="number-grid"><div class="number-tile"><div class="number">5</div><div class="label">个生成系统 · 3 家提供商</div><div class="caption">Google、OpenAI、Perplexity<span class="src">§1 · PDF p.2</span></div></div><div class="number-tile"><div class="number">4,706</div><div class="label">条真实查询 · 6 类数据集</div><div class="caption">政治、科学、购物、时效<span class="src">§3.1 · PDF p.4</span></div></div><div class="number-tile"><div class="number">0–14</div><div class="label">平均每次查询检索的网页数</div><div class="caption">GPT-Tool 不足 1，Sonar 14<span class="src">§1 · PDF p.2</span></div></div><div class="number-tile"><div class="number">18%</div><div class="label">两个月后 AIO 来源重合率</div><div class="caption">同批查询对比 Organic 45%<span class="src">§6.1 · PDF p.8</span></div></div></div></div></div><div class="b-key">覆盖相近，行为不同：知识依赖、来源广度与稳定性都因系统而异。<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">这门课讲 2026 年的一项实证测量：作者把同一批真实查询同时发给 Google 传统搜索和五个生成系统，比较它们检索了什么、引用了谁、答案稳不稳定。先记住三组数：平均检索 0 到 14 个网页、两个月后来源重合 18% 对 45%、零温度下 5 分钟内答案翻转 9% 到 27%。它们分别对应三个维度，整门课沿这三条线展开。</div></section>
+
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">学完这节课，你能回答四个问题</h2></div><div class="b-body even"><div class="lesson"><ol class="fact-list"><li>同一批查询，六个系统各自检索多少网页？<small>§4 · 平均 0–14 个 · PDF p.2</small></li><li>生成系统引用的来源，与 Google 前十差多远？<small>§5 · AIO 53% 域名不在前十 · PDF p.2</small></li><li>隔 5 分钟、隔两个月再问，答案与来源会变吗？<small>§6 · 翻转 9–27%、重合 45% 对 18%</small></li><li>这些行为差异，对创作者与评测者意味着什么？<small>第 6 章 · 行动清单与工作形态</small></li></ol><div class="term-row" id="xterms"></div></div><div class="lesson"><ul class="route-list" id="xroute"></ul><p class="caption">右侧路线可直接点击跳转；第 11 页的系统画像是全课枢纽。</p></div></div><div class="b-key">先建立测量框架，再沿三个维度读证据，最后落到应用与边界。</div></div><div class="notes">课程按七段展开：先看现象与测量框架，再沿三个维度——知识依赖、来源广度、稳定性——逐条核对证据，最后讲怎么把这套口径搬进自己的工作。术语都可以点开解释，目录随时可以跳页。</div></section>
+
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">同一个问题，系统的检索行为差得很远</h2></div><div class="b-body split"><div class="lesson"><p class="lead">用户只看到一段答案；答案背后，系统可以先搜后答，也可以完全不搜。</p><p>选一个论文里的真实查询，看作者观察到的行为差异。三类查询对应三种最优行为。</p><p class="caption">查询均为论文原例（Table 1、Table 2、Figure 3）；行为描述转述自 §4。</p></div><div class="lesson"><div class="choice-row" role="group" aria-label="选择查询" id="qselG"><button type="button" class="choice" data-action="qsel" data-value="0" aria-pressed="true">静态事实题</button><button type="button" class="choice" data-action="qsel" data-value="1" aria-pressed="false">开放式问题</button><button type="button" class="choice" data-action="qsel" data-value="2" aria-pressed="false">时效热点题</button></div><div class="answer" id="xscene" aria-live="polite"></div></div></div><div class="b-key">检索多少网页是系统自己的决定，用户看不到。<span class="src">§1 · PDF p.2</span></div></div><div class="notes">三个真实查询对应三种行为：首都题可以不搜就答对；开放式问题让 AIO 检索 30 多个网页；时效热点题上，不搜索的 GPT-Tool 把新闻人物的死因答错。让学生先感到「检索多少」是系统的自主决定，再进入测量框架。</div></section>
+
+<!-- 第 2 章 原理 -->
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">比较系统之前，先分清三个观测维度</h2></div><div class="b-body full"><div class="lesson"><div class="step-track" id="ccardG"><button type="button" class="choice" data-action="ccard" data-value="0" aria-pressed="true">检索足迹</button><button type="button" class="choice" data-action="ccard" data-value="1" aria-pressed="false">来源广度</button><button type="button" class="choice" data-action="ccard" data-value="2" aria-pressed="false">稳定性</button></div><div class="answer" id="xcon" aria-live="polite"></div></div></div><div class="b-key">三个维度各自可测，也各自对应一组论文读数。<span class="src">§1 · PDF p.2</span></div></div><div class="notes">这三个维度是全课的骨架。检索足迹看「查了多少」；来源广度看「引了谁」；稳定性看「再问一次变不变」。后面每一页都在填这三张表，第 11 页把它们合成一张画像。</div></section>
+
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">测量分五步：从构造查询到复测稳定性</h2></div><div class="b-body full"><div class="lesson"><div class="step-track" id="xpsteps"></div><div class="answer" id="xstep" aria-live="polite"></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" id="xstepPrev">上一步</button><button class="btn" type="button" data-action="nextStep" id="xstepNext">下一步</button></div><p class="caption">流程按论文方法重新组织；第 3 步保存原始来源是后面所有对齐与重合计算的前提。</p></div></div><div class="b-key">关键在第五步：复测让「行为差异」可以被重复验证。<span class="src">§3 · §6</span></div></div><div class="notes">强调两点：查询集是真实查询，4,706 条，有合成模板但没有编造问题；复测是全量重跑加专门的翻转实验。温度能设零的都设了零，AIO 和 GPT-Search 例外，它们不支持温度参数。</div></section>
+
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">这项研究刻画行为，无法打开商业黑盒</h2></div><div class="b-body split"><div class="lesson"><div class="choice-row" role="group" aria-label="研究位置" id="bdyG"><button type="button" class="choice" data-action="bdy" data-value="0" aria-pressed="true">研究能支持什么</button><button type="button" class="choice" data-action="bdy" data-value="1" aria-pressed="false">研究回答不了什么</button><button type="button" class="choice" data-action="bdy" data-value="2" aria-pressed="false">论文的位置</button></div><div class="answer" id="xbdy" aria-live="polite"></div></div><div class="lesson"><ul class="fact-list x-tight"><li>首个系统刻画生成搜索来源的研究<small>作者自述 · §2 · PDF p.3</small></li><li>已有评测范式未覆盖检索行为、综合与稳定性<small>§7 · PDF p.9</small></li><li>封闭系统、每条查询仅一次输出<small>§8 · PDF p.10</small></li></ul><div class="only-pro" style="margin-top:10px" id="xabs"></div></div></div><div class="b-key">行为刻画可迁移，机制解释需谨慎：商业系统内部不可观测。<span class="src">§8 · PDF p.10</span></div></div><div class="notes">先说能支持什么：六个系统在同一时点的行为画像，和一套可复用的口径。再说不能：排序与触发逻辑看不到，结论限定英语、美德两国、单轮、单次输出。专业层可以看到摘要原文，对照作者自己的表述。</div></section>
+
+<!-- 第 3 章 测量 -->
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">三组指标回答三个不同的行为问题</h2></div><div class="b-body split"><div class="lesson"><div class="choice-row" role="group" aria-label="选择指标" id="metricG"><button type="button" class="choice" data-action="metric" data-value="0" aria-pressed="true">检索足迹</button><button type="button" class="choice" data-action="metric" data-value="1" aria-pressed="false">来源广度</button><button type="button" class="choice" data-action="metric" data-value="2" aria-pressed="false">稳定性</button></div><div class="answer" id="xmetric" aria-live="polite"></div></div><div class="lesson"><ul class="fact-list"><li>测量对象<small>6 个系统 × 4,706 条查询 · §3 · PDF p.4</small></li><li>对应结论<small>行为差异单独报告，与答案正确率分开 · §7</small></li><li>禁止越界<small>行为差异不能直接当成质量优劣 · 第 21 页</small></li></ul><div class="only-pro"><div class="formula">J(A,B) = |A∩B| ⁄ |A∪B|</div><div class="pro-note">Jaccard 相似度衡量两次执行来源集合的重合；决策翻转率 = 极性改变的查询数 ÷ 总查询数。翻转的判定由 LLM judge 在肯定 / 否定 / 混合三类中标注。<span class="src">§6 · PDF p.9</span></div></div></div></div><div class="b-key">先问口径再读数：均值或中位数、T=0、URL 级或域名级。<span class="src">§4–§6</span></div></div><div class="notes">每个数字先问口径：均值还是中位数、零温度还是默认温度、URL 级还是域名级。论文给分位数的原因是 AIO 的检索量高度自适应，只报均值会掩盖两端。专业层给了两个核心口径的定义式。</div></section>
+
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">4,706 条真实查询对上六个搜索系统</h2></div><div class="b-body split"><div class="lesson"><div class="kicker">6 类数据集 · 点击查看构成与原例</div><div class="choice-row" id="xdsChips" role="group" aria-label="选择数据集"></div><div class="answer" id="xds" aria-live="polite"></div></div><div class="lesson"><table class="mini-table tight"><tbody><tr><th style="width:64px">系统</th><td>Organic（取前 100）· AIO · Gemini 2.5-Flash · GPT-4o Search · GPT-4o Tool · Sonar</td></tr><tr><th>执行</th><td>2025 年 9 月 · 英语 · 美国 + 德国两地</td></tr><tr><th>设置</th><td>温度尽量为 0 · 最多 1,000 个新 token</td></tr><tr><th>复测</th><td>两个月后全部重跑；5 分钟 / 24 小时翻转实验</td></tr><tr><th>基准</th><td>Tranco 域名排名（2025 年 7 月）· Google 内容类别</td></tr></tbody></table><p class="caption">示例查询均译自论文 Table 1 · PDF p.3。</p></div></div><div class="b-key">真实查询 + 六系统 + 两次时点，构成测量框架。<span class="src">§3 · PDF p.3–4</span></div></div><div class="notes">六类数据集覆盖日常与专业负载，Trends 当天抓当天测。AllSides 与 Regulatory Actions 的问句来自 People Also Ask 和 GPT-4o 生成，代表了真实用户的问法。右侧是全部实验设置，专业模式可以逐项核对。</div></section>
+
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">复测这项研究前，先固定五个条件</h2></div><div class="b-body split"><div class="lesson"><div class="check-list" id="xchecks"></div></div><div class="lesson"><div class="answer" id="xctl" aria-live="polite"></div></div></div><div class="b-key">五项都固定，行为读数才可比。<span class="src">§3.2 · §6</span></div></div><div class="notes">这五条来自论文的做法：冻结版本、记录温度、保存原始来源、区分漂移与随机性、报告波动。勾满五项，你的复测读数才能和论文或其他复测对得上。清单用于自检，不能证明因果识别自动成立。</div></section>
+
+<!-- 第 4 章 方法 -->
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">三个维度拆开，行为差异才看得清</h2></div><div class="b-body split"><div class="lesson"><div class="step-track" style="grid-template-columns:1fr;margin-bottom:8px" id="mdimG"><button type="button" class="choice" data-action="mdim" data-value="0" aria-pressed="true">维度一 · 内外部知识依赖</button><button type="button" class="choice" data-action="mdim" data-value="1" aria-pressed="false">维度二 · 来源广度与多样性</button><button type="button" class="choice" data-action="mdim" data-value="2" aria-pressed="false">维度三 · 稳定性</button></div><div class="answer" id="xmdim" aria-live="polite"></div></div><div class="lesson"><div class="kicker">保持不变的约束</div><ul class="fact-list"><li>同一批查询、同一时点并行执行<small>§3.2 · PDF p.4</small></li><li>行为读数与正确率分开报告<small>§7 · PDF p.9</small></li><li>结论限定实测范围：英语、美德、单轮<small>§8 · PDF p.10</small></li></ul><div class="callout" style="margin-top:12px">三个维度分别对应发现 F2、F1 与 F3、F4——下一页的画像图把它们合成一张表。</div></div></div><div class="b-key">每个维度有自己的测量办法与代表性读数。<span class="src">§4–§6</span></div></div><div class="notes">三个维度各自独立成章，也是发现章 F1 到 F4 的组织方式：维度一对应 F2，维度二对应 F1 与 F3，维度三对应 F4。点左侧切换，看每个维度怎么测、读数是什么。</div></section>
+
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">六个系统的行为画像：一图看清差异</h2></div><div class="b-body split"><div class="lesson"><div class="choice-row" id="xlabDims" role="group" aria-label="选择维度" style="margin-bottom:10px"><button type="button" class="choice" data-action="xdim" data-value="foot" aria-pressed="true">知识依赖</button><button type="button" class="choice" data-action="xdim" data-value="breadth" aria-pressed="false">来源多样性</button><button type="button" class="choice" data-action="xdim" data-value="stab" aria-pressed="false">运行稳定性</button></div><div id="xlabBars" aria-live="polite"></div></div><div class="lesson"><div class="kicker">系统速览 · 点击切换画像</div><div class="x-sysbtns" id="xlabSys" role="group" aria-label="系统速览" style="margin-top:6px"></div><div class="answer" id="xlabCard" aria-live="polite" style="padding:12px 16px"></div><p class="caption">横条按该维度数值绘制，虚线为 Organic 基线；GPT-Tool 平均检索量按 1 绘制（论文表述为不足 1 个，中位数 0）。<span class="src">§1 p.2 · §5.1 p.6 · Table 4 p.9</span></p></div></div><div class="b-key">检索量从不足 1 到 14；翻转率从 9% 到 27%——同一批查询。<span class="src">§1 p.2 · Table 4 p.9</span></div></div><div class="notes">这是全课的枢纽页。切维度看排名变化：知识依赖维度 Sonar 最高、GPT-Tool 最低；来源广度上生成系统都比 Organic 低一点；稳定性维度 Sonar 翻转最高。再点右侧系统名看画像卡，重点看 GPT-Tool：不搜索是特性，也是风险。</div></section>
+
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">关键读数要连口径一起读</h2></div><div class="b-body full"><div class="lesson"><div class="choice-row" id="xnumDims" role="group" aria-label="选择读数"></div><div id="xnum" aria-live="polite"></div></div></div><div class="b-key">每个读数都带单位、实验设置与出处，引用时一并带上。<span class="src">§6 · §4.3 · §1</span></div></div><div class="notes">四组读数各带口径：两个月来源重合 45% 对 18%；AIO 53% 的域名不在前十；零温度下 5 分钟翻转 9–27%；时效概念覆盖 51–72%。注意第三组：即使是零温度也压不住随机性。引用任何一组时，把口径一起带上。</div></section>
+
+<!-- 第 5 章 发现 -->
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">主题覆盖相近，来源集合仍然不同</h2></div><div class="b-body split"><div class="lesson"><div class="ev" style="margin-bottom:12px">发现 F1 · <span class="str-m">证据强度：中</span> · 依赖自动概念归纳<span class="src">§5.3 · PDF p.7–8</span></div><div id="xf1" aria-live="polite"></div><p style="font-size:14.5px">主题词相似恢复不了真实检索过程；在含糊查询上 Organic 仍占优——覆盖最低的 10% 查询里，Organic 中位覆盖 67%，AIO 55%，GPT-Tool 48%。</p><div class="choice-row" style="margin-top:10px"><button class="btn" type="button" data-go="12">看关键读数 →</button></div></div><div class="lesson"><div class="kicker">来源重合示意 · 按实测比例构造</div><div class="x-chips" id="xchipsA"></div><div class="x-chips" id="xchipsB"></div><p class="caption">绿色 = 两者共用；黄色 = AIO 独有。示意：论文实测 AIO 链接与 Organic 前 10 的重合不足 50%，与前 100 的重合不足 60%。<span class="src">§5.1 · PDF p.7</span></p></div></div><div class="b-key">覆盖率打平，概念重合只有 60–68%。<span class="src">§5.3 · PDF p.8</span></div></div><div class="notes">覆盖率打平不代表看到同样的内容：每条查询上两者提到的概念只有六成多重合。右侧示意图对照论文实测——AIO 的链接与前十重合不足一半。给学生留一个问题：如果两家覆盖一样，你该相信哪家引的来源？</div></section>
+
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">内外部知识依赖：0 次到 14 次搜索</h2></div><div class="b-body split"><div class="lesson"><div class="ev" style="margin-bottom:12px">发现 F2 · <span class="str-h">证据强度：强</span> · 249 题专门实验 + 多数据集一致<span class="src">§4 · PDF p.5–6</span></div><div class="choice-row" role="group" aria-label="切换查询类型" id="f2G"><button type="button" class="choice" data-action="f2mode" data-value="0" aria-pressed="true">静态事实题</button><button type="button" class="choice" data-action="f2mode" data-value="1" aria-pressed="false">时效热点题</button></div><div id="xf2" aria-live="polite"></div></div><div class="lesson"><div class="only-pro"><div class="kicker">Table 2 原文数值 · 249 道首都题</div><table class="mini-table tight" id="xt2"></table></div><ul class="fact-list"><li>平均检索量跨度 0–14 个网页<small>§1 · PDF p.2</small></li><li>AIO 自适应：10 分位 0.6、90 分位 17，Organic 固定 10<small>§4.1 · PDF p.5</small></li><li>开放式问题（如 AI 会取代哪些工作）AIO 检索 30+ 网页，约占 2%<small>§4.1 · PDF p.5</small></li></ul></div></div><div class="b-key">静态题搜索是浪费，时效题不搜会出错——权衡由系统决定。<span class="src">Table 2 · §4.3</span></div></div><div class="notes">左边切两种查询：静态题上 GPT-Tool 零搜索全对，搜索是纯开销；时效题上它垫底、还会出错。效率与准确是一对权衡，系统自己决定怎么选，用户承担结果。专业层有 Table 2 的完整数值。</div></section>
+
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">生成搜索把用户带到前十名之外</h2></div><div class="b-body split"><div class="lesson"><div class="ev" style="margin-bottom:12px">发现 F3 · <span class="str-m">证据强度：中</span> · 外部排名基准 + LLM 类别标注<span class="src">§5 · PDF p.6–7</span></div><div class="choice-row" role="group" aria-label="切换视图" id="f3G"><button type="button" class="choice" data-action="f3mode" data-value="0" aria-pressed="true">Tranco 排名</button><button type="button" class="choice" data-action="f3mode" data-value="1" aria-pressed="false">类别构成</button></div><div id="xf3" aria-live="polite"></div></div><div class="lesson"><ul class="fact-list"><li>AIO 53%（27%）的引用域名不在 Organic top-10（top-100）<small>§1 · PDF p.2</small></li><li>Gemini 与 GPT-Search 的重合更低，GPT-Tool 接近零<small>§5.1 · PDF p.7</small></li><li>GPT 系偏公司官网与百科；Organic 的社交与论坛来源最高可达 35%<small>§5.2 · PDF p.7</small></li></ul><div class="callout" style="margin-top:12px">对内容方：被引用的机会已从「挤进前十」扩展到「进入生成系统的来源池」。</div></div></div><div class="b-key">来源更冷门、类别构成也不同——广度是真实的。<span class="src">§5 · PDF p.6–7</span></div></div><div class="notes">Tranco 占比 81% 到 89%，差距不大但方向一致：生成系统引用更冷门的来源。切到类别构成：GPT 系偏官网与百科，社交与论坛占比低，Organic 一类最高可达 35%。对内容创作者，这是被引用机会结构的变化。</div></section>
+
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">隔 5 分钟再问，答案就可能翻转</h2></div><div class="b-body split"><div class="lesson"><div class="ev" style="margin-bottom:12px">发现 F4 · <span class="str-m">证据强度：中</span> · 专门翻转实验 + 两月全量复测<span class="src">Table 4 · PDF p.9</span></div><div class="choice-row" role="group" aria-label="温度设置" id="ftempG"><button type="button" class="choice" data-action="ftemp" data-value="t0" aria-pressed="true">温度 T=0</button><button type="button" class="choice" data-action="ftemp" data-value="def" aria-pressed="false">默认温度</button></div><div class="choice-row" role="group" aria-label="时间间隔" id="fgapG"><button type="button" class="choice" data-action="fgap" data-value="t5" aria-pressed="true">隔 5 分钟</button><button type="button" class="choice" data-action="fgap" data-value="t24" aria-pressed="false">隔 24 小时</button></div><div id="xf4" aria-live="polite"></div></div><div class="lesson"><ul class="fact-list"><li>两个月后来源重合：Organic 45%、AIO 18%<small>§6.1 · PDF p.8</small></li><li>AIO 平均链接数 8.4 → 7.2；GPT 系域名热度漂移达 40,000 名<small>§6.1 · PDF p.8</small></li><li>生成系答案 55% 肯定 / 19% 否定 / 26% 混合；仅 16% 查询 Organic 前十立场一致<small>§6.2 · PDF p.9</small></li></ul><div class="only-pro"><div class="kicker">Table 4 原文数值 · 极性翻转率</div><table class="mini-table tight" id="xt4"></table></div></div></div><div class="b-key">零温度压不住随机性：9–27% 的答案会翻转。<span class="src">Table 4 · PDF p.9</span></div></div><div class="notes">翻转率矩阵是最值得记住的表：零温度、5 分钟，最低 9%、最高 27%；温度调高、时间拉长，多数引擎更不稳。右侧是时间漂移的证据：AIO 两个月后来源重合只有 18%。单次采样会把这一切不确定性藏起来。</div></section>
+
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">与重复测量研究互证：单次读数不可靠</h2></div><div class="b-body full"><div class="lesson"><div class="choice-row" role="group" aria-label="对照视图" id="cmpG"><button type="button" class="choice" data-action="cmp" data-value="0" aria-pressed="true">本篇研究</button><button type="button" class="choice" data-action="cmp" data-value="1" aria-pressed="false">相关研究</button><button type="button" class="choice" data-action="cmp" data-value="2" aria-pressed="false">合读启发</button></div><div id="xcmp" aria-live="polite"></div></div></div><div class="b-key">本篇给出分布的形态，相关研究给出估计的方法。<span class="src">§6 · PDF p.8–9</span></div></div><div class="notes">与仓库内《可见性需要重复测量》互证：那篇主张把可见性与稳定性当作分布来估计，本篇给出了分布的实际形态——重合率 45% 对 18%、翻转率 9–27%。两篇合读的结论：任何单次读数都不可靠。</div></section>
+
+<!-- 第 6 章 应用 -->
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">论文原例：同一问题，答案随时间改变</h2></div><div class="b-body full"><div class="lesson"><div class="choice-row" id="xcaseTabs" role="group" aria-label="选择案例"></div><div class="answer" id="xcase" aria-live="polite" style="padding:14px 18px"></div><p class="caption">三个案例均为论文原例的中文转述，出处随案例标注；本页未补造任何提升幅度。</p></div></div><div class="b-key">三个原例：极性翻转、零搜索的代价、内部知识出错。<span class="src">Table 2/3 · §4.3</span></div></div><div class="notes">三个原例各有用途：索里亚题展示极性翻转的完整时间线，问三次得两个答案；hatton 题展示零搜索的代价；首都题展示内部知识也会错——AIO 把国家格鲁吉亚答成了同名的美国州。每个案例都可以回原文核对。</div></section>
+
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">三类角色各有一份行为观测清单</h2></div><div class="b-body full"><div class="lesson"><div class="x-persona" id="xpersona" role="group" aria-label="选择角色"></div><div id="xrole" aria-live="polite"></div></div></div><div class="b-key">清单从行为读数推出，属本课推断，先小范围验证。<span class="src">对应 F1–F4</span></div></div><div class="notes">三份清单都从行为读数推出：内容方监测自己的域名在两类系统中的出现，评测方报告波动与分位数，审核方核对口径与复测。明确标注这是教学推断——先小范围试，再扩大。</div></section>
+
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">把行为观测装进现有的工作形态</h2></div><div class="b-body full"><div class="lesson"><div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody><tr><td><b>搜索表现看板</b></td><td>来源重合率、决策翻转率、检索量分位（月度快照）</td><td>跨时间复测（§6.1）</td></tr><tr><td><b>评测基准卡</b></td><td>查询集构成、复测协议、温度与采样设置</td><td>构造查询与并行查询（§3）</td></tr><tr><td><b>引擎变更记录</b></td><td>版本时点、界面变化、前后读数对比</td><td>时间漂移归因（§6.1）</td></tr></tbody></table><div class="callout" style="margin-top:18px">行为读数是时点快照：引擎更新、界面改版之后，需要同口径重测。论文自己也在两个月后全部重跑了一遍。</div></div></div><div class="b-key">看板、基准卡、变更记录可以承接这套测量。<span class="src">本页推断</span></div></div><div class="notes">成熟形态对应的是研究环节：看板承接复测读数，基准卡承接查询集与协议，变更记录承接漂移归因。对应关系是本页推断。最后一行提醒：引擎更新后，旧读数要作废重测。</div></section>
+
+<!-- 第 7 章 复盘 -->
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">七条边界：读这篇论文要打折扣的地方</h2></div><div class="b-body split"><div class="lesson"><div class="x-lims" id="xlims"></div></div><div class="lesson"><div class="answer" id="xlim" aria-live="polite"></div></div></div><div class="b-key">引用读数时带上范围、前十假设与单次输出三条折扣。<span class="src">§8 · PDF p.10</span></div></div><div class="notes">七条里影响最大的是前三条：查询与语言范围、前十加摘要的假设、单次输出。读数引用时要带上这些折扣。最后一条链接到仓库内的重复测量研究，可以对照着读。</div></section>
+
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走六句话</h2></div><div class="b-body full"><div class="lesson"><div class="flips" id="xquotes"></div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div></div></div><div class="b-key">点击卡片翻面，背面写依据与用法；复制会附出处。</div></div><div class="notes">六句话可以带走。建议把卡片翻过来——每句背后都有一个可以马上执行的动作。复制按钮会连出处一起复制。</div></section>
+
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">5 道题检验理解</h2></div><div class="b-body split-r"><div class="lesson" id="xquiz" aria-live="polite"></div><div class="lesson"><div class="answer"><div class="kicker">引用这篇论文</div><p style="font-size:14px;margin-bottom:10px">Kirsten E, Grosse Perdekamp J, Wu Q, Upadhyay M, Gummadi K P, Zafar M B. Characterizing Web Search in the Age of Generative AI. arXiv:2510.11560v2, 2026.</p><div class="choice-row"><button class="btn" type="button" data-drawer>术语与来源</button><a class="btn" href="https://arxiv.org/pdf/2510.11560" target="_blank" rel="noopener">打开原文核对</a></div></div><p class="caption">本课全部数字取自论文 §1、§3–§7、Table 2/4 与 Figure 3；标注「示意」的图形为演示构造。</p></div></div><div class="b-key">答错的题，按解释里的页码回看对应页面。</div></div><div class="notes">五道题覆盖核心结论、反常发现、指标理解、复测设计与局限。答错的话，解释里会告诉你回到哪一页。</div></section>
+<!-- ============ PAPER CONTENT 结束 ============ -->
+<!-- ============ PAPER CONTENT 结束 ============ -->
+<!-- ============ PAPER CONTENT 结束 ============ -->
+<!-- ============ PAPER CONTENT 结束 ============ -->
+<!-- ============ PAPER CONTENT 结束 ============ -->
+<!-- ============ PAPER CONTENT 结束 ============ -->
+<!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>Characterizing Web Search in the Age of Generative AI</p><p>2026 · 2510.11560v2</p><p><a href="https://arxiv.org/pdf/2510.11560" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper21,
+  author = {Elisabeth Kirsten and Jost Grosse Perdekamp and Qinyuan Wu and Mihir Upadhyay and Krishna P. Gummadi and Muhammad Bilal Zafar},
+  title = {Characterizing Web Search in the Age of Generative AI},
+  year = {2026},
+  url = {https://arxiv.org/pdf/2510.11560}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：88e9f56544a3f134ca884a6b1563a899fb0ab7b671c72facc2f07605fda8a5ff</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{t:'导入',d:'问题与三组读数'},{t:'原理',d:'观测对象与研究设计'},{t:'测量',d:'指标、数据集与复测'},{t:'方法',d:'三个维度的拆解'},{t:'发现',d:'逐条核对证据'},{t:'应用',d:'把行为读数用起来'},{t:'复盘',d:'边界、要点与自测'}];
+/* PAPER 数据对象：所有论文实测数字与出处（§x · PDF p.n 均按本地 23 页 PDF 核对） */
+const PAPER={
+ id:21,zh:'生成搜索的行为差异',kind:'实证测量',version:'2510.11560v2',
+ title:'Characterizing Web Search in the Age of Generative AI',
+ authors:'Elisabeth Kirsten; Jost Grosse Perdekamp; Qinyuan Wu; Mihir Upadhyay; Krishna P. Gummadi; Muhammad Bilal Zafar',
+ year:'2026',category:'04_AI搜索实证',
+ url:'https://arxiv.org/pdf/2510.11560',
+ pdf:'../04_AI搜索实证/04_AI搜索实证_Characterizing_Web_Search_in_Generative_AI_Age.pdf',
+ question:'相似的主题覆盖，会产生相同的检索足迹吗？',
+ claim:'多个生成系统具有不同的内外部知识依赖、来源多样性与运行稳定性',
+ setting:'Google 自然搜索与 5 个生成系统（AIO、Gemini、GPT-Search、GPT-Tool、Sonar）在 4,706 条查询上的对照',
+ boundary:'主题覆盖相似无法推出证据一致，商业系统内部过程可观测性有限',
+ kind_note:'基于 2025 年 9 月受测环境的时点快照，迁移前需同口径复测',
+ stats:[
+  {v:'5',name:'生成系统 · 3 家提供商',source:'§1',page:2,context:'Google、OpenAI、Perplexity 各自的系统，与 Google Organic 对照。'},
+  {v:'4,706',name:'条查询 · 6 类数据集',source:'§3.1',page:4,context:'MS Marco、WildChat、AllSides、Regulatory Actions、Science、Products、Trends。'},
+  {v:'0–14',name:'平均检索网页数跨度',source:'§1',page:2,context:'GPT-Tool 平均不足 1 个，Sonar 平均 14 个；Organic 每页固定约 10 条。'},
+  {v:'18%',name:'两个月后 AIO 来源重合率',source:'§6.1',page:8,context:'同一批查询的 Jaccard 重合：AIO 18%，Organic 45%。'}],
+ metrics:[
+  {name:'检索足迹',plain:'系统为一条查询实际检索或引用的网页链接集合'},
+  {name:'来源广度',plain:'引用来源的流行度、类别构成与和 Organic 的重合'},
+  {name:'稳定性',plain:'重复执行或跨时间后，来源与答案极性的一致程度'}],
+ steps:['构造查询集','并行查询六系统','保存检索与回答','对齐外部基准','复测漂移与随机性'],
+ findings:['主题覆盖相近时来源仍可不同','内外部知识依赖存在差异','不同系统多样性不同','时间与重复执行影响结果'],
+ finding_details:[
+  '跨数据集的概念覆盖率与 Organic 相近（0.71–0.78 对 0.78），但每条查询的概念重合只有 60–68%；AIO 链接与前十的重合不足一半。主题词相似无法恢复真实检索过程。',
+  '平均检索量从 GPT-Tool 的不足 1 个到 Sonar 的 14 个；249 道首都题上 GPT-Tool 零搜索全对，AIO 却把国家格鲁吉亚答成亚特兰大。依赖内部知识省成本，也埋下时效风险。',
+  '生成引擎的来源常在 Organic 前 10 甚至前 100 之外：AIO 53% 的域名不在前十；Tranco 前 100 万占比 81–86%，低于 Organic 的 89%；Sonar 中位域名排名 5,647，最冷门。',
+  '同一批查询跨两个月：Organic 来源重合 45%，AIO 只有 18%；T=0 下 5 分钟内也有 9–27% 的查询答案极性翻转。单次采样会把这种不确定性完全藏起来。'],
+ evidence:[
+  {label:'摘要与研究目标',page:1,text:'We conduct a systematic comparison between Google organic search and five generative search systems from three providers: Google, OpenAI, and Perplexity. Our analysis reveals substantial variation among engines in their reliance on internal v.s. external knowledge, source diversity, and stability. While generative systems often achieve topical coverage comparable to traditional search, they do so using markedly different retrieval footprints and synthesis strategies. We further show that the outputs of generative search can vary across time and executions, raising new challenges for robustness.'},
+  {label:'方法与数据集',page:3,text:'Our datasets are designed to (i) reflect real user queries, (ii) cover both everyday and domain-specific workloads (e.g., politics, science, products), and (iii) include both persistent and time-sensitive topics. … All the datasets combined consist of 4,706 queries.'},
+  {label:'结论与研究边界',page:9,text:'We conduct a systematic evaluation of generative search engines, focusing on new dimensions that are largely absent from traditional ranked-list evaluation. … Despite often achieving comparable topical coverage, generative engines differ markedly in their retrieval footprints, source diversity, and sensitivity to time and stochasticity.'}],
+ table:{label:'Table 2 原文数值（转写）',page:5,
+  head:['引擎','触发搜索查询占比','平均 URL 数','正确率'],
+  rows:[['GPT-Tool','0%','0','100%'],['GPT-Search','98%','5.2','100%'],['Gemini','100%','4.47','100%'],['Sonar','100%','8.66','100%'],['AIO','–','5.83','99.5%']]},
+ strength:'中',strength_why:'本课保守评级：实证比较覆盖 6 系统 4,706 查询并含专门实验；但概念归纳依赖 LLM、封闭系统单次输出。',
+ related:{id:14,zh:'可见性需要重复测量',title:'Don’t Measure Once: Reliable AI Search Visibility Requires Repeated Trials and Structure-Aware Metrics',url:'./03_GEO测量评估_Dont_Measure_Once_AI_Search_Visibility.html',pdf:'../03_GEO测量评估/03_GEO测量评估_Dont_Measure_Once_AI_Search_Visibility.pdf',claim:'回答随运行、措辞与时间变化，应把可见性和稳定性作为分布估计'},
+ limitations:[
+  ['高','neg','查询与语言范围有限','仅英语、美国与德国，未覆盖多轮对话；政治、科学、商品等负载有代表性，聊天式追问未测试。§8 · PDF p.10'],
+  ['高','neg','Organic 只读前十的标题与摘要','假设用户很少点开全文；附录 H 显示改用完整网页会提高概念召回、同时引入更多无关内容。§8 · PDF p.10'],
+  ['中','acc','封闭系统、单次输出','商业系统无法关闭个性化与后端差异；每条查询只取一次输出（温度尽量为 0），不确定性只能靠复测补齐。§8 · PDF p.10'],
+  ['中','acc','时间窗口窄','主实验集中在 2025 年 7–9 月，引擎与索引持续更新；结论是时点快照，两个月后 AIO 平均链接数已从 8.4 变为 7.2。§6.1 · §8'],
+  ['中','acc','概念归纳依赖 LLM（LLooM）','概念覆盖由 LLM 驱动的归纳方法计算，可能带入模型自身偏好与盲区，未做大规模人工校验。§8 · PDF p.10'],
+  ['低','','Sonar 缺席时效分析','脚注 6：Trends 时效分析未运行 Sonar，该维度少一个对照。§4.3 · PDF p.6'],
+  ['中','acc','仓库内后续研究对照','《可见性需要重复测量》主张把可见性与稳定性作为分布估计，与本篇的翻转率、重合率互证。<a href="../03_GEO测量评估/03_GEO测量评估_Dont_Measure_Once_AI_Search_Visibility.pdf">对照原文</a>']],
+ quiz:[
+  {q:'同一批查询上，平均检索网页数最多与最少的系统组合是？',o:['Sonar 最多（14），GPT-Tool 最少（不足 1）','AIO 最多（17），Organic 最少（0）','GPT-Search 最多（14），Sonar 最少（4）','六个系统的检索量基本相同'],a:0,e:'平均检索网页数：Sonar 14、AIO 与 Gemini 9、GPT-Search 4、GPT-Tool 不足 1；Organic 每页固定约 10 条。17 是 AIO 的 90 分位，属于极值。',p:11},
+  {q:'在 249 道「某国首都是哪」的题目上，GPT-Tool 的表现是？',o:['一次搜索都没做，全部答对','平均搜索 8.66 个网页','把约 20% 的首都答错','正确率 99.5%，低于其他引擎'],a:0,e:'Table 2：GPT-Tool 0% 查询触发搜索、0 个 URL、100% 正确；平均 8.66 是 Sonar，99.5% 是 AIO——它是唯一出错者。',p:14},
+  {q:'「平均 53% 的 AIO 引用域名不在 Organic 前 10」最准确的解读是？',o:['生成搜索把用户带到了传统前十之外的新来源','AIO 的引用有 53% 是错误来源','Google 只索引了 47% 的网页','AIO 平均检索了 53 个网页'],a:0,e:'这是来源广度指标：与 Organic top-10 的重合不足 50%，放宽到 top-100 仍有 27% 在外。它说明的是来源集合不同，与对错无关。',p:15},
+  {q:'想在两个月后复测某生成系统的行为，哪种设计最贴近论文口径？',o:['固定查询集，报告来源重合率与决策翻转率','换一批新查询，各测一次','只测静态事实题','把翻转率直接当作答案错误率'],a:0,e:'论文用同一批查询跨两个月重测（Jaccard：Organic 45%、AIO 18%），另用 5 分钟与 24 小时间隔测随机性。翻转率是行为稳定性指标，与事实对错分开。',p:12},
+  {q:'下列哪项属于论文自述的局限？',o:['概念归纳依赖 LLM（LLooM），可能引入偏差','所有输出都经过人工逐条核验','实验覆盖了多轮对话场景','同一查询复测了 10 次取平均'],a:0,e:'§8：LLooM 可能有偏；论文未覆盖多轮对话、每条查询仅一次输出（温度尽量为 0）。其余三项与论文做法相反。',p:21}]};
+const GLOSSARY={
+ footprint:{t:'检索足迹',d:'系统为一条查询实际检索或引用的网页链接集合。Organic 每页固定约 10 条；生成系统从不足 1 个到 14 个不等。'},
+ breadth:{t:'来源广度',d:'引用来源的宽度与冷门程度：Tranco 域名排名、类别构成、与 Organic 前列结果的重合。'},
+ stab:{t:'稳定性',d:'同一查询重复执行或跨时间后，来源集合与答案极性保持一致的程度。论文分时间漂移与随机性两条线测量。'},
+ aio:{t:'AI Overview（AIO）',d:'Google 搜索页顶部的生成式摘要，附引用来源；是否触发、检索多少网页都是自适应的。'},
+ tranco:{t:'Tranco 排名',d:'公认的网站流量排名列表；论文用它衡量引用域名有多主流（前 100 万）。'},
+ jaccard:{t:'Jaccard 相似度',d:'两个集合交集除以并集；论文用它衡量两次执行的来源重合程度。'},
+ flip:{t:'决策翻转',d:'同一查询的答案在肯定 / 否定 / 混合三类之间改变；由 LLM judge 标注，论文 Table 4 报告比例。'},
+ judge:{t:'LLM judge',d:'用一个语言模型按规则给回答分类或打分；论文用它标注答案极性与概念。'},
+ llloom:{t:'LLooM',d:'论文使用的 LLM 驱动概念归纳框架，用于计算概念覆盖率。'},
+ rag:{t:'RAG',d:'先检索外部资料、再以资料支持模型生成的架构；生成搜索是它的产品化形态。'},
+ baseline:{t:'基线',d:'作为比较起点的参照；本课以 Google Organic 作为传统搜索基线。'},
+ transfer:{t:'迁移',d:'把方法或结论用到另一系统、时期或语言；行为读数迁移前需同口径复测。'}};
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* ===== PAPER CONTENT runtime · 本课程交互（新增组件一律 x- 前缀） ===== */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const XSRC=(l,p)=>`<span class="src">${esc(l)} · PDF p.${p}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const srcEv=e=>`<div class="source-text" lang="en" style="max-height:150px">${esc(e.text)}</div><div class="caption">${esc(e.label)} · PDF p.${e.page}。原文节选保留核验入口，白板内容为其中文转述。</div>`;
+const xbar=(name,v,lab,max)=>`<div class="x-vrow"><span>${esc(name)}</span><div class="x-track"><div class="x-fill" style="width:${Math.max(v/max*100,1.2).toFixed(1)}%"></div></div><span class="x-val">${esc(lab)}</span></div>`;
+const baseline=(v,max,lab)=>`<span class="x-base-line" style="left:calc(var(--xw) + 10px + (100% - var(--xw) - var(--xv) - 20px) * ${(v/max).toFixed(4)})"><span class="x-base-lab">${esc(lab)}</span></span>`;
+/* 页面数据：论文实测读数 */
+const XQ=[
+ {tag:'静态事实',q:'What is the capital of France?',obs:'GPT-Tool 一次搜索都没有触发，直接凭内部知识答对；同类「首都题」共 249 道，它全部正确。多数生成引擎仍检索 4–9 个网页。',src:['Table 2 · §4.2',5]},
+ {tag:'开放式',q:'What jobs will AI agents replace?',obs:'AIO 对这类开放式问题检索 30 个以上网页——约占全部查询的 2%；另有 15% 的 AIO 查询只取 2 个或更少网页。',src:['§4.1',5]},
+ {tag:'时效热点',q:'ricky hatton cause of death',obs:'不搜索的 GPT-Tool 缺少最新信息，表示不确定并误报当事人仍在世；当日热榜数据集上它的概念覆盖仅 51%。',src:['§4.3 · Figure 3',6]}];
+const XCON=[
+ {t:'检索足迹',d:'系统为一条查询实际检索或引用的网页链接集合。',n:'Organic 每页固定约 10 条；生成系统从不足 1 个到 14 个，AIO 还随查询自适应：10 分位 0.6、90 分位 17。',src:['§1 · §4.1',5]},
+ {t:'来源广度',d:'引用来源有多主流、属于什么类别、与 Organic 重合多少。',n:'Tranco 前 100 万占比 81–89%；AIO 53% 的引用域名不在 Organic 前 10；GPT 系偏公司官网与百科。',src:['§5',6]},
+ {t:'稳定性',d:'重复执行或跨时间后，来源与答案极性保持一致的程度。',n:'时间漂移：两月重合 Organic 45%、AIO 18%；随机性：T=0 下 5 分钟内翻转 9–27%。',src:['§6',8]}];
+const XSTEPS=[
+ {t:'构造查询集',plain:'6 类数据集、4,706 条真实查询：通用搜索与聊天、政治、科学、商品、当日热榜。',pro:'MS Marco 1,000 条；WildChat 1,750 条（过滤对话式）；AllSides 议题 + People Also Ask；Regulatory Actions 58 项行政令 × 10 问；Science 45 个 AI 主题 × 10 问；Products 100 个热销商品；Trends 当日 top-100。',src:['§3.1',4]},
+ {t:'并行查询六系统',plain:'同一条查询同时发给 Organic（取前 100 条）与五个生成系统。',pro:'2025 年 9 月执行；英语查询；温度尽量设 0（AIO 与 GPT-Search 不支持温度参数）；最多生成 1,000 个新 token；美国与德国两地执行，差异很小。',src:['§3.2',4]},
+ {t:'保存检索与回答',plain:'记录每个系统的链接集合、回答全文与引用位置。',pro:'AIO 是否触发、GPT-Tool 是否调用搜索工具，本身也是观测项（附录 A.2 · Table 5）。',src:['§3 · §6.1',8]},
+ {t:'对齐外部基准',plain:'把来源映射到 Tranco 流量排名与内容类别，再与 Organic 计算重合。',pro:'Tranco 于 2025 年 7 月取回；类别用 26 类 Google Content Categories 与自建 10 类（LLM judge 标注）。',src:['§5',6]},
+ {t:'复测漂移与随机性',plain:'两个月后全部重跑；另用 5 分钟与 24 小时间隔重问三元判断题。',pro:'漂移看来源 Jaccard 与域名热度变化；随机性看极性翻转率，分 T=0 与默认温度两组。',src:['§6',8]}];
+const XBDY=[
+ {t:'研究能支持什么',b:'六个系统在同一时点的行为画像：检索足迹、来源广度、稳定性，以及一套可复用的测量口径。行为差异与答案正确率分开报告。'},
+ {t:'研究回答不了什么',b:'商业系统的检索与触发逻辑不可观测，无法解释「为什么这样检索」；结论限定英语、美德两国、单轮、单次输出。'},
+ {t:'论文的位置',b:'作者自述：据其所知，这是首个系统刻画生成搜索来源的研究；既有评测范式未覆盖检索行为、综合与稳定性。'}];
+const XMET=[
+ {t:'检索足迹',plain:'一条查询背后，系统实际检索或引用了多少网页。',pro:'同时报告均值、中位数与分位数。AIO 的链接数 10 分位 0.6、90 分位 17，Organic 固定约 10——只报均值会掩盖两端。',src:['§4.1',5]},
+ {t:'来源广度',plain:'引用的来源有多主流、多广，与 Organic 差多少。',pro:'三层口径：Tranco top-1M 占比；中位域名排名；与 Organic top-10 / top-100 的 URL 与域名级重合率。',src:['§5.1',6]},
+ {t:'稳定性',plain:'同一查询再问一次、隔段时间再问，结果变不变。',pro:'两个口径：决策翻转率（肯定 / 否定 / 混合，LLM judge 标注）与 Jaccard 相似度（T=0 文本 0.27–0.63）。',src:['§6',8]}];
+const XDS=[
+ ['MS Marco','通用 · 搜索','1,000 条 Bing 真实搜索查询','origin of term doldrums'],
+ ['WildChat','通用 · 聊天','1,750 条；过滤对话式，长度 4–75 字符','how do i stop procrastinating'],
+ ['AllSides','政治','议题列表 + People Also Ask 转成问句','what is terrorism in 100 words'],
+ ['Regulatory Actions','政治 · 时事','58 项行政令 × 10 问（GPT-4o 生成）','is my personal bitcoin affected by the strategic bitcoin reserve and stockpile?'],
+ ['Science','科学','45 个 AI 主题 × 10 问（People Also Ask）','what is discrete search'],
+ ['Products','购物','100 个热销商品改写为评测问句','crocs worth it'],
+ ['Trends','时效','当日 Google Trends top-100，当天测完','emmy winners 2025']];
+const XCHECKS=['冻结引擎版本与界面时点，记录 AIO 触发情况','记录温度设置：AIO 与 GPT-Search 不支持 T=0','保存原始来源与回答，不只存最终答案','区分时间漂移（两个月）与随机性（5 分钟 / 24 小时）','报告分位数与重复波动，不只报均值'];
+const XMDIM=[
+ {t:'维度一 · 内外部知识依赖',f:'对应 F2',b:'怎么测：每条查询的搜索触发与链接数；另设 249 道静态事实题专门测试。读数：平均 0–14 个网页；GPT-Tool 零搜索全对。',src:['§4 · Table 2',5]},
+ {t:'维度二 · 来源广度与多样性',f:'对应 F1 · F3',b:'怎么测：来源对齐 Tranco 排名与域名类别，再与 Organic 求重合。读数：AIO 53% 域名不在前十；Tranco 占比 81–89%。',src:['§5',6]},
+ {t:'维度三 · 稳定性',f:'对应 F4',b:'怎么测：两个月后全量重跑；5 分钟与 24 小时间隔的三元判定题。读数：重合 45% 对 18%；翻转 9–27%。',src:['§6',8]}];
+/* 招牌交互：六系统行为画像（数据：§1 p.2 · §5.1 p.6 · Table 4 p.9） */
+const XDIMS={
+ foot:{n:'内外部知识依赖',unit:'平均每次查询检索的网页数',max:15,base:{v:10,lab:'基线 Organic 10'},src:['§1',2],
+  rows:[['Sonar',14,'14'],['Organic',10,'10 · 每页固定'],['AIO',9,'9'],['Gemini',9,'9'],['GPT-Search',4,'4'],['GPT-Tool',1,'<1']]},
+ breadth:{n:'来源多样性',unit:'引用域名位于 Tranco 前 100 万的占比（%）',max:100,base:{v:89,lab:'基线 Organic 89%'},src:['§5.1',6],
+  rows:[['Organic',89,'89%'],['GPT-Search',86,'86%'],['AIO',85,'85%'],['Sonar',84,'84%'],['Gemini',83,'83%'],['GPT-Tool',81,'81%']]},
+ stab:{n:'运行稳定性',unit:'零温度下 5 分钟内答案极性翻转的查询占比（%）',max:30,base:null,src:['Table 4',9],
+  rows:[['Sonar',27,'27%'],['AIO',17,'17%'],['GPT-Search',16,'16%'],['Gemini',15,'15%'],['GPT-Tool',9,'9%']]}};
+const XPROF={
+ Organic:{rows:[['知识依赖','固定约 10 条'],['来源多样性','Tranco 89%'],['运行稳定性','两个月重合 45%']],txt:'传统搜索的画像：规模固定、来源主流、两次执行重合最高；排序列表本身容纳多种立场。',src:['§6.1',8]},
+ AIO:{rows:[['知识依赖','平均 9 个 · 自适应 0.6–17'],['来源多样性','Tranco 85% · 53% 域名不在前十'],['运行稳定性','翻转 17% · 两月重合 18%']],txt:'检索最多变：少的只查 2 个，多的超 30 个；两个月后来源几乎换血，主题覆盖却保持稳定。',src:['§4.1 · §6.1',5]},
+ Gemini:{rows:[['知识依赖','平均 9 个'],['来源多样性','Tranco 83%'],['运行稳定性','翻转 15%（默认温度 20%）']],txt:'回答最长（平均 2,284±1,239 字符），其余行为居中。',src:['§5.3.1 · Table 4',7]},
+ 'GPT-Search':{rows:[['知识依赖','平均 4 个 · 首都题 98% 触发'],['来源多样性','Tranco 86%'],['运行稳定性','翻转 16%']],txt:'总是搜索但检索克制；时效题概念覆盖最高（72%）。',src:['§4.3',6]},
+ 'GPT-Tool':{rows:[['知识依赖','平均不足 1 · 中位数 0'],['来源多样性','Tranco 81% · 中位排名 1,124 最靠前'],['运行稳定性','翻转 9% · 时效覆盖仅 51%']],txt:'把「不搜索」用到极致：静态题零成本全对；代价是时效题出错（误报新闻人物仍在世）。',src:['Table 2 · §4.3',5]},
+ Sonar:{rows:[['知识依赖','平均 14 个 · 总是搜索'],['来源多样性','Tranco 84% · 中位排名 5,647 最冷门'],['运行稳定性','翻转 27% 最高']],txt:'检索最重、来源最冷门、答案也最不稳——广度与稳定性在此明显权衡。',src:['§5.1 · Table 4',6]}};
+/* 证据读数页四组读数 */
+const NGRPS=[
+ {k:'两月来源重合',unit:'同一批查询跨两个月，来源集合的 Jaccard 重合率',max:50,base:{v:45,lab:'基线 Organic 45%'},
+  bars:[['Organic',45,'45%'],['Google AIO',18,'18%']],
+  read:'AIO 的来源集合两个月后只留下 18%，Organic 为 45%——但概念覆盖大体稳定：来源换了，主题没换。',cap:'Jaccard 相似度 = 交集 ÷ 并集。',src:['§6.1',8]},
+ {k:'前十之外',unit:'AIO 引用域名不在 Organic 前列结果的占比',max:60,base:null,
+  bars:[['不在 top-10',53,'53%'],['不在 top-100',27,'27%']],
+  read:'AIO 过半引用域名在 Google 前 10 之外；放宽到前 100，仍有 27% 在外。',cap:'域名级统计；URL 级重合更低（§5.1）。',src:['§1',2]},
+ {k:'答案翻转率',unit:'零温度下隔 5 分钟重复提问，答案极性翻转的占比',max:30,base:null,
+  bars:[['GPT-Tool',9,'9%'],['Gemini',15,'15%'],['GPT-Search',16,'16%'],['AIO',17,'17%'],['Sonar',27,'27%']],
+  read:'零温度也压不住随机性：24 小时后翻转率升至 10–28%；默认温度下多数引擎更高。',cap:'肯定 / 否定 / 混合三元判定，LLM judge 标注。',src:['Table 4',9]},
+ {k:'时效概念覆盖',unit:'Trends 当日热榜数据集上的概念覆盖率',max:80,base:{v:67,lab:'基线 Organic 67%'},
+  bars:[['GPT-Search',72,'72%'],['Organic',67,'67%'],['Gemini',66,'66%'],['GPT-Tool',51,'51%']],
+  read:'检索最多的 GPT-Search 覆盖最高，检索最少的 GPT-Tool 覆盖最低——时效题上，检索量换来了信息量。',cap:'概念覆盖由 LLooM 概念归纳计算。',src:['§4.3',6]}];
+const F1BARS=[['生成引擎 · 概念覆盖',78,'0.71–0.78'],['Organic · 概念覆盖',78,'0.78'],['两者概念重合',64,'60–68%']];
+const F2D={
+ static:{unit:'249 道「某国首都」题 · 平均 URL 数（标注正确率）',max:10,base:null,
+  rows:[['GPT-Tool',0,'0 · 未搜索'],['Gemini',4.47,'4.47 · 100%'],['GPT-Search',5.2,'5.2 · 100%'],['AIO',5.83,'5.83 · 99.5%'],['Sonar',8.66,'8.66 · 100%']],
+  callout:'静态事实题上搜索是纯开销：GPT-Tool 一次未搜、249 题全对；AIO 是唯一出错者——把国家格鲁吉亚答成了同名的美国州。',src:['Table 2',5]},
+ trend:{unit:'Trends 时效题 · 概念覆盖率（%）',max:80,base:null,
+  rows:[['GPT-Search',72,'72%'],['Organic',67,'67%'],['Gemini',66,'66%'],['GPT-Tool',51,'51%']],
+  callout:'不搜索的代价出现在时效题：GPT-Tool 覆盖最低，并在「ricky hatton 死因」上误报当事人仍在世。',src:['§4.3',6]}};
+const T4ROWS=[['GPT-Tool',9,10,18,18],['GPT-Search',16,17,15,22],['Gemini',15,15,20,20],['AIO',17,16,11,17],['Sonar',27,28,27,24]];
+const T4={t0:{t5:'t0t5',t24:'t0t24'},def:{t5:'dft5',t24:'dft24'}};
+const T4VAL={'t0t5':[9,15,16,17,27],'t0t24':[10,15,17,16,28],'dft5':[18,15,20,11,27],'dft24':[18,22,20,17,24]};
+const T4NAME=['GPT-Tool','GPT-Search','Gemini','AIO','Sonar'];
+const XCASES=[
+ {tab:'极性翻转',t:'答案极性随时间翻转',sys:'Google AIO',q:'Does the Soria province have a border with Navarre?',src:['Table 3',9],
+  body:'同一问题问三次，AIO 的措辞与最终极性都变了：先答不接壤，5 分钟后与 24 小时后均改答接壤。',
+  tl:[['t0','No, the Province of Soria does not directly border Navarre…','否定'],['t5m','Yes, the Province of Soria … share a border…','肯定'],['t24h','Yes, the Province of Soria in Spain does border Navarre…','肯定']]},
+ {tab:'零搜索代价',t:'零搜索的代价出现在时效题',sys:'GPT-4o with Search Tool',q:'ricky hatton cause of death',src:['§4.3 · Figure 3',6],
+  body:'缺乏最新信息，模型表示不确定并误报当事人仍在世。同一 Trends 数据集上，GPT-Tool 的概念覆盖 51%，六系统中最低。',tl:[]},
+ {tab:'内部知识出错',t:'内部知识也会答错',sys:'Google AIO',q:'What is the capital of Georgia?',src:['Table 2',5],
+  body:'249 道首都题中 AIO 是唯一出错者：把国家格鲁吉亚的首都答成亚特兰大——同名的美国州首府。零搜索的 GPT-Tool 反而全部答对。',tl:[]}];
+const XROLES=[
+ {k:'内容与站点负责人',s:'关注来源被谁引用',f:'F3',why:'你的域名可能已在生成系统的来源池里，只是不在前十——AIO 53% 的引用域名来自 Organic 前 10 之外。',todo:['用一组固定查询，逐月记录自己的域名在 Organic 与各生成系统中的出现情况','给关键页面补上清晰的结论句与出处，方便被摘引','把「被引用的措辞」与原始文案对照，观察综合阶段怎么改写','检查英文页面——论文仅测英语与美德两国'],avoid:'只盯 Google 排名，把前十之外的出现当作不存在。'},
+ {k:'评测与数据人员',s:'搭建可复测的评测',f:'F1 · F4',why:'论文的口径（重合率、翻转率、分位数）可以直接搬进评测脚本。',todo:['构造静态 + 时效两类查询集，标注期望答案类型','保存每条查询的原始来源与回答，而非只存最终答案','报告中位数与 10/90 分位，别只报均值（AIO：0.6 与 17）','同一查询至少三次执行，报告翻转率与来源重合率'],avoid:'把单次输出当成系统行为，把翻转率当成事实错误率。'},
+ {k:'研究与审核人员',s:'读证据、定边界',f:'F2 · F4',why:'本篇给出跨 6 系统、4,706 条查询的测量，但都是 2025 年秋的时点快照。',todo:['核对每个读数的口径：均值还是中位数、T=0 还是默认温度','把时间漂移（两个月）与随机性（5 分钟）分开归因','与《可见性需要重复测量》对照，把稳定性作为分布报告','复现时冻结引擎版本与界面时点，记录差异'],avoid:'把行为差异直接解读成质量优劣。'}];
+const XQUOTES=[
+ {zh:'覆盖相近，足迹可以完全不同。',back:'依据 F1：覆盖率 0.71–0.78，概念重合仅 60–68%。用法：评测时把「引用了谁」单独列成一列。'},
+ {zh:'静态事实未必需要搜索。',back:'依据 Table 2：GPT-Tool 零搜索答对 249 道首都题。用法：把简单事实题从检索评测里拆出来单独看。'},
+ {zh:'生成搜索把用户带到前十之外。',back:'依据 §5.1：AIO 53% 的域名不在 Organic 前 10。用法：与其只盯排名，不如监测域名的整体出现。'},
+ {zh:'同一问题隔 5 分钟再问，答案可能翻转。',back:'依据 Table 4：T=0 下翻转率 9–27%。用法：对关键结论至少复测三次再引用。'},
+ {zh:'两个月后，AIO 的来源只留下 18%。',back:'依据 §6.1：Jaccard 重合 AIO 18%、Organic 45%。用法：用月度快照代替一次性截图。'},
+ {zh:'评测生成搜索，要把稳定性写进口径。',back:'依据 §7：评估应显式考虑检索行为、综合与稳定性。用法：报告均值时附上重复执行的波动范围。'}];
+const st={step:0,ccard:0,bdy:0,metric:0,ds:0,mdim:0,xdim:'foot',xsys:'GPT-Tool',ngrp:0,f2:0,f3:0,ftemp:'t0',fgap:'t5',cmp:0,case:0,role:0,lim:0,flips:new Set(),checks:new Set(),q:0,answers:[]};
+/* 渲染函数：只更新输出容器，不重建按钮组 */
+function renderScene(v){const d=XQ[v];$('#xscene').innerHTML=`<span class="tag acc">${esc(d.tag)}</span><h3 style="margin-top:8px;font-size:18px" lang="en">“${esc(d.q)}”</h3><p>${esc(d.obs)}</p><div class="caption">出处：${esc(d.src[0])} · PDF p.${d.src[1]}</div>`;}
+function renderCon(v){const d=XCON[v];$$('#ccardG button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===v)));
+ $('#xcon').innerHTML=`<h3>${esc(d.t)}</h3><p>${esc(d.d)}</p><p>${esc(d.n)}</p><div class="caption">出处：${esc(d.src[0])} · PDF p.${d.src[1]}</div>`;}
+function renderStep(){$$('#xpsteps button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===st.step)));
+ const s=XSTEPS[st.step];
+ $('#xstep').innerHTML=`<h3>${esc(s.t)}</h3><p class="only-plain">${esc(s.plain)}</p><div class="only-pro"><p>${esc(s.pro)}</p></div><div class="caption">${XSRC(s.src[0],s.src[1])}</div>`;
+ const pv=$('#xstepPrev'),nx=$('#xstepNext');if(pv){pv.disabled=st.step===0;nx.disabled=st.step===XSTEPS.length-1;}}
+function renderBdy(v){const d=XBDY[v];$$('#bdyG button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===v)));
+ $('#xbdy').innerHTML=`<h3>${esc(d.t)}</h3><p>${esc(d.b)}</p>`;}
+function renderMet(v){const d=XMET[v];$$('#metricG button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===v)));
+ $('#xmetric').innerHTML=`<h3>${esc(d.t)}</h3><p class="only-plain">${esc(d.plain)}</p><div class="only-pro"><p>${esc(d.plain)}</p><div class="pro-note">${esc(d.pro)}</div></div><div class="caption">${XSRC(d.src[0],d.src[1])}</div>`;}
+function renderDs(){$$('#xdsChips button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===st.ds)));const d=XDS[st.ds];
+ $('#xds').innerHTML=`<h3 style="font-size:20px">${esc(d[0])} · ${esc(d[1])}</h3><p>${esc(d[2])}</p><p class="mono" lang="en">“${esc(d[3])}”</p><div class="caption">示例查询译自论文 Table 1 ${XSRC('§3.1',3)}</div>`;}
+function renderCtl(){const n=st.checks.size;
+ $('#xctl').innerHTML=`<h3>${n===5?'具备基本复验要素':'继续补齐复测条件'}</h3><p>${esc(PAPER.kind_note)}：已勾选 ${n} / 5 项。</p><div class="caption">清单用于自检方案完整性，无法自动证明因果识别成立。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}。</div>`;}
+function renderMdim(v){const d=XMDIM[v];$$('#mdimG button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===v)));
+ $('#xmdim').innerHTML=`<span class="tag acc">${esc(d.f)}</span><h3 style="margin-top:8px">${esc(d.t)}</h3><p>${esc(d.b)}</p><div class="caption">出处：${esc(d.src[0])} · PDF p.${d.src[1]}</div>`;}
+function renderLab(){if(!$('#xlabBars'))return;const d=XDIMS[st.xdim];
+ $$('#xlabDims button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.value===st.xdim)));
+ $$('#xlabSys button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.value===st.xsys)));
+ let h=`<div class="grp-t">${esc(d.n)} · ${esc(d.unit)} ${XSRC(d.src[0],d.src[1])}</div><div class="x-chart">${d.base?baseline(d.base.v,d.max,d.base.lab):''}${d.rows.map(r=>xbar(r[0],r[1],r[2],d.max)).join('')}</div>`;
+ if(st.xdim==='foot')h+=`<p class="x-note">GPT-Tool 论文表述为「平均不足 1 个」，图示按 1 绘制，其中位数为 0（§4.1）；Organic 无单一检索量，按每页固定约 10 条标注。</p>`;
+ if(st.xdim==='stab')h+=`<p class="x-note">Organic 无单一答案可比：仅 16% 的查询其前十条结果立场完全一致（§6.2）。</p>`;
+ $('#xlabBars').innerHTML=h;
+ const p=XPROF[st.xsys];
+ $('#xlabCard').innerHTML=`<span class="tag acc">系统画像</span><h3 style="margin-top:8px">${esc(st.xsys)}</h3><table class="mini-table tight" style="margin:6px 0">${p.rows.map(r=>`<tr><th style="width:96px">${esc(r[0])}</th><td>${esc(r[1])}</td></tr>`).join('')}</table><p style="font-size:14px;margin:0">${esc(p.txt)} <span class="src">${esc(p.src[0])} · PDF p.${p.src[1]}</span></p>`;}
+function renderNum(){const g=NGRPS[st.ngrp];
+ $$('#xnumDims button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===st.ngrp)));
+ $('#xnum').innerHTML=`<div class="grp-t">${esc(g.unit)} ${XSRC(g.src[0],g.src[1])}</div><div class="x-chart">${g.base?baseline(g.base.v,g.max,g.base.lab):''}${g.bars.map(r=>xbar(r[0],r[1],r[2],g.max)).join('')}</div><div class="callout" style="margin-top:10px">${esc(g.read)}</div>${tip(g.cap)}`;}
+function renderF1(){if(!$('#xf1'))return;
+ $('#xf1').innerHTML=`<div class="x-chart">${F1BARS.map(r=>xbar(r[0],r[1],r[2],100)).join('')}</div><p class="x-note">概念覆盖由 LLooM 归纳计算：覆盖率相近、重合度低，说明两家呈现的网页与概念并不相同。<span class="src">§5.3 · PDF p.7–8</span></p>`;
+ $('#xchipsA').innerHTML='<b style="display:block;font-size:12px;margin-bottom:2px">Organic 前 10（示意）</b><div class="x-chips">'+Array.from({length:10},(_,i)=>`<span class="${i<4?'hit':''}">O${i+1}</span>`).join('')+'</div>';
+ $('#xchipsB').innerHTML='<b style="display:block;font-size:12px;margin-bottom:2px">AIO 引用（示意，9 个）</b><div class="x-chips">'+Array.from({length:9},(_,i)=>`<span class="${i<4?'hit me':''}">A${i+1}</span>`).join('')+'</div>';}
+function renderF2(){const d=F2D[st.f2?'trend':'static'];
+ $$('#f2G button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===st.f2)));
+ $('#xf2').innerHTML=`<div class="grp-t">${esc(d.unit)} ${XSRC(d.src[0],d.src[1])}</div><div class="x-chart">${d.rows.map(r=>xbar(r[0],r[1],r[2],d.max)).join('')}</div><div class="callout" style="margin-top:10px">${esc(d.callout)}</div>`;}
+function renderT2(){const t=PAPER.table;
+ $('#xt2').innerHTML=`<thead><tr>${t.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${t.rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}</tbody>`;}
+function renderF3(){$$('#f3G button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===st.f3)));
+ if(st.f3===1){$('#xf3').innerHTML=`<div class="grp-t">来源类别构成 ${XSRC('§5.2',7)}</div><div class="grid2"><div class="card"><div class="k">GPT 系（GPT-Search / GPT-Tool）</div><p>明显偏公司官网与百科类，社交与论坛来源占比低。</p></div><div class="card"><div class="k">其他引擎（含 Organic）</div><p>社交与论坛来源最高可达 35%。</p></div></div><p class="x-note">类别由 LLM judge 按 10 类自建体系标注；论文给出方向性结论与 35% 一处数值，未提供完整比例表。</p>`;return}
+ const d={unit:'引用域名位于 Tranco 前 100 万的占比（%）',max:100,rows:[['Organic',89,'89% · 中位排名 2,352'],['GPT-Search',86,'86%'],['AIO',85,'85%'],['Sonar',84,'84% · 中位排名 5,647'],['Gemini',83,'83%'],['GPT-Tool',81,'81% · 中位排名 1,124']]};
+ $('#xf3').innerHTML=`<div class="grp-t">${esc(d.unit)} ${XSRC('§5.1',6)}</div><div class="x-chart">${baseline(89,100,'基线 Organic 89%')}${d.rows.map(r=>xbar(r[0],r[1],r[2],d.max)).join('')}</div><p class="x-note">占比略低未必更差：GPT-Tool 引用少而精，中位域名排名反而高于 Organic（1,124 对 2,352）；Sonar 最冷门。</p>`;}
+function renderT4Table(){$('#xt4').innerHTML=`<thead><tr><th>引擎</th><th>T=0 · 5 分钟</th><th>T=0 · 24 小时</th><th>默认温度 · 5 分钟</th><th>默认温度 · 24 小时</th></tr></thead><tbody>${T4ROWS.map(r=>`<tr><td>${r[0]}</td>${r.slice(1).map(v=>`<td>${v}%</td>`).join('')}</tr>`).join('')}</tbody>`;}
+function renderF4(){$$('#ftempG button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.value===st.ftemp)));
+ $$('#fgapG button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.value===st.fgap)));
+ const vals=T4VAL[T4[st.ftemp][st.fgap]];
+ $('#xf4').innerHTML=`<div class="grp-t">答案极性翻转的查询占比 · ${st.ftemp==='t0'?'温度 T=0':'默认温度'} · ${st.fgap==='t5'?'隔 5 分钟':'隔 24 小时'} ${XSRC('Table 4',9)}</div><div class="x-chart">${T4NAME.map((n,i)=>xbar(n,vals[i],vals[i]+'%',30)).join('')}</div><p class="x-note">温度不可控的 AIO 与 GPT-Search 也表现出稳定的翻转率；完整矩阵见右侧专业层。</p>`;}
+function renderCmp(){const v=st.cmp;$$('#cmpG button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===v)));let h='';
+ if(v===0)h=`<div class="columns">${panel('本篇主张',PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ else if(v===1)h=`<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p><p class="muted">${ext(PAPER.related.url,'互动课')} · ${ext(PAPER.related.pdf,'对照原文')}</p>${tip('按相关论文摘要转述；沿用其研究范围。')}</div>`;
+ else h=`<div class="answer"><h3>合读：把稳定性写成口径</h3><p>本篇给出分布的形态——来源重合 45% 对 18%、翻转 9–27%；相关研究主张把可见性当作分布来估计。落到评测：同一查询至少三次执行，同时报告均值与波动。</p><p class="muted">${ext(PAPER.related.url,'互动课')} · ${ext(PAPER.related.pdf,'对照原文')}</p>${tip('合读建议为本课推断。')}</div>`;
+ $('#xcmp').innerHTML=h;}
+function renderCaseTabs(){$('#xcaseTabs').innerHTML=XCASES.map((c,i)=>`<button type="button" class="choice" data-action="case" data-value="${i}" aria-pressed="${i===st.case}">${esc(c.tab)}</button>`).join('');}
+function renderCase(){const c=XCASES[st.case];$$('#xcaseTabs button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===st.case)));
+ $('#xcase').innerHTML=`<span class="tag acc">${esc(c.sys)}</span><h3 style="margin-top:8px">${esc(c.t)}</h3><p class="mono" lang="en">“${esc(c.q)}”</p><p>${esc(c.body)}</p>${c.tl.length?`<div class="x-tl">${c.tl.map(r=>`<div class="row"><span class="when">${esc(r[0])}</span><span lang="en">${esc(r[1])}</span><span class="pol ${r[2]==='肯定'?'pos':'neg'}">${esc(r[2])}</span></div>`).join('')}</div>`:''}<div class="caption">出处：${esc(c.src[0])} · PDF p.${c.src[1]}</div>`;}
+function renderRole(){$$('#xpersona button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===st.role)));const p=XROLES[st.role];
+ $('#xrole').innerHTML=`<div class="columns" style="align-items:start"><div><div class="kicker">为什么适合 · 对应 ${esc(p.f)}</div><p>${esc(p.why)}</p><div class="callout warn" style="margin-top:8px"><b>避免：</b>${esc(p.avoid)}</div></div><div><div class="kicker">可以这样做</div><ul class="x-todo">${p.todo.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div></div>`;}
+function renderLims(){$('#xlims').innerHTML=PAPER.limitations.map((l,i)=>`<button type="button" data-action="limit" data-value="${i}" aria-pressed="${i===st.lim}"><span class="sev tag ${l[1]}">影响${l[0]}</span><span>${esc(l[2])}</span></button>`).join('');}
+function renderLim(){$$('#xlims button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===st.lim)));const l=PAPER.limitations[st.lim];
+ $('#xlim').innerHTML=`<span class="sev tag ${l[1]}">影响${l[0]}</span><h3>${esc(l[2])}</h3><p>${l[3]}</p>`;}
+function renderQuotes(){$('#xquotes').innerHTML=XQUOTES.map((q,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${st.flips.has(i)}"><b>${esc(q.zh)}</b><span class="flip-back">${esc(q.back)}</span><small>本课提炼 · 点击翻面</small></button>`).join('');}
+function quizHtml(){const qz=PAPER.quiz,q=qz[st.q],a=st.answers[st.q];
+ if(!q){const score=st.answers.filter((x,i)=>x===qz[i].a).length;
+  return `<div class="answer"><div class="kicker">自测完成</div><div class="number" style="font-size:52px">${score} / ${qz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div>`;}
+ return `<div class="answer"><div class="kicker">第 ${st.q+1} 题 / 共 ${qz.length} 题</div><h3 style="font-size:20px">${esc(q.q)}</h3><div class="quiz-options">${q.o.map((o,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(o)}</button>`).join('')}</div>${a!=null?`<p class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></p><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${st.q===qz.length-1?'查看得分':'下一题'}</button>`:''}</div>`;}
+function renderQuiz(){const box=$('#xquiz');if(box)box.innerHTML=quizHtml();}
+/* 初始化静态与默认状态 */
+(function xinit(){
+ if($('#xterms'))$('#xterms').innerHTML=Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}" aria-expanded="false">${esc(g.t)}</button>`).join(' · ');
+ const gl=$('#gl');if(gl)gl.innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${esc(g.t)}</dt><dd>${esc(g.d)}</dd>`).join('');
+ if($('#xroute'))$('#xroute').innerHTML=CHAPTERS.map((c,i)=>{const idx=chPages(i+1);return `<li><button type="button" data-go="${idx[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>P${idx[0]+1}–${idx[idx.length-1]+1} →</small></button></li>`}).join('');
+ if($('#xpsteps'))$('#xpsteps').innerHTML=XSTEPS.map((s,i)=>`<button type="button" class="choice" data-action="step" data-value="${i}" aria-pressed="${i===0}">${esc(s.t)}</button>`).join('');
+ if($('#xdsChips'))$('#xdsChips').innerHTML=XDS.map((d,i)=>`<button type="button" class="choice" data-action="dsel" data-value="${i}" aria-pressed="${i===0}">${esc(d[0])}</button>`).join('');
+ if($('#xchecks'))$('#xchecks').innerHTML=XCHECKS.map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="false"><span class="checkmark"></span>${esc(s)}</button>`).join('');
+ if($('#xlabSys'))$('#xlabSys').innerHTML=['Organic','AIO','Gemini','GPT-Search','GPT-Tool','Sonar'].map(s=>`<button type="button" data-action="xsys" data-value="${s}" aria-pressed="${s==='GPT-Tool'}">${esc(s)}</button>`).join('');
+ if($('#xnumDims'))$('#xnumDims').innerHTML=NGRPS.map((g,i)=>`<button type="button" class="choice" data-action="ngrp" data-value="${i}" aria-pressed="${i===0}">${esc(g.k)}</button>`).join('');
+ if($('#xpersona'))$('#xpersona').innerHTML=XROLES.map((p,i)=>`<button type="button" data-action="role" data-value="${i}" aria-pressed="${i===0}">${esc(p.k)}<small>${esc(p.s)}</small></button>`).join('');
+ if($('#xabs'))$('#xabs').innerHTML=`<div class="kicker">摘要原文节选</div>`+srcEv(PAPER.evidence[0]);
+ if($('#xscene'))renderScene(0);
+ if($('#xcon'))renderCon(0);
+ if($('#xpsteps'))renderStep();
+ if($('#xbdy'))renderBdy(0);
+ if($('#xmetric'))renderMet(0);
+ if($('#xds'))renderDs();
+ if($('#xctl'))renderCtl();
+ if($('#xmdim'))renderMdim(0);
+ if($('#xlabBars'))renderLab();
+ if($('#xnum'))renderNum();
+ if($('#xf1'))renderF1();
+ if($('#xt2'))renderT2();
+ if($('#xf2'))renderF2();
+ if($('#xf3'))renderF3();
+ if($('#xt4'))renderT4Table();
+ if($('#xf4'))renderF4();
+ if($('#xcmp'))renderCmp();
+ if($('#xcaseTabs')){renderCaseTabs();renderCase();}
+ if($('#xrole'))renderRole();
+ if($('#xlims')){renderLims();renderLim();}
+ if($('#xquotes'))renderQuotes();
+ if($('#xquiz'))renderQuiz();
+})();
+/* 交互分发：更新输出容器与按钮状态 */
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;
+ const a=b.dataset.action,v=b.dataset.value;
+ switch(a){
+  case 'qsel':$$('#qselG button').forEach((x,i)=>x.setAttribute('aria-pressed',String(i===+v)));renderScene(+v);break;
+  case 'ccard':renderCon(+v);break;
+  case 'step':st.step=+v;renderStep();break;
+  case 'prevStep':st.step=Math.max(0,st.step-1);renderStep();break;
+  case 'nextStep':st.step=Math.min(XSTEPS.length-1,st.step+1);renderStep();break;
+  case 'bdy':renderBdy(+v);break;
+  case 'metric':renderMet(+v);break;
+  case 'dsel':st.ds=+v;renderDs();break;
+  case 'check':{const n=+v;if(st.checks.has(n))st.checks.delete(n);else st.checks.add(n);b.setAttribute('aria-pressed',st.checks.has(n));renderCtl();break;}
+  case 'mdim':renderMdim(+v);break;
+  case 'xdim':st.xdim=v;renderLab();break;
+  case 'xsys':st.xsys=v;renderLab();break;
+  case 'ngrp':st.ngrp=+v;renderNum();break;
+  case 'f2mode':st.f2=+v;renderF2();break;
+  case 'f3mode':st.f3=+v;renderF3();break;
+  case 'ftemp':st.ftemp=v;renderF4();break;
+  case 'fgap':st.fgap=v;renderF4();break;
+  case 'cmp':st.cmp=+v;renderCmp();break;
+  case 'case':st.case=+v;renderCase();break;
+  case 'role':st.role=+v;renderRole();break;
+  case 'limit':st.lim=+v;renderLim();break;
+  case 'flip':{const n=+v;if(st.flips.has(n))st.flips.delete(n);else st.flips.add(n);b.setAttribute('aria-pressed',st.flips.has(n));break;}
+  case 'copySummary':copyText(PAPER.findings.map(t=>t+'。').join('\n')+'\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);break;
+  case 'answer':if(st.answers[st.q]==null){st.answers[st.q]=+v;renderQuiz();}break;
+  case 'nextQuiz':st.q++;renderQuiz();break;
+  case 'resetQuiz':st.q=0;st.answers=[];renderQuiz();break;
+ }
+ checkOverflow(pages.indexOf(b.closest('.page')));
+});
+/* 方向键在控件组内循环选择，不触发翻页 */
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button,.x-sysbtns button,.x-persona button,.x-lims button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();
+ const group=b.parentElement,bs=$$('button',group);
+ const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;
+ bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

@@ -1,0 +1,686 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>词频统计编码与检索 · 论文课堂</title><meta name="description" content="词频与同段共现可作为意义证据：机器据此把文献编成概念模式并按相似度匹配检索，1200 份技术报告的初步试验结果令人鼓舞。"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="IBM Journal of Research and Development"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* x-lab：词频—区分力演示（本课新增） */
+.lesson .x-num3{grid-template-columns:repeat(3,1fr)}
+.x-num3 .src{white-space:normal}
+.x-lab{display:grid;grid-template-columns:11fr 9fr;gap:16px;align-items:stretch}
+.x-curve{border:1px solid var(--line);border-radius:12px;padding:8px 10px 4px;background:#fff}
+.x-curve svg{display:block;width:100%;height:auto}
+.x-slider{display:flex;align-items:center;gap:10px;margin:4px 0 0;font-size:12.5px;color:var(--ink-2)}
+.x-slider input{flex:1;min-width:0}
+.x-read{border:1px solid var(--line);border-radius:12px;padding:13px 16px;display:flex;flex-direction:column;gap:9px;font-size:14px}
+.x-read h4{font-size:16px}
+.x-zone{align-self:flex-start;font-size:12px;border-radius:999px;padding:1px 10px;border:1px solid var(--line-2);color:var(--ink-2)}
+.x-zone.z0{background:var(--neg-tint);color:var(--neg);border-color:transparent}
+.x-zone.z1{background:var(--pos-tint);color:var(--pos);border-color:transparent}
+.x-zone.z2{background:#f7ecd9;color:var(--c3);border-color:transparent}
+.x-docs{display:flex;gap:3px;flex-wrap:wrap}
+.x-docs i{width:13px;height:13px;border-radius:3px;background:var(--tint);border:1px solid var(--line-2)}
+.x-docs i.lit{background:var(--accent);border-color:var(--accent)}
+.x-bar{display:grid;grid-template-columns:64px 1fr 46px;gap:8px;align-items:center;font-size:12.5px;color:var(--ink-2)}
+.x-luhn{border-top:1px solid var(--line);padding-top:8px;font-size:13.5px;color:var(--ink-2);line-height:1.65}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.x-lab{grid-template-columns:1fr}.x-read{padding:12px 14px}.lesson .x-num3{grid-template-columns:1fr}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 11 检索与文本相关性</div>
+    <h1>词频统计编码与检索</h1>
+    <div class="en">1957 · 理论框架</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">词频统计编码与检索</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">词频与同段共现可作为意义证据：机器据此编码文献并按相似度检索。<span class="src">摘要 · PDF p.1 · 结论 p.8</span></div></div><div class="notes">开场先立结论：Luhn 主张词频与同段共现本身就是意义证据，机器不必理解语义也能给文献编码。右侧两个数字——1200 份试验报告与约 1000 个概念类别——是全课的证据锚点，后面逐页展开。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">沿着问题与证据完成这门课</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">先读结论与证据类型，再拆机制、口径、发现，最后回到边界。<span class="src">本课结构</span></div></div><div class="notes">这门课按七章走：先看结论与证据类型，再进入机制——概念家族怎么建、编码规则是什么、检索怎么匹配；发现章逐条过证据，应用章转成角色动作，复盘章守住 1957 年证据的边界。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">机器可以只靠词频统计完成标引与检索</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">统计词频与共现，让中高区分度的主题词自然浮现。<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">用企业知识库的标引任务开场：手工打标签口径不一，大词覆盖一切页面。Luhn 的回答是让统计说话——词频与同段共现就是主题证据。切换「研究启发」看方法怎样回应这一痛点，注意本页情境为教学示意。</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">编码单元是概念家族，而不是单个词</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">概念家族把意义相近的词归成一组，规模估计少于 1000 个。<span class="src">词典构建 · PDF p.5–6</span></div></div><div class="notes">编码单元不是单词而是「概念家族」：意义相近的词归为一组，用一个编号代表。构造靠专家做词索引再按 Roget 式类别归组，Luhn 估计总数少于 1000 个、增长缓慢。协调标引指多个概念共同刻画主题。点击上方三步看各自的对象。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">抽样统计 → 词典编码 → 模式匹配，三步闭环产出检索</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">从最样本文档抽样，到概念模式匹配输出相似文献。<span class="src">系统组织 · PDF p.5–7</span></div></div><div class="notes">三步流程：先从最新的「年龄层」抽样本、转录成机器可读形式；专家归组概念家族，机器按词典把每份文档编成概念模式；提问写成短文同样编码，按重合比例匹配输出。逐步点击查看每步的输入与证据范围。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">本篇能支持什么，不能支持什么</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">方法设计论文：初步可行已验证，生产收益未证明。<span class="src">结论 · PDF p.8</span></div></div><div class="notes">先定位干预环节：改变的是「文献如何被编码」，不是检索词怎么写。本篇是方法设计加初步试验：能支持的是统计编码在 1200 份报告上初步可行，不能支持任何生产收益数字。专业模式下有六层信息系统的定位：本系统面向第 5 层应用科学文献。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">编码看词频共现，匹配看重合概念比例</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">两个口径：概念家族是编码单元；协调标引按重合比例判定命中。<span class="src">PDF p.7 · p.8</span></div></div><div class="notes">两个口径分开记：概念家族是编码单元，由专家归组、规模少于 1000 个；协调标引的命中条件是提问与文档的重合概念比例达到给定阈值。专业层给出编码规则与匹配式，阈值原文未定数值，图示比例仅为示意。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">方法论文加 1200 份报告的初步试验</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">IBM 期刊方法论文，附 1200 份技术报告的初步试验，未做对照评测。<span class="src">结论 · PDF p.8</span></div></div><div class="notes">研究设计决定证据强度：这是 IBM 期刊的方法论文，附 1200 份技术报告的初步试验，作者自称结果令人鼓舞，但没有对照评测。右侧可切换三段原文节选：提问模式、结论边界、证据条件，核对口令后再生效结论。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">复验该研究思路时，先补齐这四项对照</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">检查项为本课按现代评测标准补充，非论文原设计。<span class="src">本课示意</span></div></div><div class="notes">给复验方案做检查：对象一致、有基线、记录版本、报告负向结果。1957 年没有标准检索评测集，这四项是本课按现代标准补的。勾选只说明方案完整，不能自动证明因果成立。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">编码规则：同段出现两次即为主要概念</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">同段出现 ≥2 次、或出现在紧邻段落的概念，记为主要概念。<span class="src">编码规则 · PDF p.7</span></div></div><div class="notes">编码规则是全课的机械核心：概念同段出现至少 2 次、或出现在紧邻段落，即记为主要概念，其余词不入模式。机器逐段扫描，把每段压成概念编号列表——「概念摘要」。逐步点击三步，注意每步保留了什么、丢掉了什么。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">太常见要细分，太罕见要上卷，中频带最有价值</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">词频两端都伤区分力：两端调整规则出自论文原例。<span class="src">electricity/butterfly 例 · PDF p.6</span></div></div><div class="notes">拖动词频滑杆：太常见的词（electricity，约 1080/1200 份）几乎全员命中，Luhn 的处置是按修饰形容词拆成子概念；太罕见的词（butterfly，约 6 份）几乎无法被匹配，要上卷进昆虫、动物这类更宽的家族；中频带区分力最高，保留为独立家族。曲线与阈值是示意，两端原例出自 PDF p.6。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">三个数字，先读口径再读大小</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">每个数字保留原论文单位、样本和适用条件。<span class="src">结论 p.8 · 词典 p.6 · 编码 p.7</span></div></div><div class="notes">三个数字各有口径：1200 是初步试验覆盖的技术报告数（结论）；少于 1000 是概念家族的估计规模（词典构建）；2 是「同段主要概念」的次数阈值（编码规则）。三者口径不同、不可直接互比；专业层附编码规则原文。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">同段出现两次以上的词被视作主要概念</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">同段 ≥2 次或相邻段出现，即记为主要概念。<span class="src">编码规则 · PDF p.7</span></div></div><div class="notes">这是编码的硬规则：概念同段出现 ≥2 次、或出现在紧邻段落，即记为主要概念。Luhn 把作者反复用词当作论述重心的统计证据——机器不懂语义也能抽出要点。注意证据强度标为弱：初步试验、未做对照。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">概念出现越频密越接近作者本意核心</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">频次是作者意图的统计证据，可被机器读取。<span class="src">统计论证 · PDF p.7</span></div></div><div class="notes">词频不只是计数：概念与概念组合出现越频密，越接近作者本意核心。这一句把「作者为什么重复」解释成可计算的信号，是后来所有词加权方法的出发点。专业层附原文论证。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">提问写成短文，同样编码后按比例匹配</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">提问与文档同构编码，重合比例达到阈值才输出。<span class="src">检索流程 · PDF p.7–8</span></div></div><div class="notes">提问也被当作一篇短文、按同一规则编码，再按重合概念的比例匹配。好处是提问与文档同构、不受中介人工拼装影响；代价是把智力成本挪到提问撰写与输出抽检——原文称之为输出端的智力投入。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">全员命中的大词没有区分力，需细分或上卷</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">electricity 与 butterfly 是论文自己的两个反例。<span class="src">区分力调整 · PDF p.6</span></div></div><div class="notes">区分力两端都失效：electricity 这类领域内全员命中的大词，要按修饰形容词细分；butterfly 这类过窄概念，要上卷到昆虫、动物、生物。这一「按整体频次调整」的思路是后来 IDF 的先声——研究对照页有 1972 年的后续。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">1972 年后续把区分力做成可计算的权重</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">Sparck Jones 按集合频率加权，在三个测试集上追平人工叙词表。<span class="src">相关研究 · 见引用抽屉</span></div></div><div class="notes">相关研究是 1972 年 Sparck Jones：把区分力做成集合频率的加权（IDF 谱系），在三个测试集上追平精心构造的人工叙词表。对照读法：Luhn 给机制（词频即证据），Sparck Jones 给权重公式；两篇都不能直接给出生产收益。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">一篇新报告怎样被自动标引成概念模式</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">标引结果按 PDF p.7 规则从示意段落推出，非论文实测。<span class="src">本课示意 · 机制 p.7</span></div></div><div class="notes">示意任务：给一篇《整流器纹波测试》自动标引。同段 3 次的整流器、3 次的纹波进入模式；只出现 1 次且相邻段没有的电容被排除。提问短文同规则编码后，按重合概念比例与库内文档匹配。全程示意，论文原文例是 electricity 与 butterfly。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">三个角色，各取一张执行清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">行动建议为本课推断，需用对照试验确认。<span class="src">本课示意</span></div></div><div class="notes">三个角色三张清单：内容负责人盯标签口径与概念模式输出；技术复现抽样、词典与阈值并记录版本；研究审核对照 1972 年后续与迁移边界。所有行动建议是本课推断，先做小范围对照再扩大。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">研究方法可以落进三类日常工作形态</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">成熟形态与研究方法的映射为本课推断。<span class="src">本课示意</span></div></div><div class="notes">成熟形态映射：带证据的说明文档、分层测量报告、可复现实验记录，分别对应抽样统计、词典编码、模式匹配三个环节。映射是推断；承接证据时先小范围复验，再决定扩大应用。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">两条高影响边界，决定应用尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">结论依托 1957 年专业文献库与人工维护的概念词典，未在通用语料上验证。<span class="src">结论 · PDF p.8</span></div></div><div class="notes">两条高影响边界：结论只覆盖专业文献库与人工维护的词典；没有对照评测与通用语料验证。作者自己列了未解问题：哪些词类最有区分力、概念家族要多少个、颗粒度多细。搬到今天要重定阈值、重建词典，并用现代评测集复测。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">保留结论依据与适用条件，再转为实践动作。<span class="src">本课提炼</span></div></div><div class="notes">六张卡片：前四张是论文发现（同段两次规则、频次即证据、提问同构、区分力调整），后两张是使用条件。点开每张看依据与用法——记住「保留结论依据与适用条件」再转成动作。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">五道题覆盖结论、口径、区分力与边界</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">答错会给出对应复习页，回看后再继续。<span class="src">本课自测</span></div></div><div class="notes">五道题覆盖核心结论、试验边界、区分力机制、迁移姿势与提问代价。答错会给出对应复习页码；做完看得分，回看薄弱环节再继续学习地图。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>A Statistical Approach to Mechanized Encoding and Searching of Literary Information</p><p>1957 · IBM Journal of Research and Development</p><p><a href="https://openlib.org/home/krichel/courses/lis618/readings/luhn57.pdf" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper71,
+  author = {H. P. Luhn},
+  title = {A Statistical Approach to Mechanized Encoding and Searching of Literary Information},
+  year = {1957},
+  url = {https://openlib.org/home/krichel/courses/lis618/readings/luhn57.pdf}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：6f92a731ee1f30861bb8a5c07f4aaea3e0ef24b95c737dccfb2093a85c5460ed</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={"id": 71, "zh": "词频统计编码与检索", "kind": "理论框架", "question": "机器能否只靠词频统计自动标引并检索文献？", "claim": "词频与同段共现可作为意义证据：机器据此把文献编成概念模式并按相似度匹配检索，1200 份技术报告的初步试验结果令人鼓舞。", "steps": ["抽取文献样本做词频统计", "按概念家族编词典并编码", "概念模式匹配输出相似文献"], "findings": ["同段出现两次以上的词被视作主要概念", "概念出现越频密越接近作者本意核心", "提问写成短文同样编码后按比例匹配", "通用大词几乎无区分力需细分或上卷"], "metrics": [{"name": "概念家族", "plain": "把意义相近的词归成一组作为编码单元，规模估计少于 1000 个"}, {"name": "协调标引", "plain": "多个概念共同刻画主题；提问按重合概念比例与阈值比较后命中"}], "setting": "IBM 期刊方法论文，附 1200 份技术报告的初步试验，未做对照评测。", "boundary": "结论依托 1957 年专业文献库与人工维护的概念词典，未在通用语料上验证。", "query": "教学情境：企业知识库想让站内搜索自动抓准每篇文档的主题词，能只靠词频统计吗？", "before": "依赖编辑手工打标签：同一篇《整流器纹波测试》被不同人标成“电力”“设备”“测试报告”，大词覆盖一切页面", "after": "按“同段出现 ≥2 次即主要概念”的规则统计词频与共现，抽出中高区分度的概念作为文档模式", "finding_details": ["Luhn 把词的出现次数当作作者意图的统计证据：同一概念在段落里反复出现、或在紧邻段落再次出现，说明它是论述重心，机器无需理解语义也能抽出要点。", "他把信息系统按语言纪律分成六层，语言越自由越依赖人工，统计方法最适合应用科学这类有纪律的领域语言。", "检索时提问也被写成短文并按同样规则编码，机器比较两组概念模式的重合比例，按给定相似度阈值输出候选文献。", "像 electricity 这类领域内几乎每篇都含的词没有区分力，太罕见的词又过于具体，需要在概念家族里细分或上卷，这一思路是后来 IDF 的先声。"], "fsrc": ["编码规则 · PDF p.7", "统计论证 · PDF p.7", "检索流程 · PDF p.7–8", "区分力调整 · PDF p.6"], "catalog_title": "A Statistical Approach to Mechanized Encoding and Searching of Literary Information", "title": "A Statistical Approach to Mechanized Encoding and Searching of Literary Information", "authors": "H. P. Luhn", "year": "1957", "category": "11_检索与文本相关性", "url": "https://openlib.org/home/krichel/courses/lis618/readings/luhn57.pdf", "file": "11_检索与文本相关性_A01_A_Statistical_Approach_to_Mechanized_Encoding_and_Searching_of_Literary_Information.html", "pdf": "", "kind_note": "概念与推导，暂无生产效果估计", "extra": "教学情境：query、before、after 为示意设定，非论文实测。1957 年尚无标准检索评测集，本文数值证据有限，以系统设计为主。", "evidence": [{"label": "摘要与研究目标", "text": "would be set up as a question pattern in a dataprocessing machine of adequate functional ability. This procedure would overcome the inconsistency of method that would exist if a question pattern were artificially assembled by a mediator. A standard program could serve to direct the machine to compare the question pattern with the notional patterns of the documents of the collection. Since an identical match is highly improbable, this process would be carried out on a statistical basis by asking for a given degree of similarity. This gauging of the question might be accomplished in many ways; the most direct would be to ask for a match of a given fraction of the notions. If the machine were equipped to transcribe each complying pattern onto a new tape, this searching process could be carried out most efficiently by first making an appropriately broad search to assemble a likely selection of documents on a separate tape. With the aid of this special tape the search might be extended in several ways. One would be to change the fraction of coincidence required; another to modify conditions through requests that specific notions or combinations thereof be present. In this system a certain degree of intellectual effort is spent at the output phase. This would involve the sampling of the selected documents to determine the effectiveness of the search and to discover clues which might", "page": 8}, {"label": "讨论与研究边界", "text": "The soundness and practicability of the approach and system proposed in the preceding discussion have not as yet been proved by any full-scale operations. Experiments involving some 1200 technical reports, however, have produced encouraging results. There are as yet many unanswered questions, such as whether nouns and adjectives or other portions of sentences furnish the most practical and, at the same time, the most effective discriminating elements for recognizing similarity of information by mechanical pattern matching. Other questions are how few notional families may be required, what various degrees of specificity these families should have, and how many of them need be recorded for a given kind and size of document collection. A great advantage of the system described here would be the assurance that the idea content of information was being left intact. The ideas of an author would not be narrowed, biased, or distorted through the intervention of an interpreter. The proposed", "page": 8}, {"label": "摘要后半与证据边界", "text": "equipped to transcribe each complying pattern onto a new tape, this searching process could be carried out most efficiently by first making an appropriately broad search to assemble a likely selection of documents on a separate tape. With the aid of this special tape the search might be extended in several ways. One would be to change the fraction of coincidence required; another to modify conditions through requests that specific notions or combinations thereof be present. In this system a certain degree of intellectual effort is spent at the output phase. This would involve the sampling of the selected documents to determine the effectiveness of the search and to discover clues which might", "page": 8}], "table": null, "version": "IBM Journal of Research and Development", "sha256": "6f92a731ee1f30861bb8a5c07f4aaea3e0ef24b95c737dccfb2093a85c5460ed", "stats": [{"v": "1200", "name": "试验技术报告数", "source": "Conclusion", "context": "早期统计编码试验覆盖的报告数量，作者称结果令人鼓舞；未经全规模运行证明", "page": 8}, {"v": "<1000", "name": "概念家族估计规模", "source": "Creating a dictionary of notions", "context": "Roget 为全部经验建立约 1000 个类别作参照；Luhn 估计本系统所需概念家族少于 1000 个且增长缓慢", "page": 6}, {"v": "≥2", "name": "主要概念同段次数阈值", "source": "The encoding of documents", "context": "概念同段出现至少 2 次、或出现在紧邻段落，即记为主要概念并入编码模式", "page": 7}], "related": {"id": 72, "zh": "稀有词更有区分力", "title": "A Statistical Interpretation of Term Specificity and Its Application in Retrieval", "url": "./11_检索与文本相关性_A02_A_Statistical_Interpretation_of_Term_Specificity_and_Its_Application_in_Retrieval.html", "pdf": "https://www.cl.cam.ac.uk/archive/ksj21/ksjdigipapers/jdoc72.pdf", "claim": "词的区分力应按集合频率统计解释：匹配稀有词价值高于常见词，按此加权在三个测试集上取得可与精心构造叙词表相比的显著改进。"}, "strength": "弱", "strength_why": "本课保守评级：概念、模拟、有限样本或未完成独立语义验证。", "limitations": [["高", "研究结论有明确范围", "结论依托 1957 年专业文献库与人工维护的概念词典，未在通用语料上验证。"], ["高", "评价口径决定可以推断的结果", "教学情境：query、before、after 为示意设定，非论文实测。1957 年尚无标准检索评测集，本文数值证据有限，以系统设计为主。"], ["中", "环境变化需要重新验证", "引擎版本、界面、查询与候选来源变化时，重新执行同口径测量。该项为本课迁移审查。"], ["中", "证据与建议需逐项区分", "应用页的行动与成熟形态是教学推断。核查原论文方法、结果及局限后再作为实验假设。"], ["中", "相关研究提供新的对照", "词的区分力应按集合频率统计解释：匹配稀有词价值高于常见词，按此加权在三个测试集上取得可与精心构造叙词表相比的显著改进。"], ["低", "原文版本与内部一致性", "采用本地PDF可识别版本；不将清单页数与PDF分页混用。未逐表重算的指标仍需人工复核。"]], "quiz": [{"q": "Luhn 的机器给一篇文献编码时，依据的统计证据是什么？", "o": ["词在标题里的出现顺序", "词频与同段共现：同段出现次数与相邻段分布", "作者标注的学科分类号", "文档后来被引用的次数"], "a": 1, "e": "编码规则：概念同段出现 ≥2 次、或出现在紧邻段落，即记为主要概念；词频是作者意图的统计证据。", "p": 10}, {"q": "关于 1200 份技术报告的试验，下列哪句与论文一致？", "o": ["完成了全规模生产系统并上线运行", "结果令人鼓舞，但尚未经任何全规模运行证明", "试验失败，方案被放弃", "与人工标引做了对照评测并显著胜出"], "a": 1, "e": "结论原文：soundness 与 practicability 尚未被任何全规模运行证明；1200 份报告的初步试验结果令人鼓舞，未做对照评测。", "p": 8}, {"q": "在电力专业文献库里，electricity 为什么被 Luhn 视为无区分力？", "o": ["拼写太长，机器难以存储", "几乎每份文档都含它，无法用来圈定子集", "它不是名词，不在编码范围内", "它属于其他学科的领域语言"], "a": 1, "e": "领域内全员命中的概念不携带筛选信息；论文的处置是按修饰形容词拆成子概念（PDF p.6）。", "p": 16}, {"q": "把这套思路搬到一个今天的内容站，哪种做法是对的？", "o": ["直接照搬 1957 年的阈值当生产参数", "借鉴“词频 + 共现 = 主题证据”的思路，用自己的语料重定阈值并做对照评测", "只要有词频统计就能保证检索质量", "概念家族词典一次建好，永久不用更新"], "a": 1, "e": "论文依托专业文献库与人工维护词典，且要求按年龄层周期更新（PDF p.5、p.8）；迁移必须重建词典并复测。", "p": 21}, {"q": "提问也要写成短文再编码，这给检索者带来什么代价？", "o": ["检索者必须写一段描述性文字，提问成本上升", "机器必须先翻译全部文献", "必须先把文献库缩到 1200 份以内", "概念家族的数量必须减半"], "a": 0, "e": "系统把智力成本集中到提问撰写与输出抽检：原文称输出端需投入智力以评估检索效果、发现改进线索（PDF p.7–8）。", "p": 15}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{geo:{t:"GEO",d:"改善来源在生成式答案中的可见性及归功的研究与实践。"},rag:{t:"RAG",d:"先检索外部资料，再以资料支持模型生成。"},baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},ablation:{t:"消融",d:"去除某个组件，比较它对整体结果的贡献。"},transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=e=>`<span class="src">${esc(e.label)} · PDF p.${e.page}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const researchOnly=['理论框架','综述'].includes(PAPER.kind);
+const stageNames=['问题与候选资料','研究干预与比较','答案或评价结果'];
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,num:0,lim:0,role:0,proof:0,q:0,answers:[],checks:new Set(),flips:new Set()};
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function dataNumbers(){return PAPER.stats.length?`<div class="number-grid">${PAPER.stats.slice(0,4).map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div>${tip(s.source)}</div>`).join('')}</div>`:`<div class="answer"><div class="kicker">证据类型 · ${esc(PAPER.kind)}</div><h3>${esc(PAPER.zh)}</h3><p>${esc(PAPER.kind_note)}</p>${tip('本篇未在封面展示未经逐项核对的效果数值。')}</div>`}
+function flow(highlight){return `<div class="flow-line">${stageNames.map((t,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${highlight===i?'active':''}">${esc(t)}<div class="caption">${esc(PAPER.steps[i])}</div></div>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+const notesForStep=i=>[
+ `输入与目标：${PAPER.question}。做法：从最新的「年龄层」抽取样本文档，转录到磁带并标记名词类，为后续词索引做准备（PDF p.5）。`,
+ `研究比较：${PAPER.steps[1]}。专家按 Roget 式类别归组概念家族（估计少于 1000 个），机器查词典把每段编成概念模式，输出「概念摘要」（PDF p.5–7）。`,
+ `结果解读：${PAPER.steps[2]}。提问写成短文同规则编码，按重合概念比例与阈值比较后输出候选，可再调阈值或指定必含概念（PDF p.7–8）。`
+][i];
+function xMetricPanel(v){
+ if(v===0)return `<h3>概念家族</h3><p class="only-plain">${esc(PAPER.metrics[0].plain)}</p><div class="only-pro"><p>${esc(PAPER.metrics[0].plain)}</p><div class="pro-note">构造口径：从最新年龄层抽样 → 转录并标记名词类 → 做逐句词索引（concordance）→ 专家按 Roget 式类别归组。家族即编码单元，机器只记录家族编号。</div><div class="formula">词 → 家族编号（查词典索引）</div></div>${src({label:'词典构建',page:6})}${tip('构造是人工智力环节，发生在系统安装期；日常编码才交给机器。')}`;
+ return `<h3>协调标引</h3><p class="only-plain">${esc(PAPER.metrics[1].plain)}</p><div class="only-pro"><p>${esc(PAPER.metrics[1].plain)}</p><div class="formula">命中 ⇔ |Q ∩ D| ⁄ |Q| ≥ θ</div><div class="pro-note">Q 为提问短文的概念模式，D 为文档概念模式；θ 即「给定重合比例」，原文未定数值。θ 过高召回不足，过低则全员命中——与词频两端的取舍一致。</div></div>${src({label:'检索流程',page:8})}${tip('通俗口径：重合的概念够多才算命中；具体比例由检索者按需调整。')}`;
+}
+function xMethodPanel(i){
+ const body=[
+  '从最新的「年龄层」抽取样本文档，转录成机器可读形式并标记名词类——编码之前最重的人工环节（PDF p.5）。',
+  '机器查词典把名词换成家族编号；同段出现 ≥2 次或紧邻段落再现的概念记为主要概念，其余丢弃，产出每段的概念摘要（PDF p.7）。',
+  '提问写成短文、按同一规则编码成概念模式；与库内文档比重合比例，达到给定阈值即输出，之后可调阈值或指定必含概念重跑（PDF p.7–8）。'][i];
+ return `<h3>${esc(PAPER.steps[i])}</h3><p>${esc(body)}</p>${i===1?`<div class="callout">同段 ≥2 次 或 紧邻段落再现 → 主要概念<span class="src">PDF p.7</span></div>`:''}<div class="only-pro pro-note">${esc(i===0?'样本规模由「有用文档的数量」决定；这一步的质量决定词典能否代表领域语言。':i===1?'原文将编码结果称为 mechanically prepared notional abstract——机器生成的概念摘要，全程无需理解词义。':'提问与文档共用同一编码程序，为的是避免提问被中介人工拼装造成口径不一致。')}</div>`;
+}
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors.split("; ")[0])}${PAPER.authors.includes(";")?" 等":""} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}${PAPER.pdf?' · '+ext(PAPER.pdf,'本地PDF'):''}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿。进度自动保存在当前浏览器。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>${esc(PAPER.question)}</li><li>${esc(PAPER.metrics[0].name)}衡量什么？</li><li>${esc(PAPER.steps[1])}怎样起作用？</li><li>哪些条件会限制结论迁移？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>同一目标下，先对照常见做法与研究启发。</p>${tip('以下为围绕论文方法构造的教学情境。不给示意操作附加实测收益。')}</div><div>${choices(['常见做法','研究启发'],0,'scene')}<div class="answer" id="sceneOut" aria-live="polite"><h3>常见做法</h3><p>${esc(PAPER.before)}</p>${tip('观察这一做法遗漏了什么条件。')}</div></div></div>`;
+ else if(view==='concept')h=`${choices(PAPER.steps,0,'concept')}<div class="columns"><div class="answer" id="conceptOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p></div><div><div class="kicker">本篇要区分的量</div><ul class="fact-list">${PAPER.metrics.map((m,i)=>`<li><button type="button" class="term" data-term="metric${i}">${esc(m.name)}</button><small>${esc(m.plain)}</small></li>`).join('')}</ul></div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(notesForStep(state.step))}</p><div class="only-pro pro-note">${esc(PAPER.setting)}。证据范围：${esc(PAPER.boundary)}。</div></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按论文方法重新组织；箭头表达研究逻辑，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],1,'flow')}<div id="flowOut" aria-live="polite">${flow(1)}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric')h=`<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite">${xMetricPanel(state.metric)}</div></div><div><div class="kicker">指标解释的检查次序</div><ul class="fact-list"><li>测量对象<small>${esc(PAPER.setting)}</small></li><li>对应结论<small>${esc(PAPER.findings[0])}</small></li><li>禁止越界<small>${esc(PAPER.boundary)}</small></li></ul></div></div>`;
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 研究设计</div><p class="intro">${esc(PAPER.setting)}</p><div class="callout">${esc(PAPER.boundary)}</div>${tip('研究类型会决定所需对照。综述需要核查纳入条件，理论需要核查假设，实证需要核查比较设计。')}</div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">给你的复验方案做检查 · 本课推断</div><div class="check-list">${['保持研究问题和对象一致','明确基线与比较方案','记录引擎或数据版本','报告负向变化与不确定性'].map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${s}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'具备基本复验要素':'继续补齐比较条件'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选用于检查方案完整性，无法自动证明因果识别成立。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button type="button" class="choice" data-action="method" data-value="${i}" aria-pressed="${i===0}">${esc(s)}</button>`).join('')}</div><div class="columns"><div class="answer" id="methodOut" aria-live="polite">${xMethodPanel(0)}</div><div><div class="kicker">全程不变的约束</div><ul class="fact-list"><li>抽样取自最新的「年龄层」，词典才跟得上领域语言<small>PDF p.5</small></li><li>编码全自动：机器查表比对，无需理解语义<small>PDF p.7</small></li><li>词典由专家维护，按年龄层周期更新<small>PDF p.5、p.8</small></li></ul></div></div>`;
+ else if(view==='lab')h=xLabHtml();
+ else if(view==='numbers')h=numbersHtml();
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);
+  const xFpro=[
+   `<div class="only-pro pro-note">规则原文（PDF p.7）：a notion occurring at least twice in the same paragraph would be considered a major notion；出现在紧邻段落的概念即使只出现一次也计入。段落与章节的分界，正是作者留下的结构线索。</div>`,
+   `<div class="only-pro pro-note">论证原文（PDF p.7）：the more frequently a notion and combination of notions occur, the more importance the author attaches to them——频次被当作作者意图的证据来读，而不是噪声。</div>`,
+   `<div class="only-pro pro-note">流程原文（PDF p.7–8）：提问以短文（essay）书写并经同一程序编码；机器比较提问模式与文档模式，要求 a match of a given fraction of the notions——给定比例的重合概念，阈值原文未定值。</div>`,
+   `<div class="only-pro pro-note">原文例证（PDF p.6）：electricity 在电力领域几乎每篇都含，worthless as a discriminating element，须按修饰形容词细分；butterfly 过窄，须上卷到 insects / animals / living things。后续研究（Sparck Jones 1972）把这一思路发展为按集合频率加权。</div>`][ix];
+  h=`<div class="ev" style="margin-bottom:16px">F${ix+1} · <span class="src">${esc(PAPER.fsrc[ix])}</span> · 证据强度 <span class="${PAPER.strength==='弱'?'str-l':'str-m'}">${esc(PAPER.strength)}</span> ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite"><p>${esc(PAPER.finding_details[ix])}</p><div class="caption">结合本篇研究设计理解这条发现。</div></div>${xFpro}</div><div><div class="kicker">如何核查这一发现</div><ul class="fact-list"><li>研究设置<small>${esc(PAPER.setting)}</small></li><li>观察指标<small>${esc(PAPER.metrics[ix%PAPER.metrics.length].name)}：${esc(PAPER.metrics[ix%PAPER.metrics.length].plain)}</small></li><li>迁移约束<small>${esc(ix===3?'区分力随语料而变：换库必须重测词频分布（对照研究对照页）。':PAPER.boundary)}</small></li></ul><button type="button" class="btn" data-go="8" style="margin-top:12px">回到原文证据 →</button></div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes'){const quotes=[...PAPER.findings,'应用策略需要保留任务与证据条件','有效测量需要同时报告代价与边界'];h=`<div class="flips">${quotes.map((s,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(s)}。</b><span class="flip-back">依据：${esc(i<4?PAPER.claim:PAPER.boundary)}<br>用法：${esc(i<3?PAPER.steps[i]:'记录口径并检查迁移条件')}。</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;}
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+/* x-lab：词频—区分力演示。曲线为示意（区分力 ∝ p(1−p)，峰值在半数文档处）；两端词例与处置出自 PDF p.6。 */
+const XL={f:1080,w:0};
+const XWORDS=[
+ {t:'electricity',f:1080},
+ {t:'整流器（示意词）',f:340},
+ {t:'butterfly',f:6}];
+const xdisc=f=>{const p=Math.min(Math.max(f/1200,0),1);return 4*p*(1-p)};
+const xzone=f=>f<180?0:f<=900?1:2;
+const XZONES=[
+ ['上卷合并','出现太少：作为独立家族几乎不会被任何提问命中。论文处置：把 butterfly 并入昆虫、动物、生物这类更宽的家族。'],
+ ['保留为独立概念家族','中频带区分力最高：既能把相近文献圈出来，又不至于全库命中。按重合比例匹配在这个频段最有效。'],
+ ['按修饰词细分','出现太多：几乎每份文档都含，无法筛选。论文处置：把 electricity 按修饰形容词拆成子概念。']];
+function xReadInner(){const f=XL.f,z=xzone(f),d=xdisc(f),lit=Math.max(f>0?1:0,Math.round(f/1200*20));
+ return `<span class="x-zone z${z}">${XZONES[z][0]}</span><h4>${esc(XL.w>=0?XWORDS[XL.w].t:'自选频次')}</h4><div class="muted">1200 份示意报告中约 <b>${f}</b> 份含此概念${XL.w===0?'——论文原例：领域内几乎每篇都含。':XL.w===2?'——论文原例：整库仅零星几篇提到。':''}</div><div class="x-docs" aria-hidden="true">${Array.from({length:20},(_,i)=>`<i class="${i<lit?'lit':''}"></i>`).join('')}</div><div class="x-bar"><span>区分力</span><div class="bar-track"><div class="bar-fill" style="width:${(d*100).toFixed(1)}%"></div></div><span class="mono">${Math.round(d*100)}%</span></div><div class="x-luhn">${XZONES[z][1]}</div>`;}
+function xSvg(){
+ const W=560,H=206,L=42,R=12,T=14,B=30;
+ const x=f=>L+(f/1200)*(W-L-R), y=d=>T+(1-d)*(H-T-B);
+ const pts=[];for(let f=0;f<=1200;f+=30)pts.push(`${x(f).toFixed(1)},${y(xdisc(f)).toFixed(1)}`);
+ const tick=[0,300,600,900,1200].map(f=>`<text x="${x(f).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#8b8b87">${f}</text>`).join('');
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="词频与区分力关系示意曲线：太常见与太罕见区分力都低，中间最高"><rect x="${x(0)}" y="${T}" width="${(x(180)-x(0)).toFixed(1)}" height="${H-T-B}" fill="rgba(193,58,33,.07)"></rect><rect x="${x(180).toFixed(1)}" y="${T}" width="${(x(900)-x(180)).toFixed(1)}" height="${H-T-B}" fill="rgba(35,122,75,.08)"></rect><rect x="${x(900).toFixed(1)}" y="${T}" width="${(x(1200)-x(900)).toFixed(1)}" height="${H-T-B}" fill="rgba(192,106,18,.09)"></rect><line x1="${x(600).toFixed(1)}" y1="${y(1)}" x2="${x(600).toFixed(1)}" y2="${H-B}" stroke="#d6d6d1" stroke-dasharray="4 4"></line><text x="${x(600).toFixed(1)}" y="${T+11}" text-anchor="middle" font-size="10" fill="#8b8b87">区分力峰值（示意）</text><polyline points="${pts.join(' ')}" fill="none" stroke="#2446d8" stroke-width="2.2"></polyline><line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="#d6d6d1"></line><line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="#d6d6d1"></line>${tick}<g id="xmark"><line id="xmarkL" x1="0" y1="0" x2="0" y2="0" stroke="#2446d8" stroke-width="1" opacity=".45"></line><circle id="xmarkC" r="4.5" fill="#2446d8" stroke="#fff" stroke-width="1.5"></circle></g></svg>`;
+}
+function xSync(){const r=$('#xread');if(r)r.innerHTML=xReadInner();
+ const W=560,H=206,L=42,R=12,T=14,B=30;const cx=L+(XL.f/1200)*(W-L-R),cy=T+(1-xdisc(XL.f))*(H-T-B);
+ const l=$('#xmarkL'),c=$('#xmarkC');if(l){l.setAttribute('x1',cx);l.setAttribute('x2',cx);l.setAttribute('y1',cy);l.setAttribute('y2',H-B)}if(c){c.setAttribute('cx',cx);c.setAttribute('cy',cy)}}
+function xLabHtml(){
+ const chips=`<div class="choice-row" role="group" aria-label="选一个词例查看它的频次与处置">${XWORDS.map((w,i)=>`<button type="button" class="choice" data-action="xword" data-value="${i}" aria-pressed="${i===XL.w}">${esc(w.t)}</button>`).join('')}</div>`;
+ return `${chips}<div class="x-lab"><div class="x-curve">${xSvg()}<div class="x-slider"><span>0 份</span><input type="range" class="x-freq" min="0" max="1200" step="1" value="${XL.f}" aria-label="该概念在 1200 份报告中出现的文档数"><span>1200 份</span></div><div class="caption">横轴：1200 份示意报告中含该概念的文档数；纵轴：区分力（示意曲线，峰值在半数文档处）。三色区带：左 = 上卷区，中 = 独立家族区，右 = 细分区。<span class="src">曲线示意 · 词例 PDF p.6</span></div></div><div class="x-read" id="xread" aria-live="polite">${xReadInner()}</div></div>${tip('操作：点词例或拖滑杆，看区分力与 Luhn 的处置如何变化。语料规模对应论文试验；180/900 份阈值为教学划分。')}`;
+}
+function numbersHtml(){
+ const tiles=PAPER.stats.map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div><div class="caption">${esc(s.context)}</div><div class="caption">${src({label:s.source,page:s.page})}</div></div>`).join('');
+ return `<div class="number-grid x-num3">${tiles}</div><div class="answer" style="margin-top:14px" aria-live="polite"><h3>怎么读这三个数字</h3><p>三个数字口径不同、不能互比：1200 是试验样本量，&lt;1000 是词典规模估计，≥2 是编码规则阈值。合起来是方法的分工——人工建词典，机器跑编码与匹配。</p><div class="only-pro pro-note">编码规则原文（PDF p.7）：a notion occurring at least twice in the same paragraph would be considered a major notion；出现在紧邻段落亦计入。匹配口径（PDF p.8）：ask for a match of a given fraction of the notions——给定比例的重合概念，阈值未定值。</div></div>`;
+}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p>${relatedLink()}${tip('按相关论文摘要转述；沿用该论文的研究范围。')}</div>`;
+ return `<div class="answer"><h3>一条 1957 → 1972 的对照线</h3><p>Luhn 定机制：词频即主题证据，区分力两端都要调颗粒度。Sparck Jones 定权重：区分力按集合频率计算，稀有词加权更高。两篇都未测生产收益；现代检索里 IDF 类加权已是默认组件，本篇的价值在理解机制，而非直接复用参数。</p>${relatedLink()}${tip('本段为教学推断。两篇论文的数字不宜直接相加。')}</div>`;
+}
+const originalCases={
+ 25:['争议问题是否有充分支持？','论文以阿斯巴甜与癌症关联等争议问题说明证据冲突。','比较真实网页中的事实、论证风格与相关性，观察模型回答变化。','Introduction / 摘要'],
+ 35:['虚构咖啡机目录中的产品如何排序？','论文分别观察很少被推荐与通常位列次选的目标产品。','控制商品目录后比较异常附加文本对首选概率的影响。','摘要 / Figure 1'],
+ 38:['消费商品推荐为何出现排序偏差？','来源正文被放入模型上下文，名称与位置也可能影响输出。','分别控制产品名、内容和位置，再比较推荐排序分布。','摘要 / Figure 1'],
+ 52:['合同的责任限制条款包括哪些内容？','句子级检索可能只取得损害类型，漏掉责任上限与例外。','层次节点保留完整条款，帮助同时回答责任限制和例外。','论文末尾 qualitative example'],
+ 58:['付费关联评测被答案采纳后需披露什么？','引文能够支持产品主张，但付费关联可能改变读者解释。','分别检查关系证据、答案采用、重要性和披露；缺证保持未决。','Introduction'],
+ 63:['背包是否符合短途旅行和工作装备需求？','卖方页面可能掩盖缺陷，让目标背包进入推荐集合。','以用户约束与效用评价结果，比较来源改写和防御前后。','Figure 1 / 摘要']};
+function caseHtml(){const c=originalCases[PAPER.id];if(c)return `<div class="kicker">论文原例的中文转述 · 出处：${esc(c[3])}</div><p class="intro">${esc(c[0])}</p><div class="two-docs">${panel('问题与输入',c[1])}${panel('操作与检查',c[2])}</div><div class="callout" style="margin-top:16px">对应发现：${esc(PAPER.findings[0])}；${esc(PAPER.findings[2])}。</div>${tip('本页未为案例补造提升幅度。')}`;
+ return `<div class="kicker">依据论文编码规则构造的教学示意 · 论文原例见上一页 electricity/butterfly</div><p class="intro">任务：一篇新报告要进企业知识库，机器怎样自动标引它？</p><div class="two-docs">${panel('输入 · 示意段落','《整流器纹波测试》：比较三种整流器的纹波抑制表现；在整流器负载变化下测量纹波电压，并讨论滤波电容对纹波的作用。')}${panel('机器输出 · 按 PDF p.7 规则','主要概念：整流器（3 次）、纹波（3 次）；电容（1 次，相邻段未再现）不入模式。文档模式 = [整流器, 纹波]。')}</div><div class="callout" style="margin-top:14px">下一步：提问短文同规则编码，按重合概念比例与库内文档匹配（PDF p.7–8）。</div>${tip('段落为编写示意；同段计数与「提问同构编码」均出自原文机制。本页不给检索收益数字。')}`;}
+function personaHtml(){const roles=['内容与业务负责人','技术与数据人员','研究与审核人员'];const todos=[['明确本页服务的具体需求：'+PAPER.query,'检查事实及来源，再尝试：'+PAPER.after,'保留未修改样本，对照观察：'+PAPER.metrics[0].name],['复现论文任务：'+PAPER.setting,'记录版本、候选来源与指标分母','分别追踪主指标和负向变化：'+PAPER.extra],['核对原文方法及结果的证据位置','检查研究边界：'+PAPER.boundary,'与《'+PAPER.related.zh+'》进行同口径对照']];return `${choices(roles,state.role,'role')}<div class="columns"><div><h3>${roles[state.role]}</h3><p style="margin-top:12px">为什么适合：${esc(state.role===0?PAPER.findings[0]:state.role===1?PAPER.findings[1]:PAPER.findings[3])}。</p><div class="callout warn">避免：${esc(PAPER.before)}后，直接宣称所有结果都由该操作带来。</div></div><div><ul class="fact-list">${todos[state.role].map((s,i)=>`<li>${esc(s)}<small>对应 F${state.role===0?1:state.role===1?2:4} · 本课应用推断</small></li>`).join('')}</ul></div></div>`;}
+function matureHtml(){const forms=PAPER.kind==='风险研究'?['来源与关系审计表','红队测试用例库','防御上线复核单']:PAPER.category.startsWith('09')||PAPER.category.startsWith('08')?['检索运行追踪','技术基准卡','系统变更记录']:['带证据的说明文档','分层测量报告','可复现实验记录'];return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${forms.map((s,i)=>`<tr><td>${esc(s)}</td><td>${esc([PAPER.query+'；事实、来源和适用条件',PAPER.metrics.map(m=>m.name).join('、')+'；按样本与版本分层','输入、操作、比较、负向结果和重测条件'][i])}</td><td>${esc(PAPER.steps[i])}</td></tr>`).join('')}</tbody></table><div class="${PAPER.kind==='风险研究'?'callout warn':'callout'}" style="margin-top:18px">${PAPER.kind==='风险研究'?'底线提示：仅在授权测试环境评估风险；公开课程聚焦识别、评估与防御。':'采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。'}</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i===0?'来自本篇研究范围与局限解读。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、指标含义、适用条件与证据强弱。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+xSync();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','concept','method','flow','lab','compare','numberless','proof','number','metric','limit'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene')$('#sceneOut').innerHTML=`<h3>${v?'研究启发':'常见做法'}</h3><p>${esc(v?PAPER.after:PAPER.before)}</p>${tip(v?'本课应用推断。需要在目标场景中验证。':'教学示意，尚未进行实际效果测量。')}`;
+ else if(a==='concept')$('#conceptOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p>`;
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flow(v);
+ else if(a==='metric'){state.metric=v;$('#metricOut').innerHTML=xMetricPanel(v);}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='method')$('#methodOut').innerHTML=xMethodPanel(v);
+ else if(a==='xword'){XL.w=v;XL.f=XWORDS[v].f;box.innerHTML=xLabHtml();xSync();}
+ else if(a==='numberless')$('#numberlessOut').textContent=v?PAPER.boundary:PAPER.setting;
+ else if(a==='number'){
+  if(v===PAPER.stats.length){const t=PAPER.table;$('#numberOut').innerHTML=t?`<div class="source-text table" lang="en">${esc(t.text)}</div>${src(t)}${tip('版面抽取节选，换行可能影响列对齐；完整表格及脚注以PDF为准。')}`:`<div class="answer"><p>未找到可可靠定位的首张表格。保留已核对的摘要数值，完整结果请打开原文。</p>${ext(PAPER.url,'查看原文')}</div>`;}
+  else{state.num=v;const s=PAPER.stats[v];$('#numberOut').innerHTML=`<div class="columns"><div><div class="kicker">${esc(s.name)}</div><div class="number-large">${esc(s.v)}</div>${src({label:s.source,page:s.page})}</div><div class="answer"><h3>这个数字表示什么</h3><p>${esc(s.context)}</p>${tip(PAPER.extra)}</div></div>`;}}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);$('#findingOut'+ix).innerHTML=`<p>${esc(v===0?PAPER.finding_details[ix]:v===1?'应用推断：'+PAPER.steps[ix%PAPER.steps.length]+'，并以'+PAPER.metrics[ix%PAPER.metrics.length].name+'检验。':PAPER.boundary)}</p>${tip(v===1?'行动建议属于教学推断。':v===2?PAPER.extra:'需要连同研究设计解读，勿省略条件。')}`;}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(PAPER.findings.map(t=>t+'。').join('\n')+'\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+
+// x-lab 滑杆：拖动即重算区分力与 Luhn 处置（input 事件委托，重渲染不失效）
+document.addEventListener('input',e=>{
+ if(!e.target.classList||!e.target.classList.contains('x-freq'))return;
+ XL.f=+e.target.value;XL.w=-1;
+ $$('[data-action="xword"]').forEach(b=>b.setAttribute('aria-pressed','false'));
+ xSync();
+});
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

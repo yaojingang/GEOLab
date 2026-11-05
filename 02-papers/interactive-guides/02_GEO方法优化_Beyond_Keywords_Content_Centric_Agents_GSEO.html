@@ -1,0 +1,816 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>内容影响力基准 · 论文课堂</title><meta name="description" content="本地PDF更新为CC-GSEO-Bench，将文章影响力拆成曝光、归功与因果影响"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="2509.05607v2"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:6px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+/* opt-5 新增组件（x- 前缀，避免与 PGS 组件冲突） */
+.lesson .x-track{display:block;position:relative;height:20px;background:var(--tint);border-radius:4px;min-width:0}
+.lesson .x-tall{height:30px}
+.lesson .x-thin{height:10px;border-radius:2px}
+.lesson .x-fill{display:block;position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:4px}
+.lesson .x-fill.x-dim{background:var(--line-2)}
+.lesson .x-btick{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px dashed var(--ink-3)}
+/* 三层漏斗（改动实验室） */
+.lesson .x-strats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+.lesson .x-strat{text-align:center;padding:6px 4px!important;font-size:13px!important;line-height:1.35}
+.lesson .x-strat small{display:block;font-size:10px;color:var(--ink-3);font-family:var(--mono)}
+.lesson .x-strat[aria-pressed=true] small{color:var(--accent-ink)}
+.lesson .x-funnel{display:flex;flex-direction:column;gap:9px}
+.lesson .x-fhead,.lesson .x-fstage{display:grid;grid-template-columns:28px 108px minmax(0,1fr) 64px;gap:10px;align-items:center;width:100%}
+.lesson .x-fhead{grid-template-columns:146px minmax(0,1fr) 64px}
+.lesson .x-funnel-cap{font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+.lesson .x-fstage{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:left}
+.lesson .x-fstage:hover{border-color:var(--line-2)}
+.lesson .x-fstage.cur{border-color:var(--accent);background:var(--accent-tint)}
+.lesson .x-fstage .x-ix{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;flex:none}
+.lesson .x-fstage.cur .x-ix{background:var(--accent);border-color:var(--accent);color:#fff}
+.lesson .x-fname{font-size:13.5px;font-weight:600;line-height:1.3}
+.lesson .x-fname small{display:block;font-size:10px;color:var(--ink-3);font-family:Georgia,serif;font-weight:400}
+.lesson .x-fd{display:flex;flex-direction:column;align-items:flex-end;gap:1px;font-family:var(--mono);font-size:12.5px;text-align:right}
+.lesson .x-fd .x-fv{font-size:10.5px;color:var(--ink-2)}
+.lesson .x-fd em{font-style:normal}
+.lesson .x-fnote{margin-top:12px;line-height:1.7}
+/* 证据读数：带基线横条图 */
+.lesson .x-nchart{display:flex;flex-direction:column;gap:5px;margin:6px 0 8px}
+.lesson .x-nrow{display:grid;grid-template-columns:150px minmax(0,1fr) 168px;gap:10px;align-items:center}
+.lesson .x-nrow.x-nbase .x-nname{font-weight:600}
+.lesson .x-nrow.x-nbase .x-track{background:var(--accent-tint)}
+.lesson .x-nname{font-size:13px;line-height:1.3}
+.lesson .x-nname small{display:block;font-size:10px;color:var(--ink-3);font-family:var(--mono)}
+.lesson .x-nval{font-family:var(--mono);font-size:12px;text-align:right;line-height:1.35}
+.lesson .x-nval em{font-style:normal;margin-left:4px}
+.lesson .x-nval small{display:block;font-size:10px;color:var(--ink-3)}
+/* 发现页迷你图 */
+.lesson .x-sqs{display:flex;gap:8px;margin:6px 0 10px}
+.lesson .x-sq{width:34px;height:34px;border:1px solid var(--line-2);border-radius:6px;background:#fff}
+.lesson .x-sq.on{background:var(--accent);border-color:var(--accent)}
+.lesson .x-legend{display:flex;gap:16px;font-size:11.5px;color:var(--ink-2);margin-bottom:8px}
+.lesson .x-leg{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.lesson .x-leg1{background:var(--line-2)}.lesson .x-leg2{background:var(--accent)}
+.lesson .x-prow{display:grid;grid-template-columns:96px minmax(0,1fr) 96px;gap:8px;align-items:center;padding:2px 0;border-bottom:1px solid var(--line)}
+.lesson .x-prow:last-of-type{border-bottom:0}
+.lesson .x-pn{font-size:12px}
+.lesson .x-pp{display:flex;flex-direction:column;gap:3px}
+.lesson .x-pv{font-family:var(--mono);font-size:11px;color:var(--ink-2);text-align:right}
+.lesson .x-duel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:4px 0 8px}
+/* 案例五维分数 */
+.lesson .x-fivescores{display:flex;gap:6px;margin:10px 0 4px;flex-wrap:wrap}
+.lesson .x-fs{flex:1;min-width:52px;border:1px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center}
+.lesson .x-fs small{display:block;font-size:10px;color:var(--ink-3)}
+.lesson .x-fs b{font-family:var(--serif);font-size:17px}
+.lesson .x-fs.x-fsq{background:var(--tint)}
+/* 流程 4 步 */
+.lesson .step-track.x-steps{grid-template-columns:repeat(4,1fr)}
+/* 方法页分组 */
+.lesson .x-grps .grp-t{margin-top:8px}
+@media (max-width:900px){
+ .lesson .x-strats{grid-template-columns:repeat(2,1fr)}
+ .lesson .step-track.x-steps{grid-template-columns:repeat(2,1fr)}
+ .lesson .x-fhead,.lesson .x-fstage{grid-template-columns:22px 76px minmax(0,1fr) 52px;gap:7px}
+ .lesson .x-fhead{grid-template-columns:105px minmax(0,1fr)}
+ .lesson .x-fhead>span:last-child{display:none}
+ .lesson .x-nrow{grid-template-columns:96px minmax(0,1fr) 84px}
+ .lesson .x-nval small{display:none}
+ .lesson .x-prow{grid-template-columns:76px minmax(0,1fr) 76px}
+ .lesson .x-blab{font-size:9px}
+}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 02 GEO方法优化</div>
+    <h1>内容影响力基准</h1>
+    <div class="en">2025 · 实证测量</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">内容影响力基准</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">1,000+ 篇文章、5,000+ 配对；影响力拆成曝光、归功与因果三层测量<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">这门课讲 CC-GSEO-Bench：把一篇文章在生成式回答里的影响力，拆成曝光、忠实归功与因果影响三层。先记住规模：一千多篇文章、五千多个查询配对。全程围绕一个问题——同一篇文章能接住多少种问法。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">沿着问题与证据完成这门课</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">四个问题贯穿全课：怎么测、拆几层、什么有效、边界在哪。</div></div><div class="notes">路线：先看问题场景，再拆五维指标与四步构建流程，然后是九种改写策略在三层上的实测，最后用论文原例和边界收尾。每页要点都带出处，可随时核对原文。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">同一篇文章能覆盖多少种用户问题</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">只测一个易命中问题会误判影响力；论文按文章建查询簇再聚合<span class="src">§2.1 · PDF p.2</span></div></div><div class="notes">常见做法是挑一个最容易命中的问题测一次。论文的做法是给每篇文章配一组意图不同的查询，还要通过检索校验。请想一想：你的内容能接住定义、比较、步骤、利弊几种问法？</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">先拆五维：三层影响、两层质量</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">三层影响维度加两层质量维度，逐维 0–10 打分<span class="src">§3.2 · PDF p.4</span></div></div><div class="notes">五维打分：三层看影响，两层看质量。重点是曝光与忠实归功分开打分——被写进回答和被正确归功是两件事，后面会发现它们走向不同。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">影响测量四步：建簇、校验、作答、对照</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">建簇、检索校验、带标注作答、移除来源对照；检索列表缓存可复现<span class="src">§2.2 · PDF p.3</span></div></div><div class="notes">四步流程：建查询簇、检索校验、带来源标注作答、移除来源对照。缓存检索列表是为了别人能复现同样的评估输入。注意第二步筛掉了目标文章搜不到的配对。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">明确干预环节才能解释效果</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">干预环节是文档改写；检索环境一致，变化才能归因于内容<span class="src">§2.1–2.2 · PDF p.2–3</span></div></div><div class="notes">干预环节在文档改写，检索环境保持一致，效果才能归因到内容本身。对照检查时先固定任务与口径，再谈新场景。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">指标分别回答不同的效果问题</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">单查询 0–10 分；簇内平均后对文章等权宏平均得 MIL<span class="src">§3.3 · PDF p.5</span></div></div><div class="notes">每个维度 0 到 10 分。文章内先按查询平均，再对所有文章等权宏平均得到 MIL；覆盖看达标占比，稳定看簇内波动。专业层有全部公式。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">实验设置限定结论的适用范围</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">测试集 5,353 配对 · gpt-oss-120b · 9 种改写策略加基线<span class="src">§4.1 · PDF p.6</span></div></div><div class="notes">测试集 5,353 个配对，引擎用 gpt-oss-120b 离线模拟，九种改写策略加一个不动的基线。右侧可以切换三段原文证据核对。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">保持对照一致才能解释变化</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">保持任务、来源范围与评估口径，再检验新场景。</div></div><div class="notes">复验清单四项：多查询、有基线、记录版本、报告负向变化。勾满说明方案完整，因果识别仍要靠设计保证。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">九种改写策略分三类：风格、增强、权威</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">策略分风格、增强、权威三类；表面编辑主要改善可读与可信<span class="src">§4.1 · Table 4 · PDF p.6–8</span></div></div><div class="notes">九种策略分三类：风格、内容增强、权威。点开看特征变化：More Quotes 平均加 487.6 个字符、9.7 处引号；Statistics 加 7.6 个数字词。表面编辑主要改善可读与可信。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">十种方案放进三层漏斗，逐层对比基线</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">三层漏斗逐层对比基线：变化集中在归功与因果层<span class="src">Table 1 · PDF p.6</span></div></div><div class="notes">这是本课的实验室：选一个策略，三层漏斗实时对比基线。默认是 More Quotes——曝光几乎没动，归功与因果层明显上移。点击每一层看打分方式与三项聚合值。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">数字需要连同口径一起读取</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">同一策略换维度结论会变：先选维度，再读基线与差值<span class="src">Table 1 · PDF p.6</span></div></div><div class="notes">换维度看排序：曝光层大家挤在一起，归功层拉开差距，因果层整体都低。每行虚线是基线 None。结论会随维度变化，所以要把口径读全。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">文章级评估需要多个查询</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">文章级结论来自查询簇聚合与覆盖统计<span class="src">§3.3 · PDF p.5</span></div></div><div class="notes">文章级结论必须落在查询簇上：单条查询既可能撞大运，也可能漏掉真正的覆盖。ICov 统计达标查询占比，示意里五个查询只中了两个。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">出现与忠实归功是不同维度</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">曝光与因果几乎不相关（r ≈ 0.019），归功与因果中度相关（r ≈ 0.254）<span class="src">Figure 3 · PDF p.6</span></div></div><div class="notes">看五对条形：曝光 MIL 几乎平的，归功 MIL 拉开了明显差距。相关分析也支持：曝光与因果 r 约 0.019，归功与因果 r 约 0.254。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">反事实比较补足因果影响</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">因果分来自移除来源前后的成对比较；最高达标率仅 9.1%<span class="src">§3.2.3 · Table 1 · PDF p.4–6</span></div></div><div class="notes">因果分靠反事实：移除来源再答一次。基线只有 4.5% 的查询真依赖目标来源；Statistics 把它翻到 9.1%，仍不到一成。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">覆盖与稳定性应同时汇报</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">平均分高可能覆盖窄：Statistics 因果 MIL 5.631，达标仅 9.1%<span class="src">Table 1 · PDF p.6</span></div></div><div class="notes">Statistics 的因果平均分 5.631 看着不低，达标占比只有 9.1%，可信分还降了 0.7。平均、覆盖、稳定三把尺子一起读。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">相关研究帮助检验迁移边界</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">与《引用选择与内容吸收》对照：都主张测量深于引用角标的采用</div></div><div class="notes">相关课《引用选择与内容吸收》在真实平台区分被引用与被吸收两个阶段。两篇互相印证：引用角标之外还有更深的采用；口径不同，数字别直接相加。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">把方法还原为一次具体操作</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">来源 1 主导回答（因果 7.5），来源 2 被检索却影响很小（4.5）<span class="src">Figure 2 · PDF p.3</span></div></div><div class="notes">论文原例：第一次养宠物选什么。来源 1 讲豚鼠，饮食与寿命清楚，因果分 7.5，主导了回答；来源 2 吹鹦鹉好养会说话，可信分 5.0，因果分 4.5。被检索到，未必有影响。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">不同角色需要不同的执行清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">行动建议为本课推断，需用对照试验确认。</div></div><div class="notes">三类角色各取一张清单。内容负责人先建问题簇；技术同学守住基线与版本记录；研究与审核同学核对口径和边界。行动是推断，先做小范围对照。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态可以承接研究方法</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">成熟形态与研究方法的映射为本课推断。</div></div><div class="notes">把研究方法接进日常工作：文章对照卡、分层影响力报告、可复现测量记录。这一对应是本课推断，先小范围试。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">结论的边界决定应用的尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">论文自述局限：离线模拟、自动裁判、仅文档级改写<span class="src">Limitations · PDF p.9</span></div></div><div class="notes">论文自述三条局限：离线缓存检索、自动裁判打分、只改文档。再加一条：主表只有 gpt-oss-120b 一个引擎。结论的边界决定能用它做什么决定。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">每条金句带依据与用法；复制时附出处。</div></div><div class="notes">六张金句卡，背面有依据和用法。复制按钮会带上论文出处与边界，方便贴进自己的文档。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">五题覆盖结论、反常发现、指标、边界与局限；答错给复习页。</div></div><div class="notes">五道题覆盖结论、反常发现、指标、边界与局限。答错会给出复习页码，回看后再答一遍。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>CC-GSEO-Bench: A Content-Centric Benchmark for Measuring Source Influence in Generative Search Engines</p><p>2025 · 2509.05607v2</p><p><a href="https://arxiv.org/pdf/2509.05607" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper5,
+  author = {Qiyuan Chen and Jiahe Chen and Hongsen Huang and Qian Shao and Jintai Chen and Renjie Hua and Hongxia Xu and Ruijia Wu and Chuan Ren and Jian Wu},
+  title = {CC-GSEO-Bench: A Content-Centric Benchmark for Measuring Source Influence in Generative Search Engines},
+  year = {2025},
+  url = {https://arxiv.org/pdf/2509.05607}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：47fe261b3542663071a34882b225de2e5026cf3c1ede3b7b8f02e3d8a82f4fab</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={"id": 5, "zh": "内容影响力基准", "kind": "实证测量", "question": "同一篇文章能覆盖多少种用户问题？",
+ "claim": "CC-GSEO-Bench 把文章影响力拆成曝光、忠实归功与因果影响三层，在 5,000+ 查询配对上按文章聚合测量",
+ "steps": ["为每篇文章建立查询簇", "检索校验：目标文章须重新出现", "带来源标注作答并逐维打分", "移除目标来源对照回答变化"],
+ "findings": ["文章级评估需要多个查询", "出现与忠实归功是不同维度", "反事实比较补足因果影响", "覆盖与稳定性应同时汇报"],
+ "metrics": [
+  {"name": "曝光", "plain": "文章在生成回答中的出现", "pro": "裁判读查询、带角标的回答与来源摘要（标题、URL、片段），来源出现越显著分越高；0–10。"},
+  {"name": "忠实归功", "plain": "内容贡献获得正确来源标注", "pro": "裁判比对回答中归到该来源的说法与来源原文，检查有无支撑、是否失真；0–10。"},
+  {"name": "因果影响", "plain": "移除或替换来源后的答案变化", "pro": "同一查询生成含来源 A⁺ 与移除来源 A⁻ 两次回答，按质量损失打分；0–10。"}],
+ "setting": "测试集 5,353 个查询文章配对；用检索器加生成器离线模拟生成式搜索，并缓存检索上下文",
+ "boundary": "结论来自 gpt-oss-120b 离线模拟与自动评分裁判；换引擎、换提示词或真实上线需复测",
+ "query": "同一篇教程怎样服务多种提问？",
+ "before": "挑一个最容易命中的问题（如「X 是什么」）测一次，答得上来就当作有影响力",
+ "after": "围绕文章建一组意图不同的查询，逐层记录曝光、归功与回答变化，再聚合",
+ "finding_details": [
+  "影响力要在文章对应的查询簇上聚合：先在簇内对每个维度取均值，再对所有文章等权宏平均。只看单条查询会高估或低估，覆盖（ICov）与稳定性（IStab）同样按簇计算。",
+  "曝光与忠实归功分开打分：正文借用观点却把角标指向别处时，二者会分离。Table 1 里各策略曝光 MIL 集中在 5.56–5.77，忠实归功 MIL 最高到 6.328，两条维度走向不同。",
+  "把目标来源从上下文移除后重新作答，比较两次回答的质量差，得到 0–10 的因果分。基线只有 4.5% 的查询达到可接受水平，Statistics 提升到 9.1%，多数回答并不依赖单一来源。",
+  "平均分与覆盖要一起读：Statistics 的因果 MIL 5.631 看似不低，达标查询仅 9.1%；同时它的可信分 7.613，低于基线 8.352。只报平均分或只报覆盖都会误导决策。"],
+ "catalog_title": "Beyond Keywords: Driving Generative Search Engine Optimization with Content-Centric Agents",
+ "title": "CC-GSEO-Bench: A Content-Centric Benchmark for Measuring Source Influence in Generative Search Engines",
+ "authors": "Qiyuan Chen; Jiahe Chen; Hongsen Huang; Qian Shao; Jintai Chen; Renjie Hua; Hongxia Xu; Ruijia Wu; Chuan Ren; Jian Wu",
+ "year": "2025", "category": "02_GEO方法优化", "url": "https://arxiv.org/pdf/2509.05607",
+ "file": "02_GEO方法优化_Beyond_Keywords_Content_Centric_Agents_GSEO.html",
+ "pdf": "../02_GEO方法优化/02_GEO方法优化_Beyond_Keywords_Content_Centric_Agents_GSEO.pdf",
+ "kind_note": "基于受测环境，迁移效果需要另测",
+ "extra": "保持论文的任务、来源范围和评估口径，再检验新场景。",
+ "evidence": [
+  {"label": "摘要与研究目标", "page": 1, "text": "[1][2] [2][3] Generative Search Engines (GSEs) synthesize conversational answers from multiple sources, weakening the long-standing link between search ranking and digital visibility. This shift raises a central question for content creators: How can we reliably quantify a source article's influence on a GSE's synthesized answer across diverse intents and follow-up questions? We introduce CC-GSEO-Bench, a content-centric benchmark that couples a large-scale dataset with a creator-centered evaluation framework. The dataset contains over 1,000 source articles and over 5,000 query–article pairs, organized in a one-to-many structure for article-level evaluation. We ground construction in realistic retrieval by combining seed queries from public QA datasets with limited synthesized augmentation and retaining only queries whose paired source reappears in a follow-up retrieval step. On top of this dataset, we operationalize influence along three core dimensions, Exposure, Faithful Credit, and Causal Impact, and two content-quality dimensions, Readability and Structure and Trustworthiness and Safety."},
+  {"label": "方法与评估", "page": 5, "text": "In this section, we conduct a comprehensive empirical evaluation of document-level optimization strategies for Generative Search Engines (GSEs). Our analysis aims to answer several key research questions: First, we quantify the overall effectiveness of different optimization heuristics on key performance dimensions including Exposure, Faithful Credit, and Causal Impact (RQ1), and investigate the inherent trade-offs between these objectives and document quality metrics such as Readability and Trustworthiness (RQ2). Furthermore, we examine whether the optimal strategy is context-dependent regarding user intent and query difficulty (RQ3), and how retrieval rank influences the efficacy of these optimizations (RQ4). Finally, we interpret these results by analyzing the linguistic feature shifts associated with successful optimizations (RQ5). We then compute the benchmark-level macroaverage (each article has equal weight), termed the Mean Influence Level (MIL)."},
+  {"label": "讨论与研究边界", "page": 8, "text": "This paper introduces CC-GSEO-Bench and a content-centric evaluation framework for measuring and optimizing source influence in Generative Search Engines. Going beyond surface attribution, our framework quantifies a source's Exposure, Faithful Credit, and Causal Impact, together with content-quality dimensions of Readability & Structure and Trustworthiness & Safety. CC-GSEO-Bench pairs each source article with a query cluster and supports article-level influence analysis via strength, coverage, and stability over clustered queries. Experiments on nine representative rewriting strategies reveal systematic trade-offs and strong rank effects, offering actionable guidance for creators and a principled foundation for future GSEO research."}],
+ "table": {"page": 6, "label": "Table 1 / Table I 原文抽取", "text": "Table 1: Performance of different GSEO strategies on gpt-oss-120b. We report the Mean Influence Level (MIL),\nCoverage (ICov), and Stability (IStab) for the primary metrics (Exposure, Faithful Credit, Causal Impact), alongside\nthe mean scores for Readability & Structure and Trustworthiness & Safety. The best performance per column is\nhighlighted in bold.\n\n                              Exposure (E)          Faithful Credit (F)     Causal Impact (C)         Readability (R)     Trust (T)\n Method\n                           MIL     ICov    IStab   MIL     ICov    IStab   MIL     ICov      IStab            Mean         Mean\n None                      5.630   0.333   0.773   5.747   0.477   0.691   5.501   0.045     0.864            4.767        8.352\n Fluent                    5.658   0.344   0.745   5.909   0.505   0.663   5.512   0.051     0.863            5.980        8.636\n Simple Language           5.623   0.330   0.745   5.610   0.454   0.689   5.496   0.049     0.873            5.196        8.412\n Technical Terms           5.618   0.327   0.771   6.142   0.548   0.681   5.566   0.057     0.875            4.411        8.582\n Authoritative             5.655   0.335   0.769   5.742   0.487   0.679   5.512   0.051     0.878            4.726        7.332\n More Quotes               5.769   0.365   0.731   6.328   0.562   0.699   5.642   0.081     0.872            5.077        8.440\n Citing Credible Sources   5.689   0.341   0.733   5.908   0.489   0.696   5.572   0.062     0.867            4.624        8.153\n Statistics                5.558   0.317   0.768   6.158   0.519   0.706   5.631   0.091     0.862            4.705        7.613\n SEO                       5.640   0.333   0.765   6.138   0.534   0.691   5.576   0.057     0.881            4.817        8.419\n Unique Words              5.577   0.322   0.751   5.905   0.511   0.672   5.524   0.050     0.868            4.223        8.415"},
+ "version": "2509.05607v2", "sha256": "47fe261b3542663071a34882b225de2e5026cf3c1ede3b7b8f02e3d8a82f4fab",
+ "stats": [
+  {"v": ">1,000", "name": "源文章", "source": "摘要", "context": "统计对象为文章；每篇文章再配一组查询", "page": 1},
+  {"v": ">5,000", "name": "查询文章配对", "source": "摘要", "context": "一篇文章对应一组意图与改写不同的查询", "page": 1},
+  {"v": "5,353", "name": "测试集配对", "source": "§4.1", "context": "实验使用 test split 的规模（N = 5,353）", "page": 6},
+  {"v": "9+1", "name": "改写策略与基线", "source": "§4.1", "context": "九种改写策略，加未修改的 None 基线", "page": 6}],
+ "t1": [
+  {"k": "None", "zh": "未修改基线", "E": [5.630, 0.333, 0.773], "F": [5.747, 0.477, 0.691], "C": [5.501, 0.045, 0.864], "R": 4.767, "T": 8.352},
+  {"k": "Fluent", "zh": "流畅改写", "E": [5.658, 0.344, 0.745], "F": [5.909, 0.505, 0.663], "C": [5.512, 0.051, 0.863], "R": 5.980, "T": 8.636},
+  {"k": "Simple Language", "zh": "通俗语言", "E": [5.623, 0.330, 0.745], "F": [5.610, 0.454, 0.689], "C": [5.496, 0.049, 0.873], "R": 5.196, "T": 8.412},
+  {"k": "Technical Terms", "zh": "术语化表达", "E": [5.618, 0.327, 0.771], "F": [6.142, 0.548, 0.681], "C": [5.566, 0.057, 0.875], "R": 4.411, "T": 8.582},
+  {"k": "Authoritative", "zh": "权威口吻", "E": [5.655, 0.335, 0.769], "F": [5.742, 0.487, 0.679], "C": [5.512, 0.051, 0.878], "R": 4.726, "T": 7.332},
+  {"k": "More Quotes", "zh": "增加引语", "E": [5.769, 0.365, 0.731], "F": [6.328, 0.562, 0.699], "C": [5.642, 0.081, 0.872], "R": 5.077, "T": 8.440},
+  {"k": "Citing Credible Sources", "zh": "引用可信来源", "E": [5.689, 0.341, 0.733], "F": [5.908, 0.489, 0.696], "C": [5.572, 0.062, 0.867], "R": 4.624, "T": 8.153},
+  {"k": "Statistics", "zh": "补充统计数字", "E": [5.558, 0.317, 0.768], "F": [6.158, 0.519, 0.706], "C": [5.631, 0.091, 0.862], "R": 4.705, "T": 7.613},
+  {"k": "SEO", "zh": "SEO 关键词", "E": [5.640, 0.333, 0.765], "F": [6.138, 0.534, 0.691], "C": [5.576, 0.057, 0.881], "R": 4.817, "T": 8.419},
+  {"k": "Unique Words", "zh": "词汇多样性", "E": [5.577, 0.322, 0.751], "F": [5.905, 0.511, 0.672], "C": [5.524, 0.050, 0.868], "R": 4.223, "T": 8.415}],
+ "rank": [
+  {"p": 0, "n": [6.18, 7.36, 5.76], "q": [6.41, 7.70, 5.93]},
+  {"p": 1, "n": [5.73, 6.34, 5.51], "q": [5.83, 6.91, 5.62]},
+  {"p": 2, "n": [5.56, 5.56, 5.41], "q": [5.60, 6.17, 5.54]},
+  {"p": 3, "n": [5.57, 4.71, 5.38], "q": [5.59, 5.41, 5.46]},
+  {"p": 4, "n": [5.14, 3.77, 5.11], "q": [5.25, 4.59, 5.28]}],
+ "feat": [
+  {"k": "Fluent", "dC": -41.2, "dN": -0.2, "dQ": 0.2},
+  {"k": "Simple Language", "dC": -85.8, "dN": -0.1, "dQ": 0.0},
+  {"k": "Technical Terms", "dC": 100.4, "dN": -0.1, "dQ": 0.0},
+  {"k": "Authoritative", "dC": 112.8, "dN": -0.1, "dQ": 0.0},
+  {"k": "More Quotes", "dC": 487.6, "dN": 2.5, "dQ": 9.7},
+  {"k": "Citing Credible Sources", "dC": 462.6, "dN": 2.5, "dQ": 0.4},
+  {"k": "Statistics", "dC": 326.5, "dN": 7.6, "dQ": 0.1},
+  {"k": "SEO", "dC": 303.5, "dN": 0.0, "dQ": 0.0},
+  {"k": "Unique Words", "dC": 65.3, "dN": -0.4, "dQ": 0.1}],
+ "corr": [{"p": "曝光 与 因果", "r": 0.019}, {"p": "归功 与 因果", "r": 0.254}, {"p": "可读 与 可信", "r": 0.197}, {"p": "因果 与 可信", "r": -0.081}],
+ "related": {"id": 16, "zh": "引用选择与内容吸收", "title": "From Citation Selection to Citation Absorption: A Measurement Framework for Generative Engine Optimization Across AI Search Platforms", "url": "./03_GEO测量评估_From_Citation_Selection_to_Citation_Absorption.html", "pdf": "../03_GEO测量评估/03_GEO测量评估_From_Citation_Selection_to_Citation_Absorption.pdf", "claim": "来源选择与内容吸收是两个阶段，问答格式本身不能保证深度采用"},
+ "strength": "中", "strength_why": "本课保守评级：主表来自单一引擎（gpt-oss-120b）与自动评分裁判；跨模型一致性在附录 C，主结论未做多设置复核。",
+ "limitations": [
+  ["高", "离线模拟与缓存检索", "受控离线设置中测得的绝对数值，会随真实部署管线、提示词与引用行为变化。来源：Limitations · PDF p.9"],
+  ["高", "自动评分裁判", "为规模化采用自动裁判，可能漏掉主观或领域特有的可读性与可信判断，需人工评估补充。来源：PDF p.9"],
+  ["中", "仅文档级改写", "未建模个性化、声誉信号与时间漂移等生态因素，列为未来工作。来源：PDF p.9"],
+  ["中", "主表为单引擎", "主结果来自 gpt-oss-120b；其他架构与跨模型一致性在附录 C，迁移前需复测。来源：§4.1 · PDF p.6"],
+  ["中", "相关研究提供新的对照", "来源选择与内容吸收是两个阶段，问答格式本身不能保证深度采用"],
+  ["低", "原文版本与内部一致性", "清单保留旧题名，课程按本地修订版解读；未逐表重算的指标仍需人工复核。"]],
+ "quiz": [
+  {"q": "CC-GSEO-Bench 用哪种结构评估一篇文章的影响力？", "o": ["一篇文章对应一个标准查询，测一次定论", "一篇文章对应一个查询簇，簇内聚合后再跨文章平均", "一篇文章对应一个引擎版本，逐版本对比", "一篇文章对应一个时间段，观察长期趋势"], "a": 1, "e": "每篇文章配一组查询（one-to-many），先簇内平均、再对所有文章等权宏平均（MIL）。", "p": 7},
+  {"q": "九种改写策略跑完后，变化主要集中在哪一层？", "o": ["曝光层大幅上涨，归功与因果几乎不动", "三层同时大幅上涨", "曝光 MIL 集中在 5.56–5.77，变化主要出现在归功与因果层", "三层全部下降"], "a": 2, "e": "曝光层各策略挤在 5.56–5.77；忠实归功 MIL 最高 6.328，因果覆盖从 0.045 升到 0.091。", "p": 14},
+  {"q": "因果影响（C）的 0–10 分是怎么得到的？", "o": ["数回答里引用角标出现的次数", "把目标来源从上下文移除后重新作答，比较两次回答的质量差", "用来源文章字数除以回答字数", "让内容作者自评重要性"], "a": 1, "e": "A⁺（含来源）与 A⁻（移除来源）对同一查询生成，裁判按完整性与正确性的损失打分。", "p": 7},
+  {"q": "Statistics 把因果覆盖从 0.045 提到 0.091，采用前还应检查什么？", "o": ["可信均分从 8.352 降到 7.613，属于明显代价", "它同时把可读性提到最高", "它对曝光 MIL 的提升最大", "它在所有维度都是最优"], "a": 0, "e": "Table 1：Statistics 的 Trust 均分 7.613，低于基线 8.352；数字密集可能被读作幻觉风险。", "p": 12},
+  {"q": "哪一条是论文自述的局限？", "o": ["数据集太小，无法做统计比较", "离线缓存检索加自动裁判，绝对数值随部署环境变化", "结论只适用于中文内容", "只覆盖图片搜索场景"], "a": 1, "e": "Limitations：受控离线设置、自动裁判与仅文档级改写；另见附录 C 的跨模型结果。", "p": 21}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{geo:{t:"GEO",d:"改善来源在生成式答案中的可见性及归功的研究与实践。"},rag:{t:"RAG",d:"先检索外部资料，再以资料支持模型生成。"},baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},ablation:{t:"消融",d:"去除某个组件，比较它对整体结果的贡献。"},transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"},mil:{t:"MIL 平均影响力",d:"单查询 0–10 分在查询簇内平均后，再对所有文章等权宏平均。"},icov:{t:"ICov 覆盖",d:"文章的查询簇中，得分达到可接受阈值 τ 的查询占比。"},istab:{t:"IStab 稳定性",d:"1 减去簇内归一化方差，越接近 1 越稳定。"},judge:{t:"自动评分裁判",d:"阅读查询、回答与来源摘要，按 0–10 打分的模型。"},cf:{t:"反事实比较",d:"同一上下文移除目标来源后再生成，比较两次回答的差异。"},gseo:{t:"GSEO",d:"面向生成式搜索引擎的内容优化；本篇用九种改写策略代表常见做法。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=(l,p)=>`<span class="src">${esc(l)} · PDF p.${p}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,num:0,lim:0,role:0,proof:0,q:0,st:5,ly:0,answers:[],checks:new Set(),flips:new Set()};
+const T1=PAPER.t1, LAYERS=[
+ {id:'E',name:'曝光',en:'Exposure',plain:'来源被写进回答，而且位置显眼、看得到。',judge:'裁判读查询、带角标的回答与来源摘要，出现越显著分越高。',find:'各策略的曝光 MIL 集中在 5.56–5.77，改写几乎没有打开这一层。'},
+ {id:'F',name:'忠实归功',en:'Faithful Credit',plain:'回答里归到该来源的说法，确实出自它，意思没被歪曲。',judge:'裁判比对归功内容与来源原文，检查有无支撑、是否失真。',find:'变化主要发生在这一层：More Quotes 的 MIL 6.328，比基线高 0.581。'},
+ {id:'C',name:'因果影响',en:'Causal Impact',plain:'把来源移走再答一次，回答明显变差，才算真有影响。',judge:'对同一查询生成含来源与移除来源的两次回答，按质量损失打分。',find:'这一层最稀缺：基线只有 4.5% 的查询达标，全场最高 9.1%。'}];
+const DIM5=[...PAPER.metrics.map(m=>({n:m.name,p:m.plain,pro:m.pro,judge:true})),
+ {n:'可读性与结构',p:'文章本身易读、组织清晰，与具体查询无关。',pro:'裁判只读文章文本，评清晰度、逻辑与标题段落等结构；0–10，同一文章的所有查询复用该分。'},
+ {n:'可信与安全',p:'来源看起来可靠，避免误导或有害内容。',pro:'裁判检查捏造口吻、操纵性框架与危险指导；0–10，同一文章的所有查询复用该分。'}];
+const GRPS=[['风格改写',['Fluent','Simple Language','Unique Words']],['内容增强',['More Quotes','Statistics','Citing Credible Sources','Technical Terms']],['权威信号',['Authoritative','SEO']]];
+const t1ix=k=>T1.findIndex(r=>r.k===k);
+const fmtD=(d)=>Math.abs(d)<0.0005?'±0.000':(d>0?'+':'−')+Math.abs(d).toFixed(3);
+const dCls=d=>d>0.0005?'pos-t':d<-0.0005?'neg-t':'';
+const covPct=v=>(v*100).toFixed(1)+'%';
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+const track=(w,b,fill,lab,cls='')=>`<span class="x-track ${cls}"><i class="x-btick" style="left:${b}%"></i><b class="x-fill ${fill?'':'x-dim'}" style="width:${w}%"></b>${lab!=null?`<span class="x-blab">${esc(lab)}</span>`:''}</span>`;
+const notesForStep=i=>[
+ `输入与目标：${PAPER.question} 数据单位是一篇文章配一组查询，共 5,000+ 配对。`,
+ `检索校验：只保留目标文章重新出现在 top-K₀ 检索结果里的查询，筛掉关联过弱的配对。`,
+ `作答与评分：回答必须带 [1][2] 式来源标注，裁判按五维各打 0–10 分。`,
+ `对照与聚合：用反事实比较移除目标来源；簇内平均、文章等权宏平均得到 MIL。`][i];
+function dataNumbers(){return `<div class="number-grid">${PAPER.stats.map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div><div class="caption">${esc(s.context)}</div>${src(s.source,s.page)}</div>`).join('')}</div>${tip('前两项为论文摘要报告的规模下限；5,353 为实验所用 test split。')}`}
+function flow(hls){hls=Array.isArray(hls)?hls:[hls];return `<div class="flow-line">${PAPER.steps.map((t,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${hls.includes(i)?'active':''}">${esc(t)}</div>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e.label,e.page)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+function labHtml(){
+ const s=T1[state.st], base=T1[0], L=LAYERS[state.ly];
+ const strats=T1.map((r,i)=>`<button type="button" class="choice x-strat" data-action="labS" data-value="${i}" aria-pressed="${i===state.st}"><span>${esc(r.zh)}</span><small>${esc(r.k)}</small></button>`).join('');
+ const stage=(i)=>{const Ly=LAYERS[i],v=s[Ly.id],b=base[Ly.id],d=v[0]-b[0];
+  return `<button type="button" class="x-fstage ${state.ly===i?'cur':''}" data-action="labL" data-value="${i}" aria-pressed="${state.ly===i}"><span class="x-ix">${i+1}</span><span class="x-fname">${esc(Ly.name)}<small>${esc(Ly.en)}</small></span>${track(v[0]/10*100,b[0]/10*100,true,null)}<span class="x-fd"><span class="x-fv">MIL ${v[0].toFixed(3)}</span><em class="${dCls(d)}">${fmtD(d)}</em></span></button>`};
+ const rows=`<div class="x-fhead"><span class="x-funnel-cap">进入上下文 · 示意</span>${track(100,0,false,null)}<span></span></div>${stage(0)}${stage(1)}${stage(2)}`;
+ const v=s[L.id],bv=base[L.id];
+ const numrow=(l,a,b2,d,f)=>`<tr><td>${esc(l)}</td><td class="n">${b2}</td><td class="n">${a}</td><td class="n ${dCls(d)}">${f?f(d):fmtD(d)}</td></tr>`;
+ const detail=`<div class="answer x-ldetail"><h3>第 ${state.ly+1} 层 · ${esc(L.name)}<span class="src">Table 1 · PDF p.6</span></h3><p class="only-plain">${esc(L.plain)} ${esc(L.find)}</p><div class="only-pro"><p>${esc(L.judge)} ${esc(L.find)}</p><table class="t tight"><thead><tr><th>聚合量</th><th>基线 None</th><th>${esc(s.zh)}</th><th>Δ</th></tr></thead><tbody>${numrow('MIL 强度',v[0].toFixed(3),bv[0].toFixed(3),v[0]-bv[0])}${numrow('ICov 覆盖',covPct(v[1]),covPct(bv[1]),v[1]-bv[1],d=>fmtD(d*100).replace('%','')+'pp')}${numrow('IStab 稳定',v[2].toFixed(3),bv[2].toFixed(3),v[2]-bv[2])}</tbody></table></div>${tip('MIL 0–10 分：簇内平均、文章等权宏平均；Δ = 策略值 − 基线值。')}</div>`;
+ return `<div class="choice-row x-strats" role="group" aria-label="选择改写策略">${strats}</div><div class="columns wide" style="align-items:start"><div><div class="x-funnel" aria-live="polite">${rows}</div><div class="small x-fnote">每行：蓝色为所选策略的 <button class="term" data-term="mil">MIL</button>（0–10 刻度），虚线为基线 None，右侧 Δ 为差值。MIL 相近时看 <button class="term" data-term="icov">ICov</button> 才见差距（见证据读数页）。${src('Table 1','6')}</div></div>${detail}</div>`;
+}
+function numbersHtml(){
+ const dims=[['E','曝光 MIL'],['F','忠实归功 MIL'],['C','因果影响 MIL']];
+ const head=`<div class="choice-row" role="group">${dims.map((d,i)=>`<button type="button" class="choice" data-action="number" data-value="${i}" aria-pressed="${state.num===i}">${esc(d[1])}</button>`).join('')}<button type="button" class="choice" data-action="number" data-value="3" aria-pressed="${state.num===3}">原文表格节选</button></div>`;
+ if(state.num===3){const t=PAPER.table;return head+`<div id="numberOut" aria-live="polite"><div class="source-text table" lang="en">${esc(t.text)}</div>${src(t.label,t.page)}${tip('版面抽取节选，换行可能影响列对齐；完整表格及脚注以 PDF 为准。')}</div>`;}
+ const key=dims[state.num][0], base=T1[0][key][0];
+ const rows=[...T1].sort((a,b)=>b[key][0]-a[key][0]).map(r=>{const v=r[key][0],d=v-base;
+  return `<div class="x-nrow${r.k==='None'?' x-nbase':''}"><span class="x-nname">${esc(r.zh)}<small>${esc(r.k)}</small></span>${track(v/10*100,base/10*100,r.k!=='None',null)}<span class="x-nval">${v.toFixed(3)} <em class="${dCls(d)}">${fmtD(d)}</em><small class="only-pro">ICov ${covPct(r[key][1])} · IStab ${r[key][2].toFixed(3)}</small></span></div>`}).join('');
+ return head+`<div id="numberOut" aria-live="polite"><div class="x-nchart">${rows}</div><div class="small">每行竖直虚线为基线 None = ${base.toFixed(3)}；Δ = 策略值 − 基线值（同表相减）。${src('Table 1','6')}</div>${tip('MIL 为 0–10 分；条形从 0 起算，故差异显得小——这正是曝光层「挤在一起」的实情。'+(state.num===2?'因果覆盖全场最高仅 9.1%，见发现 3。':''))}</div>`;
+}
+function findVis(ix){
+ if(ix===0)return `<div class="x-sqs" aria-hidden="true">${[1,1,0,0,0].map(f=>`<span class="x-sq ${f?'on':''}"></span>`).join('')}</div><p class="muted">示意：一篇文章配 5 个查询（定义、比较、步骤、利弊、追问），2 个达到可接受水平，覆盖 2/5。单看任何一条都会误判。</p>${tip('ICov 的口径见 §3.3 · PDF p.5；示例为本课示意。')}`;
+ if(ix===1){const pick=['None','SEO','More Quotes','Technical Terms','Simple Language'];
+  return `<div class="x-legend"><span><i class="x-leg x-leg1"></i>曝光 MIL</span><span><i class="x-leg x-leg2"></i>归功 MIL</span></div>${pick.map(k=>{const r=T1[t1ix(k)];return `<div class="x-prow"><span class="x-pn">${esc(r.k==='None'?'基线':r.zh)}</span><span class="x-pp">${track(r.E[0]/10*100,0,false,null,'x-thin')}${track(r.F[0]/10*100,0,true,null,'x-thin')}</span><span class="x-pv">${r.E[0].toFixed(2)} → ${r.F[0].toFixed(2)}</span></div>`}).join('')}${src('Table 1','6')}`;}
+ if(ix===2){const pick=['None','SEO','Citing Credible Sources','More Quotes','Statistics'];
+  return `${pick.map(k=>{const r=T1[t1ix(k)],c=r.C[1]*100,b=T1[0].C[1]*100;return `<div class="x-prow"><span class="x-pn">${esc(k==='None'?'基线':r.zh)}</span>${track(c*10,b*10,k!=='None',null)}<span class="x-pv">${covPct(r.C[1])}</span></div>`}).join('')}${src('Table 1 · 因果 ICov','6')}${tip('条形刻度 0–10%；虚线为基线 4.5%。')}`;}
+ const r=T1[t1ix('Statistics')];
+ return `<div class="x-duel"><div class="number-tile"><div class="number">${r.C[0].toFixed(3)}</div><div class="label">因果 MIL（0–10）</div></div><div class="number-tile"><div class="number">${covPct(r.C[1])}</div><div class="label">因果达标占比</div></div></div><p class="muted">同一策略的两把尺子：平均分不低，达标仅九成不到；可信分 ${r.T.toFixed(3)} 也低于基线 ${T1[0].T.toFixed(3)}。</p>${src('Table 1','6')}`;
+}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p><p>该研究在真实 AI 搜索平台上区分两个阶段：来源被选为引用（selection）与内容被吸收（absorption）。问答格式本身并不能保证深度采用。</p>${relatedLink()}${tip('按相关论文摘要转述；沿用该论文的研究范围。')}</div>`;
+ return `<div class="answer"><h3>重新检查研究阶段与目标量</h3><p>两篇互为印证：本篇用反事实回答测「来源对答案的真实改变」；相关研究提醒，引用角标之外还有更深的采用阶段。</p><p>对照阅读时记录：对象是否相同、来源是否已进入候选集、指标能否直接比较。</p>${relatedLink()}${tip('本段为教学推断。两篇论文的数字不宜直接相加。')}</div>`;
+}
+const originalCases={
+ 5:['第一次养宠物，选什么好？','来源 1《First Pet Facts》推荐豚鼠：群居、吃干草和新鲜蔬菜、寿命 5–7 年写得清楚；来源 2《Awesome Animal Ideas!》吹鹦鹉最聪明会说话、自己照顾自己。','答案采纳来源 1 构成可靠建议（E 7.5 / F 8.0 / C 7.5 / R 6.0 / T 7.0）；来源 2 被检索到却几乎没影响回答（E 5.0 / F 6.0 / C 4.5 / R 4.5 / T 5.0），标注为引入误导且高风险的信息。','Figure 2 · PDF p.3']};
+function caseHtml(){const c=originalCases[PAPER.id];
+ const five=(r)=>`<div class="x-fivescores">${[['曝光',r[0]],['归功',r[1]],['因果',r[2]]].map(x=>`<span class="x-fs"><small>${x[0]}</small><b>${x[1].toFixed(1)}</b></span>`).join('')}<span class="x-fs x-fsq"><small>可读</small><b>${r[3].toFixed(1)}</b></span><span class="x-fs x-fsq"><small>可信</small><b>${r[4].toFixed(1)}</b></span></div>`;
+ return `<div class="kicker">论文原例 · ${esc(c[3])} · 中文转述</div><p class="intro">${esc(c[0])}</p><div class="two-docs"><div class="answer"><div class="kicker">来源 1 · First Pet Facts（推荐豚鼠）</div><p>${esc(c[1].split('；')[0])}</p>${five([7.5,8.0,7.5,6.0,7.0])}<div class="caption">构成可靠、可信的回答基础，主导最终建议。</div></div><div class="answer"><div class="kicker">来源 2 · Awesome Animal Ideas!（推荐鹦鹉）</div><p>${esc(c[1].split('；')[1])}</p>${five([5.0,6.0,4.5,4.5,5.0])}<div class="caption">引入误导且高风险的信息，被检索到却没赢得影响。</div></div></div><div class="callout" style="margin-top:16px">对应发现：${esc(PAPER.findings[1])}；${esc(PAPER.findings[2])}。</div>${tip('分数为论文 Figure 2 示例标注值（0–10）；本页未补造其他数字。出处：'+c[3]+'。')}`;}
+function personaHtml(){const roles=['内容与业务负责人','技术与数据人员','研究与审核人员'];
+ const todos=[['给核心文章配 5–10 个意图不同的查询','逐层记录曝光、归功与因果达标率','优先试验增加引语，同时盯住可信分变化'],
+  ['复现离线模拟：缓存检索列表加 gpt-oss-120b','同时报告 MIL、ICov、IStab 三个聚合量','保留 None 基线，正负变化一起报告'],
+  ['核对 Table 1 口径与附录 C 的跨模型结果','抽查自动裁判的打分，做小规模人工复核','与《'+PAPER.related.zh+'》做同口径对照']];
+ const whys=[PAPER.findings[1],PAPER.findings[2],PAPER.findings[0]],fs=[2,3,1];
+ return `${choices(roles,state.role,'role')}<div class="columns"><div><h3>${roles[state.role]}</h3><p style="margin-top:12px">为什么适合：${esc(whys[state.role])}。</p><div class="callout warn">避免：${esc(PAPER.before)}，把单次成绩当成影响力结论。</div></div><div><ul class="fact-list">${todos[state.role].map((s,i)=>`<li>${esc(s)}<small>对应 F${fs[state.role]} · 本课应用推断</small></li>`).join('')}</ul></div></div>`;}
+function matureHtml(){const forms=[['文章 × 查询簇对照卡','每行一篇文章：簇内覆盖、归功与因果达标率，附基线差值',PAPER.steps[0]],['分层影响力报告','曝光 / 归功 / 因果分层呈现，正负变化同页可读',PAPER.steps[2]],['可复现测量记录','缓存检索列表、提示词与评分口径的版本号',PAPER.steps[3]]];
+ return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${forms.map(f=>`<tr><td>${esc(f[0])}</td><td>${esc(f[1])}</td><td>${esc(f[2])}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:18px">采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i<3?'来自论文 Limitations 与实验设置。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','五题覆盖核心结论、反常发现、指标口径、取舍代价与论文自述局限。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;
+}
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors.split("; ")[0])}${PAPER.authors.includes(";")?" 等":""} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}${PAPER.pdf?' · '+ext(PAPER.pdf,'本地PDF'):''}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿。进度自动保存在当前浏览器。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>${esc(PAPER.question)}</li><li>曝光、忠实归功、因果影响各衡量什么？</li><li>九种改写策略里哪些有效、代价是什么？</li><li>结论在什么条件下可信、哪里会失效？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>同一目标下，先对照常见做法与研究启发。</p>${tip('以下为围绕论文方法构造的教学情境。不给示意操作附加实测收益。')}</div><div>${choices(['常见做法','研究启发'],0,'scene')}<div class="answer" id="sceneOut" aria-live="polite"><h3>常见做法</h3><p>${esc(PAPER.before)}</p>${tip('观察这一做法遗漏了什么条件。')}</div></div></div>`;
+ else if(view==='concept')h=`${choices(DIM5.map(d=>d.n),0,'concept')}<div class="columns"><div class="answer" id="conceptOut" aria-live="polite"><h3>${esc(DIM5[0].n)}</h3><p class="only-plain">${esc(DIM5[0].p)}</p><div class="only-pro"><p>${esc(DIM5[0].p)}</p><div class="pro-note">${esc(DIM5[0].pro)}</div></div></div><div><div class="kicker">五维怎么分工</div><ul class="fact-list"><li>三层影响维度<small>逐查询打分，随查询簇聚合</small></li><li>两层质量维度<small>只看文章本身，整簇复用</small></li><li>全部 0–10 分<small>由自动评分裁判给出${src('§3.2','4')}</small></li></ul><button type="button" class="btn" data-go="18" style="margin-top:12px">看论文原例的五维分数 →</button></div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track x-steps">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(notesForStep(state.step))}</p><div class="only-pro pro-note">${esc(PAPER.setting)}。证据范围：${esc(PAPER.boundary)}。</div></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按论文方法重新组织；箭头表达研究逻辑，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],1,'flow')}<div id="flowOut" aria-live="polite">${flow([[0],[1,2],[3]][0])}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric'){const m=PAPER.metrics[state.metric];h=`<div class="columns"><div>${choices(PAPER.metrics.map(x=>x.name),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite"><h3>${esc(m.name)}</h3><p class="only-plain">${esc(m.plain)}</p><div class="only-pro"><p>${esc(m.pro)}</p><div class="formula">d<sub>k</sub>(S<sub>a</sub>, q<sub>a,j</sub>) ∈ [0, 10]</div><div class="formula">MIL<sub>k</sub> = (1/M) Σ<sub>a</sub> µ<sub>a,k</sub>，µ<sub>a,k</sub> = (1/N<sub>a</sub>) Σ<sub>j</sub> d<sub>k</sub></div><div class="formula">ICov<sub>k</sub> = (1/N<sub>a</sub>) Σ<sub>j</sub> I(d<sub>k</sub> ≥ τ<sub>k</sub>)</div><div class="formula">IStab<sub>k</sub> = 1 − min(1, σ²<sub>a,k</sub> / v<sub>k</sub>)</div><div class="pro-note">d 为单查询得分，τ 为达标阈值，v 为方差上界，均由基准设定；文章内平均后对 M 篇文章等权宏平均。${src('§3.3','5')}</div></div><p class="only-plain">这一维度先按单条查询打分，再在文章的整组查询上聚合出强度、覆盖与稳定三个数。</p></div></div><div><div class="kicker">三个聚合量怎么读</div><ul class="fact-list"><li><button type="button" class="term" data-term="mil">MIL 强度</button><small>簇内平均、文章等权，跨文章可比</small></li><li><button type="button" class="term" data-term="icov">ICov 覆盖</button><small>达标查询占比，防止平均分掩盖窄覆盖</small></li><li><button type="button" class="term" data-term="istab">IStab 稳定</button><small>1 − 簇内归一化方差，改写问法后表现稳不稳</small></li></ul>${src('§3.3','5')}</div></div>`;}
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 研究设计</div><p class="intro">${esc(PAPER.setting)}</p><table class="mini-table"><tbody><tr><th>数据</th><td>CC-GSEO-Bench test split：5,353 个查询文章配对 ${src('§4.1','6')}</td></tr><tr><th>引擎</th><td>gpt-oss-120b（检索器 + 生成器离线模拟）${src('§4.1','6')}</td></tr><tr><th>方案</th><td>9 种改写策略 + None 基线（三类：风格 / 增强 / 权威）${src('§4.1','6')}</td></tr><tr><th>口径</th><td>三层影响 + 两层质量，均 0–10 分 ${src('§3.2','4')}</td></tr></tbody></table>${tip('口径提示：'+PAPER.boundary)}</div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">给你的复验方案做检查 · 本课推断</div><div class="check-list">${['每篇文章配多个查询，逐条记录','保留未修改的基线（None）作对照','记录引擎、提示词与检索版本','正负变化一起报告（含可信分下降）'].map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${s}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'具备基本复验要素':'继续补齐比较条件'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选用于检查方案完整性，无法自动证明因果识别成立。</div><div class="only-pro pro-note">论文用缓存检索上下文保证可复现；复验时同样先冻结环境再比较。${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method'){const r=T1[state.mth??5],g=GRPS.find(x=>x[1].includes(r.k)),f=PAPER.feat.find(x=>x.k===r.k);
+  h=`<div class="columns wide"><div><div class="x-grps">${GRPS.map(g2=>`<div class="grp-t">${esc(g2[0])}</div><div class="choice-row x-strats">${g2[1].map(k=>`<button type="button" class="choice x-strat" data-action="method" data-value="${t1ix(k)}" aria-pressed="${r.k===k}">${esc(T1[t1ix(k)].zh)}</button>`).join('')}</div>`).join('')}</div></div><div><div class="answer" id="methodOut" aria-live="polite"><h3>${esc(r.zh)}<small style="font-size:13px;color:var(--ink-3)"> ${esc(r.k)} · ${esc(g?g[0]:'基线')}</small></h3>${r.k==='None'?`<p>基线保留原文，用于计算其他策略的差值 Δ。</p>`:`<p>改写特征：字符 <b class="mono">${f.dC>0?'+':''}${f.dC}</b> · 数字词 <b class="mono">${f.dN>0?'+':''}${f.dN}</b> · 引号 <b class="mono">${f.dQ>0?'+':''}${f.dQ}</b> ${src('Table 4','8')}</p>`}<p>效果：忠实归功 MIL <b>${r.F[0].toFixed(3)}</b>（基线 ${T1[0].F[0].toFixed(3)}）· 因果达标 <b>${covPct(r.C[1])}</b>（基线 ${covPct(T1[0].C[1])}）· 可信 <b>${r.T.toFixed(3)}</b>（基线 ${T1[0].T.toFixed(3)}）${src('Table 1','6')}</p><div class="callout">本课对 RQ5 的转述：表面编辑主要改善可读与可信；引语与数字与因果层的关系更强。</div></div></div></div>`;}
+ else if(view==='lab')h=labHtml();
+ else if(view==='numbers')h=numbersHtml();
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);
+  h=`<div class="ev" style="margin-bottom:14px">F${ix+1} · 证据强度 <span class="str-m">${esc(PAPER.strength)}</span> ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite"><p>${esc(PAPER.finding_details[ix])}</p><div class="caption">结合本篇研究设计理解这条发现。</div></div></div><div><div class="x-findvis">${findVis(ix)}</div><div class="kicker" style="margin-top:10px">如何核查这一发现</div><ul class="fact-list"><li>研究设置<small>5,353 配对 · gpt-oss-120b 离线模拟</small></li><li>观察指标<small>${esc(PAPER.metrics[ix%PAPER.metrics.length].name)}：${esc(PAPER.metrics[ix%PAPER.metrics.length].plain)}</small></li><li>迁移约束<small>${esc(ix===3?PAPER.extra:'离线模拟与自动评分口径；换引擎需复测')}</small></li></ul>${ix===0?'<button type="button" class="btn" data-go="8" style="margin-top:8px">回到原文证据 →</button>':''}</div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes'){const quotes=[
+  ['影响力要在文章的查询簇上聚合测量','依据：§2.1 的 one-to-many 结构与 §3.3 聚合公式','用法：给核心文章配 5–10 个意图不同的查询再评估'],
+  ['被写进回答，还要被正确归功','依据：曝光与忠实归功是两条独立维度（§3.2.1–3.2.2）','用法：汇报时把「出现」与「标注正确」分开列'],
+  ['移除来源再答一次，才知道它多重要','依据：因果影响的反事实构造（§3.2.3）','用法：上线前做一次去掉该来源的对照回答'],
+  ['平均分高，可能只覆盖少数查询','依据：Statistics 因果 MIL 5.631 而达标仅 9.1%（Table 1）','用法：MIL 与 ICov 一起汇报'],
+  ['位置靠后时，加引语能部分挽回影响','依据：Table 3 中 More Quotes 的 F 在低名次更抗跌','用法：排名难改时先改内容结构'],
+  ['统计数字换影响，要拿可信分来付','依据：Statistics 的 Trust 7.613，基线 8.352（Table 1）','用法：加数字的同时做事实核查']];
+  h=`<div class="flips">${quotes.map((s,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(s[0])}。</b><span class="flip-back">${esc(s[1])}<br>${esc(s[2])}</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;}
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','concept','flow','compare','numberless','proof','number','metric','limit'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene')$('#sceneOut').innerHTML=`<h3>${v?'研究启发':'常见做法'}</h3><p>${esc(v?PAPER.after:PAPER.before)}</p>${tip(v?'本课应用推断。需要在目标场景中验证。':'教学示意，尚未进行实际效果测量。')}`;
+ else if(a==='concept'){state.concept=v;$('#conceptOut').innerHTML=`<h3>${esc(DIM5[v].n)}</h3><p class="only-plain">${esc(DIM5[v].p)}</p><div class="only-pro"><p>${esc(DIM5[v].p)}</p><div class="pro-note">${esc(DIM5[v].pro)}</div></div>`;}
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flow([[0],[1,2],[3]][v]);
+ else if(a==='metric'){state.metric=v;const m=PAPER.metrics[v];$('#metricOut').innerHTML=`<h3>${esc(m.name)}</h3><p class="only-plain">这一维度先按单条查询打分，再在文章的整组查询上聚合出强度、覆盖与稳定三个数。</p><div class="only-pro"><p>${esc(m.pro)}</p><div class="formula">d<sub>k</sub>(S<sub>a</sub>, q<sub>a,j</sub>) ∈ [0, 10]</div><div class="formula">MIL<sub>k</sub> = (1/M) Σ<sub>a</sub> µ<sub>a,k</sub>，µ<sub>a,k</sub> = (1/N<sub>a</sub>) Σ<sub>j</sub> d<sub>k</sub></div><div class="formula">ICov<sub>k</sub> = (1/N<sub>a</sub>) Σ<sub>j</sub> I(d<sub>k</sub> ≥ τ<sub>k</sub>)</div><div class="formula">IStab<sub>k</sub> = 1 − min(1, σ²<sub>a,k</sub> / v<sub>k</sub>)</div><div class="pro-note">d 为单查询得分，τ 为达标阈值，v 为方差上界，均由基准设定；文章内平均后对 M 篇文章等权宏平均。${src('§3.3','5')}</div></div>`;}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='method'){state.mth=v;box.innerHTML=draw('method');}
+ else if(a==='labS'){state.st=v;box.innerHTML=draw('lab');}
+ else if(a==='labL'){state.ly=v;box.innerHTML=draw('lab');}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);
+  const prac=['给核心文章建查询簇，用 ICov 防止平均分掩盖窄覆盖；用 IStab 检查换问法后的波动。','汇报时分层列数：曝光层几乎不动，归功与因果层才是改写的收益与代价所在。','引用角标之外，补一次「去掉该来源再答」的对照，再宣称影响力。','同时报告 MIL、ICov、IStab 与可信分，避免单尺子决策。'][ix];
+  const body=v===0?PAPER.finding_details[ix]:v===1?('应用推断：'+prac):'结论来自 gpt-oss-120b 离线模拟与自动裁判；换引擎或上线环境需复测。';
+  $('#findingOut'+ix).innerHTML=`<p>${esc(body)}</p>${tip(v===1?'行动建议属于教学推断。':v===2?PAPER.extra:'需要连同研究设计解读，勿省略条件。')}`;}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(PAPER.findings.map(t=>t+'。').join('\n')+'\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button,.lesson .x-strats button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+
+/* ===== 启动 ===== */
+/* ===== 启动 ===== */
+/* ===== 启动 ===== */
+/* ===== 启动 ===== */
+/* ===== 启动 ===== */
+/* ===== 启动 ===== */
+/* ===== 启动 ===== */
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

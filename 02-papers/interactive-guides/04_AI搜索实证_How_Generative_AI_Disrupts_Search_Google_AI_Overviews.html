@@ -1,0 +1,686 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>AI摘要怎样改变搜索 · 论文课堂</title><meta name="description" content="查询基准显示AI摘要触发、来源重叠和重复稳定性都需单独测量"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="ACM SIGIR 2026 author PDF"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* x- prefixed components added by opt-23 (paper-specific, no PGS core names). */
+.x-bars{display:flex;flex-direction:column;gap:9px}
+.x-row{display:grid;grid-template-columns:150px 1fr 118px;gap:10px;align-items:center;font-size:13.5px}
+.x-row .x-lab{text-align:right;color:var(--ink-2);line-height:1.4}
+.x-row .x-lab small{display:block;font-size:11px;color:var(--ink-3)}
+.x-track{position:relative;height:20px;background:var(--tint);border-radius:3px;overflow:hidden}
+.x-fill{position:absolute;left:0;top:0;bottom:0;background:var(--c1);border-radius:3px 0 0 3px;transition:width .35s ease}
+.x-fill.c2{background:var(--c2)}.x-fill.c3{background:var(--c3)}.x-fill.neg{background:var(--neg)}
+.x-row .x-val{font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+.x-track .x-base{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2px dashed var(--ink-3)}
+.x-basetxt{font-size:11.5px;color:var(--ink-3);margin-top:4px}
+.x-labgrid{display:grid;grid-template-columns:1fr 1.15fr;gap:24px;align-items:start}
+.x-q{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+.x-q .mono{font-size:12.5px}
+.x-big{display:flex;align-items:baseline;gap:10px;margin:6px 0 2px}
+.x-big .n{font-family:var(--serif);font-size:52px;font-weight:700;line-height:1}
+.x-big .d{font-size:13px;color:var(--ink-2)}
+.x-eng{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.x-eng>div{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.x-eng b{font-family:var(--serif);font-size:22px;display:block}
+.x-eng small{color:var(--ink-3);font-size:11px}
+.x-mini{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:900px){
+.x-row{grid-template-columns:104px 1fr 74px;font-size:12px}
+.x-row .x-lab{font-size:11.5px}
+.x-labgrid{grid-template-columns:1fr}
+.x-eng{grid-template-columns:1fr}
+.x-big .n{font-size:40px}
+}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.lesson .formula{white-space:normal}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 04 AI搜索实证</div>
+    <h1>AI摘要怎样改变搜索</h1>
+    <div class="en">2026 · 实证测量</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">AI摘要怎样改变搜索</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">51.5% 的代表性真实查询会触发 AI 摘要；三种界面来源平均重合不足两成<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">开场先给两个锚点数字：ORCAS 代表性真实查询有 51.5% 触发了 AI 摘要，三种界面的来源平均 Jaccard 不足 0.2。请提醒学习者，右侧四个数字的分母与口径都不同，第 12 页会逐个展开。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">沿着问题与证据完成这门课</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">先看触发条件，再看来源差异，最后看稳定性与边界<span class="src">§4 研究问题 · PDF p.3</span></div></div><div class="notes">本页是路线图，四个问题对应论文的 RQ1 到 RQ5：触发频率、来源相似度、来源特征、一致性与高风险查询。建议按目录顺序推进，随时可以跳回第 12 页的证据读数。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">AI摘要排在自然结果上方，来源自成一套</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">平均 Jaccard &lt;0.2：三界面来源平均不到两成重合<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">先看论文测到的现象：AIO 默认显示在自然结果上方（Figure 1），用户无需主动选择。再切换到研究做法：同一查询分别采集 SERP、AIO、Gemini 的来源列表。提问：如果三个界面来源几乎不同，只看自然排名会漏掉什么？</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">研究对象需要先拆开再比较</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">基准分 9 类查询子集共 11,500 条，另有政治与趋势时点查询<span class="src">Table 1 · PDF p.3</span></div></div><div class="notes">这一页拆研究对象，三步对应论文的三件事：构建 11,500 条基准查询（9 类子集，Table 1）；用 SerpAPI 与 Gemini API 采集三界面来源；再用两个指标量化差异。三个指标术语都可以点开。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">方法沿着这些环节产生作用</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">同期采集：2025 年 12 月 7–8 日，移动端、新泽西纽瓦克<span class="src">§3 · PDF p.3</span></div></div><div class="notes">流程页强调对照条件：三界面在同一时间窗采集，AIO 与 SERP 来自同一次 SerpAPI 请求，保证时机、设备与本地化一致；Gemini 2.5 Flash 开启接地、关闭 Thinking 模式。请学习者点完三步再往下。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">明确干预环节才能解释效果</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">描述性比较：估计来源差异，未估计用户消费或收益变化<span class="src">§1/§6 · PDF p.2/p.10</span></div></div><div class="notes">这页划清能推断什么。论文比较的是各界面输出的来源集合，属于描述性证据；点击、流量与收入的因果变化需要另外设计实验。请学习者区分「测到的差异」和「推出来的影响」。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">指标分别回答不同的效果问题</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">集合重合看 Jaccard，排名重合看 RBO（p=0.9，URL 级）<span class="src">§3 · PDF p.3</span></div></div><div class="notes">两个指标分工：Jaccard 回答「来源集合有多大比例重合」，RBO 回答「排在前面的来源是否一致」。论文取 RBO 持久参数 0.9，因为公开搜索引擎每次约输出 10 条结果。专业层给出了定义式与口径。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">实验设置限定结论的适用范围</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">基准查询 11,500 条，加政治与趋势共 14,212 条<span class="src">§3/Conclusion · PDF p.3/p.10</span></div></div><div class="notes">实验设置页请注意三个条件：只测 Google 系界面；SerpAPI 模拟移动端采集；政治与趋势查询是独立采集的时点集合。论文第 5 节用桌面端与另一城市复测，主结论保持不变。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">保持对照一致才能解释变化</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">固定设备、地区与时间窗，再谈来源差异<span class="src">§4.4/§5 · PDF p.7/p.9</span></div></div><div class="notes">检查清单用于学习者自己的复验方案。论文的做法可以对照：两座城市、两种设备、双次运行、100 条分层随机样本。勾满四项后，请对照右侧提示确认证据类型。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">方法的每一步都有独立作用</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">先分层触发，再比来源，最后测重复与改述稳定性<span class="src">§4 · PDF p.4</span></div></div><div class="notes">方法页把论文分析拆成三步，分别对应触发率（RQ1）、来源重合与偏好（RQ2/RQ3）、稳定性（RQ4）。第 11 页的实验室会让你亲手改一次查询写法，观察触发率怎么变。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">改一下查询写法，触发率与来源都会变</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">同题问句 86.2% 对关键词 76.5%；商品关键词仅 17.4%<span class="src">§4.1 · PDF p.4</span></div></div><div class="notes">招牌实验：左侧是论文 Table 1 的真实查询示例。先点「商品关键词」，再点「商品问句」，同一批商品查询触发率从 17.4% 升到 92%。再看 NQ 与 NQ Keywords 这对同题改写：86.2% 对 76.5%。下方展示触发之后来源结构怎么变。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">触发率、重合度与稳定性要分开读</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">触发 51.5%（ORCAS）、重合 &lt;0.2、改述后 AIO RBO 0.49<span class="src">摘要/Table 2/§4.4 · PDF p.1/p.5/p.7</span></div></div><div class="notes">证据读数页分四个标签：触发率对比、来源重合度、一致性、原文表格。请依次切换，注意每张图的基线：65.6% 是全基准触发率，1.0 是完全重合，0.86 是 SERP 双次运行的自一致水平。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">AI摘要只覆盖部分查询</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">ELI5 94.6% 触发，商品关键词 17.4%，趋势查询仅 8.1%<span class="src">§4.1/§4.5 · PDF p.4/p.8</span></div></div><div class="notes">发现一：触发率分层明显。长信息问句几乎必触发（ELI5 94.6%），购买型关键词很少（17.4%），时点趋势查询被压到 8.1%。含义：讨论 AI 摘要可见性之前，先确认自己的查询属于哪一层。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">不同界面来源重叠很低</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">总样本平均 Jaccard 0.11–0.18，RBO 0.15–0.23<span class="src">Table 2 · PDF p.5</span></div></div><div class="notes">发现二：三对界面两两来源都很少重合，AIO 与 Gemini 反而最不相似（0.11）。论文还报告各引擎平均来源数：SERP 8.75、AIO 9.24、Gemini 9.68，数量接近说明差异来自选择方法。跨界面差异远大于同一界面两次运行的差异。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">来源类型偏好随界面变化</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">Top-1K 域名来源占比：SERP 37.8%、AIO 36.5%、Gemini 27.9%<span class="src">Figure 4 · PDF p.6</span></div></div><div class="notes">发现三：生成式界面把曝光从热门与机构域名移开，并向 Google 自有域名（google.com、youtube.com）倾斜；屏蔽 Google-Extended 的网站被 AIO 与 Gemini 引用都更少，而 AIO 本可访问这些内容，这是论文标注的反常点。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">AI摘要对重复与措辞变化更敏感</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">同题两运行 AIO RBO 0.69；轻微软述后降到 0.49<span class="src">Table 4/§4.4 · PDF p.7</span></div></div><div class="notes">发现四：稳定性分层。SERP 双次运行 RBO 0.86，AIO 只有 0.69；换设备 AIO 降到 0.53；对 200 条查询做缩写、缩略词、问号级微改后，AIO RBO 0.49，相对下降 28.99%。来源变了，摘要文本也跟着变（r=0.62）。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">相关研究帮助检验迁移边界</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">对齐查询口径与指标，再比较两篇论文<span class="src">§2 · PDF p.2</span></div></div><div class="notes">对照页：仓库内《Characterizing Web Search in the Generative AI Age》研究生成系统的知识依赖与稳定性，与本篇的来源比较互补。注意两篇的查询集与指标不同，数字不能直接相加。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">一场没结束的拳赛，AI摘要先宣布了胜者</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">33.4% 的争议类 AIO 以肯定或否定立场开头<span class="src">§4.5 · PDF p.8</span></div></div><div class="notes">案例页使用论文的定性案例：趋势查询「who won jake paul or anthony joshua」在比赛当晚被 AIO 抢先回答 Jake Paul 获胜，引用的多条来源里只有一条讽刺体育账号的 Facebook 帖子支持该说法（Figure 8）。请结合发现一与发现四理解：低触发不等于低风险。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">不同角色需要不同的执行清单</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">建议为本课推断，需用对照试验确认<span class="src">§6 · PDF p.9/p.10</span></div></div><div class="notes">三个角色对应论文的三类读者：内容与业务负责人关心屏蔽决策与可见性；技术与数据人员复现测量；研究与审核人员核对口径。每条建议都能追溯到某条发现，但属于教学推断。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态可以承接研究方法</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">触发、重合、稳定性三张表可以直接搬进周报<span class="src">本课推断 · 表结构见 Table 2/4</span></div></div><div class="notes">把研究方法转成工作形态：AIO 触发监测表、三界面来源重合报告、爬虫屏蔽决策记录。请学习者对照自己团队的周报或看板，找一页可以先落地的。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">结论的边界决定应用的尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">只测 Google 系、单一时点、经 API 采集<span class="src">§6 Limitations · PDF p.9</span></div></div><div class="notes">六条局限按影响排序。高影响两条：只覆盖 Google 生态；2025 年 12 月上旬的单一时点快照。论文自己在第 6 节写明「描述性、单一时点」，引用时请带上这些条件。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">六条结论都可溯源到对应表格或小节<span class="src">Table 2/4 · §4.5 等</span></div></div><div class="notes">金句页每张卡背面写了依据与用法。复制按钮会把六条结论连同出处与边界一起复制，方便带走。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">五题覆盖核心结论、反常点、指标、边界与局限<span class="src">全课</span></div></div><div class="notes">五道题分别对应：核心数字（触发率分层）、反常发现（屏蔽爬虫反而少被引用）、指标理解（Jaccard 口径）、适用边界（查询形态与阶段）、研究局限（时点与生态）。答错请按提示回看对应页。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>How Generative AI Disrupts Search: An Empirical Study of Google Search, Gemini, and AI Overviews</p><p>2026 · ACM SIGIR 2026 author PDF</p><p><a href="https://web.njit.edu/~borcea/papers/acm-sigir26.pdf" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper23,
+  author = {Riley Grossman and Songjiang Liu and Michael K. Chen and Mike Smith and Cristian Borcea and Yi Chen},
+  title = {How Generative AI Disrupts Search: An Empirical Study of Google Search, Gemini, and AI Overviews},
+  year = {2026},
+  url = {https://web.njit.edu/~borcea/papers/acm-sigir26.pdf}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：e13a5a0eed55a97c6f270bc53bcb28f4cf7596cf50ae31b9665f5781c6c45d5e</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "明确问题与结论"}, {"t": "原理", "d": "理解研究对象"}, {"t": "测量", "d": "核对指标与设计"}, {"t": "方法", "d": "拆解操作与对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "明确边界并检验理解"}];
+const PAPER={"id": 23, "zh": "AI摘要怎样改变搜索", "kind": "实证测量", "question": "网页搜索、AI摘要与Gemini会共享来源吗？", "claim": "查询基准显示AI摘要触发、来源重叠和重复稳定性都需单独测量", "steps": ["构建 11,500 条基准查询", "同期采集三界面来源", "检验重合、偏好与稳定性"], "findings": ["AI摘要只覆盖部分查询", "不同界面来源重叠很低", "来源类型偏好随界面变化", "AI摘要对重复与措辞变化更敏感"], "metrics": [{"name": "摘要触发率", "plain": "出现 AI 摘要的查询比例", "pro": "触发率 = 生成 AIO 的查询数 ÷ 该子集查询总数。分母决定读法：ORCAS 51.5%、全基准 65.6%、趋势查询 8.1%、政治人物查询 93.8%。"}, {"name": "Jaccard", "plain": "两个来源集合的交并比", "pro": "J(A,B) = |A∩B| ÷ |A∪B|，在 URL 级计算：0 表示无重合，1 表示完全相同。论文同时报告集合级（Jaccard）与排名级（RBO）两个口径。"}, {"name": "RBO", "plain": "按排名加权的列表重合度", "pro": "Rank-Biased Overlap：对排序列表逐位比较、按位置衰减加权。论文取持久参数 p=0.9，适配公开引擎每次约 10 条结果的输出。"}], "setting": "真实用户查询基准与Google搜索、AIO和Gemini对照", "boundary": "本篇比较搜索引擎输出的来源集合（本地修订版口径）；结论不直接估计用户消费、点击或收益变化。", "query": "三种 Google 界面给出的来源为何几乎不同？", "before": "把 Google 自然结果视为 AI 摘要的来源全集", "after": "同一查询分别采集 SERP、AIO、Gemini 来源，再计算重合度", "finding_details": ["触发高度分层：ELI5 复杂问句 94.6%、商品问句 92% 触发，商品关键词仅 17.4%，趋势查询被压到 8.1%；问句形态 89.9% 对非问句 51.9%。讨论 AI 摘要曝光之前，先判断查询属于哪一层。", "三对界面来源两两少重合：总样本 Jaccard 0.18（AIO×SERP）、0.11（AIO×Gemini）、0.16（Gemini×SERP）。各引擎平均来源数 8.75–9.68 接近，说明差异来自选择方法；跨界面差异远大于同一界面双次运行。", "生成式界面把曝光移向长尾：Top-1K 热门域名来源占比 SERP 37.8%、AIO 36.5%、Gemini 27.9%；Google 自有域名被 AIO 偏好；屏蔽 Google-Extended 的网站在 AIO 与 Gemini 引用都显著更少，尽管 AIO 有权访问。", "同题两运行 RBO：SERP 0.86、AIO 0.69、Gemini 0.52；换设备后 AIO 降至 0.53。对 200 条查询做缩写、缩略词、问号级微改后，AIO RBO 降到 0.49（−28.99%），且来源重合越低摘要文本差异越大（r=0.62）。"], "fimplies": [{"imp": "按子集分层报告触发率；进入新市场或新界面时，先用问句版与关键词版各测一轮。", "con": "触发率随时间与界面版本变化；趋势查询的 8.1% 属于时点值。"}, {"imp": "监控 AI 可见性时分别采集三个界面，并为 AIO 单独建引用清单。", "con": "重合度基于 2025 年 12 月采集；引擎更新后需复测。"}, {"imp": "冷门域名与第三方评论站点存在曝光机会；热门与机构站点需要单独策略。", "con": "Figure 3/4 是相对传统搜索的比较，不代表绝对流量规模。"}, {"imp": "用固定查询集多次运行，把稳定性当成独立指标报告。", "con": "一致性样本为 100 条分层随机查询加 200 条微改查询。"}], "trigger": {"base": {"v": 65.6, "label": "全基准 11,500 条", "src": "§4.1 · PDF p.4"}, "orcas": {"v": 51.5, "label": "ORCAS 代表性真实查询", "src": "摘要 · PDF p.1"}, "fmt": {"inter": {"v": 89.9, "n": 4130}, "other": {"v": 51.9, "n": 7370}, "src": "Figure 2c · PDF p.4"}, "sets": [{"name": "ELI5 复杂问句", "q": "What determines if a phosphorylated protein is on or off?", "v": 94.6, "src": "§4.1 · PDF p.4"}, {"name": "商品问句", "q": "What is the best star lamp projector for a small room?", "v": 92.0, "src": "§6 · PDF p.10"}, {"name": "商品比较", "q": "Compare star lamp projector galaxy vs aurora projector", "v": 88.2, "src": "§6 · PDF p.10"}, {"name": "自然问句（NQ）", "q": "when was the first cell phone call made", "v": 86.2, "src": "§4.1 · PDF p.4"}, {"name": "同题关键词版", "q": "first cell phone call", "v": 76.5, "src": "§4.1 · PDF p.4"}, {"name": "ORCAS 真实用户", "q": "public aid office locations", "v": 51.5, "src": "摘要 · PDF p.1"}, {"name": "本地服务", "q": "free rabies shot near Alicante, Spain", "v": 48.8, "src": "§6 · PDF p.10"}, {"name": "商品关键词", "q": "star lamp projector galaxy", "v": 17.4, "src": "§4.1 · PDF p.4"}]}, "profile": {"top1k": [{"e": "传统 SERP", "all": 37.8, "top1": 52.7}, {"e": "AI 摘要", "all": 36.5, "top1": 40.0}, {"e": "Gemini", "all": 27.9, "top1": 32.6}], "src": "Figure 4 · PDF p.6", "note": "屏蔽 Google-Extended 的网站被 AIO 与 Gemini 引用都显著更少（Figure 6 · PDF p.7）；Google 说明屏蔽只影响 AI 训练与接地，搜索排名不受影响。", "avg": "平均来源数：SERP 8.75 · AIO 9.24 · Gemini 9.68（§4.2 · PDF p.5）"}, "sim": {"pairs": [["AIO × SERP", 0.18, 0.23], ["AIO × Gemini", 0.11, 0.15], ["Gemini × SERP", 0.16, 0.21]], "src": "Table 2 · PDF p.5", "subsets": [["ORCAS", 0.17, 0.12, 0.20], ["Debate", 0.24, 0.10, 0.11], ["ELI5", 0.21, 0.11, 0.14], ["Localized", 0.14, 0.07, 0.16], ["Amazon Retail", 0.08, 0.06, 0.08]]}, "stability": {"runs": [["传统 SERP", 0.86], ["AI 摘要", 0.69], ["Gemini", 0.52]], "device": [["传统 SERP", 0.79], ["AI 摘要", 0.53]], "edits": [["传统 SERP", 0.74, "−13.95%"], ["AI 摘要", 0.49, "−28.99%"], ["Gemini", 0.50, "−3.85%"]], "src": "Table 4/§4.4 · PDF p.7", "note": "微改 200 条查询：100 条缩写展开、50 条缩略词、50 条问号增删；来源重合与摘要文本相似度相关（AIO r=0.62，Gemini r=0.55）。"}, "high": {"political": 93.8, "stance": [33.4, 5.6], "trending": 8.1, "cred": [["AI 摘要", 11.4], ["Gemini", 15.0], ["传统 SERP", 10.6]], "src": "§4.5 · PDF p.8"}, "catalog_title": "How Generative AI Disrupts Search: Consumer Behavior, Website Traffic, and the Impact of Google AI Overviews", "title": "How Generative AI Disrupts Search: An Empirical Study of Google Search, Gemini, and AI Overviews", "authors": "Riley Grossman; Songjiang Liu; Michael K. Chen; Mike Smith; Cristian Borcea; Yi Chen", "year": "2026", "category": "04_AI搜索实证", "url": "https://web.njit.edu/~borcea/papers/acm-sigir26.pdf", "file": "04_AI搜索实证_How_Generative_AI_Disrupts_Search_Google_AI_Overviews.html", "pdf": "../04_AI搜索实证/04_AI搜索实证_How_Generative_AI_Disrupts_Search_Google_AI_Overviews.pdf", "kind_note": "基于受测环境，迁移效果需要另测", "extra": "保持论文的任务、来源范围和评估口径，再检验新场景。", "evidence": [{"label": "摘要与研究目标", "text": "Generative AI is being increasingly integrated into web search for the convenience it provides users. In this work, we aim to understand how generative AI disrupts web search by retrieving and presenting the information and sources differently from traditional search engines. We introduce a public benchmark dataset of 11,500 user queries to support our study and future research of generative search. We compare the search results returned by Google’s search engine, the accompanying AI Overview (AIO), and Gemini Flash 2.5 for each query. We have made several key findings. First, we find that for 51.5% of representative, real-user queries, AIOs are generated, and are displayed above the organic search results. Controversial questions frequently result in an AIO. Second, we show that the retrieved sources are substantially different for each search engine (<0.2 average Jaccard similarity). Traditional Google search is significantly more likely to retrieve information from popular or institutional websites in government or education, while generative search engines are significantly more likely to retrieve Google-owned content. Third, we observe that websites that block Google’s AI crawler are significantly less likely to be retrieved by AIOs, despite having access to the content. Finally, AIOs are less consistent when processing two runs of the same query, and are less robust to mi", "page": 1}, {"label": "讨论与研究边界", "text": "We conducted a large-scale comparison of the results generated by traditional Google Search (SERP), Google AI Overviews (AIO), and Gemini for 14,212 total queries (including 11,500 time-invariant queries released in our benchmark dataset). There are several key findings. AIOs are generated for a substantial share of real-user searches and appear above organic results. Across search engines, the cited sources differ substantially, leading to meaningfully different source exposure for users and websites. Generative search shifts visibility away from popular and institutional domains and toward Google-owned properties. Surprisingly, AIOs retrieve fewer sources from websites blocking the Google-Extended bot, despite having access, which may lead some publishers to rethink their blocking strategies. Finally, we find that generative search engines are less stable than SERP across runs and more sensitive to changes in device type and minor query edits. Generative search’s impact on users is", "page": 10}, {"label": "RQ1 触发率分层", "text": "We find AIOs to be generated on 65.6% of all benchmark queries. On the extremes, 94.6% of ELI5 queries, compared to just 17.4% of Amazon Retail queries, result in an AIO. We consider the 51.5% AIO generation rate on the ORCAS dataset to be the most representative of how often real-user queries result in a generated AIO. We also show that the AIO generation rate varies based on query characteristics such as intent, format, and length.", "page": 4}], "table": {"label": "Table 2 · PDF p.5", "text": "Query subset    J: AIO×SERP  AIO×GEM  GEM×SERP\nORCAS              0.17      0.12     0.20\nAmazon Retail      0.08      0.06     0.08\nRetail-Comp        0.11      0.08     0.08\nRetail-Q           0.12      0.10     0.10\nDebate             0.24      0.10     0.11\nELI5               0.21      0.11     0.14\nLocalized          0.14      0.07     0.16\nNQ                 0.19      0.13     0.19\nNQ Keywords        0.19      0.13     0.20\nTotal              0.18      0.11     0.16\n\nRBO (Total):  AIO×SERP 0.23 · AIO×GEM 0.15 · GEM×SERP 0.21"}, "version": "ACM SIGIR 2026 author PDF", "sha256": "e13a5a0eed55a97c6f270bc53bcb28f4cf7596cf50ae31b9665f5781c6c45d5e", "stats": [{"v": "11,500", "name": "公开基准查询", "source": "Table 1", "context": "9 类时间不变的真实查询子集", "page": 3}, {"v": "14,212", "name": "研究总查询", "source": "Conclusion", "context": "含政治与趋势两类时点查询", "page": 10}, {"v": "51.5%", "name": "AI摘要触发率", "source": "摘要", "context": "ORCAS 代表性真实用户查询", "page": 1}, {"v": "<0.2", "name": "平均来源Jaccard", "source": "摘要", "context": "任意两界面的来源集合交并比", "page": 1}], "related": {"id": 21, "zh": "生成搜索的行为差异", "title": "Characterizing Web Search in the Age of Generative AI", "url": "./04_AI搜索实证_Characterizing_Web_Search_in_Generative_AI_Age.html", "pdf": "../04_AI搜索实证/04_AI搜索实证_Characterizing_Web_Search_in_Generative_AI_Age.pdf", "claim": "多个生成系统具有不同的内外部知识依赖、来源多样性与运行稳定性"}, "strength": "中", "strength_why": "本课保守评级：基准规模大且有稳健性检验；但只覆盖 Google 系、单一时点采集，且为描述性比较。", "limitations": [["高", "只覆盖 Google 系界面", "SERP、AIO、Gemini 全部来自 Google；结论对 ChatGPT、Perplexity 等其他生成引擎不自动成立（§6 · PDF p.9）。"], ["高", "单一时点的描述性快照", "采集集中在 2025 年 12 月 7–8 日（趋势查询 12 月 19 日）；分析为描述性比较，引擎或界面更新后需按同口径复测。"], ["中", "API 采集与真实用户存在差距", "SerpAPI 模拟移动端（新泽西纽瓦克）；作者用登录浏览器复测，AIO 一致性略高（0.73 对 0.69），主结论保持（§5 · PDF p.9）。"], ["中", "高风险查询集独立于基准", "政治与趋势查询是另行构造的时点集合；可信度评级（MBFC）只覆盖约一半来源（§4.5 · PDF p.8）。"], ["中", "相关研究提供新的对照", "多个生成系统具有不同的内外部知识依赖、来源多样性与运行稳定性"], ["低", "指标口径需按表核对", "相似度按 URL 级计算，RBO 取 p=0.9；本课未逐表重算的汇总指标以原文表格为准。"]], "personas": [{"role": "内容与业务负责人", "why": "AI 摘要在比较与问句形态的商品查询上触发率达 88.2%–92%，直接改变品牌曝光面。", "todos": ["分层记录核心查询在三界面的触发与引用：先确认有没有摘要，再谈排名", "检查 robots.txt 的 Google-Extended 设置，对照 Figure 6 评估屏蔽代价", "面向问句与比较形态补充内容，覆盖高触发场景", "测试第三方评论与长尾域名的引用机会（Figure 3/4）"], "avoid": "只用 SERP 排名推断 AI 摘要曝光：两者来源重合平均不足两成。"}, {"role": "技术与数据人员", "why": "论文公开了 11,500 条基准查询与采集代码，可按同口径复现。", "todos": ["复用论文基准或自建分层查询集，固定设备、地区与时间窗", "同时报告 Jaccard 与 RBO（p=0.9），注明 URL 级口径", "同一查询多次运行，报告分布而非单次结果", "把 grounding 开关与模型版本写进采集元数据"], "avoid": "单次采集即下结论：AIO 同题两运行 RBO 仅 0.69。"}, {"role": "研究与审核人员", "why": "触发、重合、稳定是三个需要分开设计与报告的维度。", "todos": ["区分 51.5%（ORCAS）与 65.6%（全基准）的分母再引用", "高风险查询单独测：政治 93.8%、趋势 8.1%，并核查来源可信度", "与仓库内《生成搜索的行为差异》做同口径对照", "把采集时点（2025 年 12 月 7–8 日）写进结论"], "avoid": "把描述性来源差异直接推断为流量或收入变化。"}], "mature": [{"form": "AIO 触发监测表", "obs": "按查询子集记录触发率与分母，对照 Table 1 的 9 类划分", "step": "构建 11,500 条基准查询"}, {"form": "三界面来源重合报告", "obs": "Jaccard 与 RBO 并报，附各引擎来源数均值（8.75–9.68）", "step": "同期采集三界面来源"}, {"form": "爬虫屏蔽决策记录", "obs": "记录 Google-Extended 设置与 AIO/Gemini 引用的前后变化", "step": "检验重合、偏好与稳定性"}], "quotes": [{"t": "先判断会不会触发，再谈摘要曝光", "b": "ELI5 94.6% 与商品关键词 17.4% 相差 5 倍以上（§4.1）", "u": "按查询子集分层报告 AI 摘要触发率"}, {"t": "三个界面等于三份不同的来源清单", "b": "平均 Jaccard 0.11–0.18（Table 2 · PDF p.5）", "u": "监测可见性时分别采集三个界面"}, {"t": "生成式界面把曝光移向长尾", "b": "Top-1K 域名占比 SERP 37.8% 对 Gemini 27.9%（Figure 4）", "u": "把冷门域名与第三方评论纳入机会评估"}, {"t": "屏蔽 AI 爬虫的代价会落到 AIO 头上", "b": "Figure 6：AIO 与 Gemini 引用均显著更少，尽管 AIO 可访问", "u": "屏蔽决策前先测自己域名的引用变化"}, {"t": "改个措辞，答案来源可能整批更换", "b": "微改后 AIO RBO 0.49，相对下降 28.99%（§4.4）", "u": "用固定查询集复测，报告多次运行分布"}, {"t": "高风险查询值得单独一条基线", "b": "政治查询 93.8% 触发；33.4% 的 AIO 直接表态（§4.5）", "u": "对政治、医疗类查询单独监控来源质量"}], "quiz": [{"q": "在 ORCAS 代表性真实用户查询上，AI 摘要的触发率是多少？", "o": ["约 8.1%", "约 17.4%", "约 51.5%", "约 94.6%"], "a": 2, "e": "全基准触发率为 65.6%，ELI5 复杂问句达 94.6%，商品关键词仅 17.4%，趋势查询 8.1%；论文把 ORCAS 的 51.5% 视为真实用户查询的最具代表性估计。", "p": 13}, {"q": "网站在 robots.txt 里屏蔽 Google-Extended 爬虫后，论文观察到什么？", "o": ["AIO 与 Gemini 的引用都显著减少，尽管 AIO 仍可访问内容", "只有 Gemini 减少，AIO 的引用不受影响", "AIO 的引用反而显著增加", "该网站在 Google 搜索中的排名同步下降"], "a": 0, "e": "这是论文标注的反常发现（Figure 6）：屏蔽爬虫的网站在 AIO 与 Gemini 引用都更少；Google 说明屏蔽只影响 AI 训练与接地，搜索排名不受影响。", "p": 15}, {"q": "论文说平均来源 Jaccard <0.2，正确的理解是？", "o": ["AIO 引用的来源数量不足 SERP 的两成", "任意两个界面返回的来源集合平均重合不足两成", "来源可信度评分低于 0.2 分", "同一查询两次运行的差异小于 0.2"], "a": 1, "e": "Jaccard 是两个来源集合的交并比（URL 级）：总量行 AIO×SERP 0.18、AIO×Gemini 0.11、Gemini×SERP 0.16；排名加权口径 RBO 为 0.15–0.23。", "p": 14}, {"q": "同为商品查询，关键词版触发率 17.4%，问句版 92%。这组对比说明什么？", "o": ["触发率只取决于查询热度", "AIO 更多出现在研究与比较阶段，最终购买阶段较少", "论文数据存在内部矛盾", "查询更长就必然触发 AI 摘要"], "a": 1, "e": "论文据此推断生成式搜索在考虑与研究阶段作用更大（§6）；同题的 NQ 86.2% 对 NQ Keywords 76.5% 也支持问句形态更易触发。", "p": 13}, {"q": "把本文结论用到自己网站之前，必须记住哪条边界？", "o": ["结论覆盖所有搜索引擎，可直接迁移", "2025 年 12 月单一时点、仅 Google 系界面、经 API 采集", "触发率不随时间变化，无需复测", "描述性比较可以直接推算流量与收益"], "a": 1, "e": "论文第 6 节自述局限：只测 Google、描述性、单一时点；引擎或界面变化后需按同口径复测。", "p": 21}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{aio:{t:"AIO",d:"Google 搜索页顶部生成的 AI 摘要（AI Overview），默认显示在自然结果上方。"},gextended:{t:"Google-Extended",d:"Google 用于训练与接地 Gemini 的爬虫；网站可在 robots.txt 中屏蔽。"},tranco:{t:"Tranco 排名",d:"面向学术研究的网站流行度排名，论文用它衡量域名热门程度。"},stance:{t:"立场性回答",d:"摘要以肯定或否定开头直接表态，而非并列呈现双方观点。"},geo:{t:"GEO",d:"改善来源在生成式答案中的可见性及归功的研究与实践。"},rag:{t:"RAG",d:"先检索外部资料，再以资料支持模型生成。"},baseline:{t:"基线",d:"作为效果比较起点的未修改或已有方案。"},causal:{t:"因果效应",d:"在明确干预与可比条件下，改变因素引起的结果差异。"},transfer:{t:"迁移",d:"在不同模型、数据或时期中复验方法。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=e=>`<span class="src">${esc(e.label)} · PDF p.${e.page}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const researchOnly=['理论框架','综述'].includes(PAPER.kind);
+const stageNames=['问题与候选资料','研究干预与比较','答案或评价结果'];
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,num:0,numtab:0,qsel:0,lim:0,role:0,proof:0,q:0,answers:[],checks:new Set(),flips:new Set()};
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function dataNumbers(){return PAPER.stats.length?`<div class="number-grid">${PAPER.stats.slice(0,4).map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div>${tip(s.source)}</div>`).join('')}</div>`:`<div class="answer"><div class="kicker">证据类型 · ${esc(PAPER.kind)}</div><h3>${esc(PAPER.zh)}</h3><p>${esc(PAPER.kind_note)}</p>${tip('本篇未在封面展示未经逐项核对的效果数值。')}</div>`}
+function flow(highlight){return `<div class="flow-line">${stageNames.map((t,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${highlight===i?'active':''}">${esc(t)}<div class="caption">${esc(PAPER.steps[i])}</div></div>`).join('')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+const notesForStep=i=>[
+ `研究输入：11,500 条基准查询分 9 类子集（Table 1 · PDF p.3），另加政治与趋势两类时点查询，总计 14,212 条。`,
+ `研究比较：用 SerpAPI 与 Gemini API 同期采集 SERP、AIO、Gemini 的来源列表（2025 年 12 月 7–8 日，移动端，新泽西纽瓦克）。`,
+ `结果解读：用 Jaccard 与 RBO（p=0.9）在 URL 级量化重合，再按域名特征与重复运行检验偏好和稳定性；三引擎都返回来源的查询共 7,439 条。`
+][i];
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors.split("; ")[0])}${PAPER.authors.includes(";")?" 等":""} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}${PAPER.pdf?' · '+ext(PAPER.pdf,'本地PDF'):''}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿。进度自动保存在当前浏览器。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>${esc(PAPER.question)}</li><li>${esc(PAPER.metrics[0].name)}衡量什么？</li><li>${esc(PAPER.steps[1])}怎样起作用？</li><li>哪些条件会限制结论迁移？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><div class="x-q" style="margin-top:10px"><div class="kicker">Google 结果页结构示意 · 据 Figure 1（PDF p.2）</div><div style="border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;background:var(--accent-tint);font-size:13.5px"><b>AI 摘要（AIO）</b><br><span style="color:var(--ink-2)">生成的答案加引用来源，默认置于最上方，用户无需主动选择</span></div><div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:8px;font-size:13.5px;color:var(--ink-2)">传统自然结果第 1–10 条（SERP）</div></div></div><div>${choices(['常见做法','研究启发'],0,'scene')}<div class="answer" id="sceneOut" aria-live="polite"><h3>常见做法</h3><p>${esc(PAPER.before)}</p>${tip('观察这一做法遗漏了什么条件。')}</div></div></div>`;
+ else if(view==='concept')h=`${choices(PAPER.steps,0,'concept')}<div class="columns"><div class="answer" id="conceptOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p></div><div><div class="kicker">本篇要区分的量</div><ul class="fact-list">${PAPER.metrics.map((m,i)=>`<li><button type="button" class="term" data-term="metric${i}">${esc(m.name)}</button><small>${esc(m.plain)}</small></li>`).join('')}</ul></div></div>`;
+ else if(view==='pipeline')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(notesForStep(state.step))}</p><div class="only-pro pro-note">${esc(PAPER.setting)}。证据范围：${esc(PAPER.boundary)}。</div></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按论文方法重新组织；箭头表达研究逻辑，不代表时间成本。')}`;
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],1,'flow')}<div id="flowOut" aria-live="polite">${flow(1)}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div>`;
+ else if(view==='metric')h=`<div class="columns"><div>${choices(PAPER.metrics.map(m=>m.name),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite"><h3>${esc(PAPER.metrics[state.metric].name)}</h3><p class="only-plain">${esc(PAPER.metrics[state.metric].plain)}</p><div class="only-pro"><div class="formula">${esc(metricFormula(state.metric))}</div><p>${esc(PAPER.metrics[state.metric].pro)}</p><div class="caption">URL 级计算；采集与口径细节见 §3 · PDF p.3。</div></div></div></div><div><div class="kicker">指标解释的检查次序</div><ul class="fact-list"><li>测量对象<small>${esc(PAPER.setting)}</small></li><li>对应结论<small>${esc(PAPER.findings[0])}</small></li><li>禁止越界<small>${esc(PAPER.boundary)}</small></li></ul></div></div>`;
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 研究设计</div><p class="intro">${esc(PAPER.setting)}</p><div class="callout">${esc(PAPER.boundary)}</div>${tip('研究类型会决定所需对照。综述需要核查纳入条件，理论需要核查假设，实证需要核查比较设计。')}</div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">给你的复验方案做检查 · 本课推断</div><div class="check-list">${['保持研究问题和对象一致','明确基线与比较方案','记录引擎或数据版本','报告负向变化与不确定性'].map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${s}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===4?'具备基本复验要素':'继续补齐比较条件'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选用于检查方案完整性，无法自动证明因果识别成立。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method')h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button type="button" class="choice" data-action="method" data-value="${i}" aria-pressed="${i===0}">${esc(s)}</button>`).join('')}</div><div class="columns"><div class="answer" id="methodOut" aria-live="polite"><h3>${esc(PAPER.steps[0])}</h3><p>${esc(notesForStep(0))}</p><div class="callout">要检查：${esc(PAPER.findings[0])}。</div></div><div><div class="kicker">保持不变的约束</div><ul class="fact-list"><li>事实与来源可追溯</li><li>指标含义保持一致</li><li>${esc(PAPER.boundary)}</li></ul></div></div>`;
+ else if(view==='lab')h=triggerLab(state.qsel);
+ else if(view==='numbers')h=numbersHtml();
+ else if(view.startsWith('finding')){const ix=+view.slice(-1);h=`<div class="ev" style="margin-bottom:14px">F${ix+1} · ${src(PAPER.evidence[0])} · 证据强度 <span class="${PAPER.strength==='弱'?'str-l':'str-m'}">${esc(PAPER.strength)}</span> ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite"><p>${esc(PAPER.finding_details[ix])}</p><div class="caption">结合本篇研究设计理解这条发现。</div></div></div>${findingViz(ix)}</div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes'){h=`<div class="flips">${PAPER.quotes.map((q,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(q.t)}</b><span class="flip-back">依据：${esc(q.b)}<br>用法：${esc(q.u)}</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;}
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+function labHtml(v){const a=panel('操作前 · 示意',PAPER.before),b=panel('操作后 · 示意',PAPER.after);return v===2?`<div class="two-docs">${a}${b}</div>`:v===0?a:b;}
+/* opt-23 signature interaction: pick a real benchmark query, see trigger rate and source shift. */
+const SUBSET_SIM={"ELI5 复杂问句":["ELI5",0.21],"商品问句":["Retail-Q",0.12],"商品比较":["Retail-Comp",0.11],"自然问句（NQ）":["NQ",0.19],"同题关键词版":["NQ Keywords",0.19],"ORCAS 真实用户":["ORCAS",0.17],"本地服务":["Localized",0.14],"商品关键词":["Amazon Retail",0.08]};
+function metricFormula(i){return i===1?'J(A,B) = |A∩B| ÷ |A∪B|':i===2?'RBO：逐位比较排名，权重随位置衰减（p=0.9）':'触发率 = 生成 AIO 的查询数 ÷ 子集查询总数'}
+function triggerLab(sel){
+ const t=PAPER.trigger,s=t.sets[sel],p=PAPER.profile,sim=SUBSET_SIM[s.name];
+ const w=v=>Math.max(2,Math.min(100,v)).toFixed(1);
+ const eng=p.top1k.map((e,i)=>`<div><small>${esc(e.e)}</small><b class="${i===0?'':i===1?'pos-t':'neg-t'}">${e.all}%</b><span class="x-val">首位来源 ${e.top1}%</span></div>`).join('');
+ return `<div class="x-labgrid"><div><div class="kicker">第一步 · 选一条论文基准查询（Table 1 原例）</div><div class="choice-row" role="group" aria-label="选择查询子集">${t.sets.map((x,i)=>`<button type="button" class="choice" data-action="xq" data-value="${i}" aria-pressed="${i===sel}">${esc(x.name)}</button>`).join('')}</div><div class="x-q"><div class="mono">${esc(s.q)}</div></div><div class="x-big"><span class="n">${s.v.toFixed(1)}%</span><span class="d">该类查询会触发 AI 摘要<br><span class="src">${esc(s.src)}</span></span></div><div class="x-bars" style="margin-top:8px"><div class="x-row"><span class="x-lab">问句形态</span><div class="x-track"><div class="x-fill c2" style="width:89.9%"></div></div><span class="x-val">89.9%</span></div><div class="x-row"><span class="x-lab">非问句形态</span><div class="x-track"><div class="x-fill" style="width:51.9%"></div></div><span class="x-val">51.9%</span></div><div class="x-row"><span class="x-lab">商品问句</span><div class="x-track"><div class="x-fill c2" style="width:92%"></div></div><span class="x-val">92.0%</span></div><div class="x-row"><span class="x-lab">商品关键词</span><div class="x-track"><div class="x-fill" style="width:17.4%"></div></div><span class="x-val">17.4%</span></div></div><div class="x-basetxt">写法改变触发率：问句 89.9% 对非问句 51.9%（Figure 2c · PDF p.4）；全部子集条形图见第 12 页。</div></div><div><div class="kicker">第二步 · 触发之后，来源怎么变</div><div class="x-q"><div class="kicker" style="margin-bottom:2px">该子集 AIO × SERP 来源重合（Jaccard）</div><div class="x-big"><span class="n" style="font-size:38px">${sim[1].toFixed(2)}</span><span class="d">1.0 = 完全重合；总样本均值 0.18<br><span class="src">${esc(PAPER.sim.src)}</span></span></div><div class="x-track" style="margin-top:6px"><div class="x-fill c2" style="width:${(sim[1]*100).toFixed(1)}%"></div><div class="x-base" style="left:18%"></div></div><div class="x-basetxt">子集 ${esc(sim[0])}；虚线为总样本均值 0.18。</div></div><div class="x-eng">${eng}</div><div class="x-basetxt">Top-1K 热门域名占全部来源比例；生成式界面把曝光移向长尾（${esc(p.src)}）。</div><div class="callout" style="margin-top:10px;font-size:13.5px">屏蔽 Google-Extended 的网站，被 AIO 与 Gemini 引用都显著更少，尽管 AIO 有权访问（Figure 6 · PDF p.7）。</div></div></div>`;
+}
+function numbersHtml(){
+ const t=PAPER.trigger,s=PAPER.sim,st=PAPER.stability;
+ const w=v=>Math.max(1.5,Math.min(100,v)).toFixed(1);
+ let body='';
+ if(state.numtab===0){
+  const rows=[...t.sets].sort((a,b)=>b.v-a.v).map(x=>`<div class="x-row"><span class="x-lab">${esc(x.name)}</span><div class="x-track"><div class="x-fill" style="width:${w(x.v)}%"></div><div class="x-base" style="left:${w(t.base.v)}%"></div></div><span class="x-val">${x.v.toFixed(1)}%</span></div>`).join('');
+  const extra=`<div class="x-row"><span class="x-lab">政治人物查询<small>独立时点查询集</small></span><div class="x-track"><div class="x-fill c3" style="width:${w(PAPER.high.political)}%"></div><div class="x-base" style="left:${w(t.base.v)}%"></div></div><span class="x-val">93.8%</span></div><div class="x-row"><span class="x-lab">趋势查询<small>独立时点查询集</small></span><div class="x-track"><div class="x-fill c3" style="width:${w(PAPER.high.trending)}%"></div><div class="x-base" style="left:${w(t.base.v)}%"></div></div><span class="x-val">8.1%</span></div>`;
+  body=`<div class="x-bars">${rows}${extra}</div><div class="x-basetxt">虚线基线 = 全基准触发率 65.6%（${esc(t.base.src)}）。蓝色为基准集子集，橙色为独立时点查询集（${esc(PAPER.high.src)}）。ORCAS 代表性真实查询为 51.5%。</div><div class="only-pro pro-note" style="margin-top:10px">问句 89.9%（n=4130）对非问句 51.9%（n=7370）：χ²=1685.7，p&lt;0.001；ORCAS 信息类意图触发最多（Figure 2b/2c · PDF p.4）。</div>`;
+ }else if(state.numtab===1){
+  const rows=s.pairs.map((p,i)=>`<div class="x-row"><span class="x-lab">${esc(p[0])}<small>Jaccard · 集合重合</small></span><div class="x-track"><div class="x-fill" style="width:${w(p[1]*100)}%"></div><div class="x-base" style="left:${w(18)}%"></div></div><span class="x-val">${p[1].toFixed(2)}</span></div><div class="x-row"><span class="x-lab"><small>RBO · 排名重合</small></span><div class="x-track"><div class="x-fill c2" style="width:${w(p[2]*100)}%"></div><div class="x-base" style="left:${w(23)}%"></div></div><span class="x-val">${p[2].toFixed(2)}</span></div>`).join('');
+  body=`<div class="x-bars">${rows}</div><div class="x-basetxt">横轴 0–1：1.0 为来源完全重合；虚线为总样本均值（Jaccard 0.18 / RBO 0.23）。出处：${esc(s.src)}。子集区间 0.06–0.24，商品与本地查询最低。</div><div class="only-pro pro-note" style="margin-top:10px">各引擎平均来源数接近：SERP 8.75、AIO 9.24、Gemini 9.68（§4.2 · PDF p.5），低重合来自选择方法而非数量。</div>`;
+ }else if(state.numtab===2){
+  const runs=st.runs.map((r,i)=>`<div class="x-row"><span class="x-lab">${esc(r[0])}<small>同题两运行</small></span><div class="x-track"><div class="x-fill ${i===1?'c2':i===2?'c3':''}" style="width:${w(r[1]*100)}%"></div></div><span class="x-val">RBO ${r[1].toFixed(2)}</span></div>`).join('');
+  const ed=st.edits.map(r=>`<div class="x-row"><span class="x-lab">${esc(r[0])}<small>微改后（${r[2]}）</small></span><div class="x-track"><div class="x-fill neg" style="width:${w(r[1]*100)}%"></div></div><span class="x-val">RBO ${r[1].toFixed(2)}</span></div>`).join('');
+  body=`<div class="grp-t">同题双次运行（Table 4 · 100 条分层随机查询）</div><div class="x-bars">${runs}</div><div class="grp-t" style="margin-top:14px">轻微软述之后（200 条查询）</div><div class="x-bars" style="margin-top:8px">${ed}</div><div class="x-basetxt">${esc(st.note)} 出处：${esc(st.src)}。</div>`;
+ }else{
+  body=`<div class="source-text table" lang="en">${esc(PAPER.table.text)}</div>${src({label:PAPER.table.label,page:5})}${tip('版面抽取节选，换行可能影响列对齐；J 为 Jaccard，RBO 为排名重合，均按 URL 级计算。完整表格与脚注以 PDF 为准。')}`;
+ }
+ return `${choices(['触发率对比','来源重合度','一致性对比','原文表格节选'],state.numtab,'numtab')}<div id="numOut" aria-live="polite">${body}</div>`;
+}
+/* opt-23: per-finding mini chart, colors keyed to engine (SERP=c1, AIO=c2, Gemini=c3). */
+function findingViz(ix){
+ const w=v=>Math.max(1.5,Math.min(100,v)).toFixed(1);
+ const row=(lab,small,v,cls,scale)=>`<div class="x-row"><span class="x-lab">${esc(lab)}${small?`<small>${esc(small)}</small>`:''}</span><div class="x-track"><div class="x-fill ${cls||''}" style="width:${w(v*(scale||1))}%"></div></div><span class="x-val">${typeof v==='number'&&v<=1?v.toFixed(2):v+'%'}</span></div>`;
+ let head='',bars='',base='',pro='';
+ if(ix===0){head='触发率按查询子集分层';
+  bars=[...PAPER.trigger.sets].sort((a,b)=>b.v-a.v).slice(0,4).map(x=>row(x.name,null,x.v)).join('')+row('政治人物查询','独立时点查询集',93.8,'c3')+row('趋势查询','独立时点查询集',8.1,'c3');
+  base=`虚线省略：全基准 65.6%、ORCAS 51.5%（§4.1 · PDF p.4）。`;
+  pro=`问句 89.9%（n=4130）对非问句 51.9%（n=7370），χ²=1685.7，p&lt;0.001；趋势查询 5 天内仅 4.8%，超 5 天升至 12.7%（§4.5）。`;}
+ else if(ix===1){head='三对界面的来源重合都很低';
+  bars=PAPER.sim.pairs.map(p=>row(p[0],null,p[1],'',100)).join('');
+  base=`横轴 0–1，1.0 为完全重合；总样本均值 0.18（${esc(PAPER.sim.src)}）。RBO 总量 0.15–0.23。`;
+  pro=`子集最低为 Amazon Retail（0.06–0.08），最高为 Debate 的 AIO×SERP（0.24）；AIO 与 Gemini 同源轻量模型却最不相似（0.11）。`;}
+ else if(ix===2){head='Top-1K 热门域名来源占比';
+  bars=PAPER.profile.top1k.map((e,i)=>row(e.e,i===0?'全部来源':'',e.all,i===0?'':i===1?'c2':'c3')).join('');
+  base=`仅首位来源时：SERP 52.7%、AIO 40.0%、Gemini 32.6%（${esc(PAPER.profile.src)}）。`;
+  pro=`Figure 6：屏蔽 Google-Extended、热门与政府教育机构域名被生成界面引用显著更少；Table 3：21 家热门出版商从未被 Gemini 引用。`;}
+ else{head='来源列表稳定性（RBO）';
+  bars=PAPER.stability.runs.map((r,i)=>row(r[0],'同题两运行',r[1],i===0?'':i===1?'c2':'c3',100)).join('')+row('AI 摘要','200 条查询微改后',PAPER.stability.edits[1][1],'neg',100);
+  base=`SERP 微改后 0.74、Gemini 0.50；微改 = 缩写、缩略词与问号级变化（${esc(PAPER.stability.src)}）。`;
+  pro=`换设备 RBO：AIO 0.53、SERP 0.79；来源重合与摘要文本相似度相关：r=0.62（AIO）。`;}
+ return `<div><div class="kicker">${esc(head)}</div><div class="x-bars">${bars}</div><div class="x-basetxt">${base}</div><div class="only-pro pro-note" style="margin-top:10px">${pro}</div><button type="button" class="btn" data-go="8" style="margin-top:12px">回到原文证据 →</button></div>`;
+}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p>${relatedLink()}${tip('按相关论文摘要转述；沿用该论文的研究范围。')}</div>`;
+ return `<div class="answer"><h3>重新检查研究阶段与目标量</h3><p>${esc(PAPER.extra)}</p><p>对照阅读时记录：对象是否相同、来源是否已进入候选集、指标能否直接比较。</p>${relatedLink()}${tip('本段为教学推断。两篇论文的数字不宜直接相加。')}</div>`;
+}
+const originalCases={
+ 23:['拳赛还没结束，AI摘要为何先宣布了胜者？','趋势查询 “who won jake paul or anthony joshua” 在比赛当晚触发 AIO，直接回答 Jake Paul 获胜；此类时点查询整体只有 8.1% 触发摘要（§4.5 · PDF p.8）。','核对 AIO 引用的多条来源：只有一条（讽刺体育账号的 Facebook 帖子）支持该结论，其余来源并无此说法；作者将其作为误信息案例展示（Figure 8）。','§4.5 / Figure 8 · PDF p.8']};
+function caseHtml(){const c=originalCases[PAPER.id];
+ if(c)return `<div class="kicker">论文原例的中文转述 · ${esc(c[3])}</div><p class="intro">${esc(c[0])}</p><div class="x-mini"><div class="answer"><div class="kicker">查询与输入</div><p style="font-size:15px">${esc(c[1])}</p></div><div class="answer"><div class="kicker">操作与检查</div><p style="font-size:15px">${esc(c[2])}</p></div></div><div class="x-mini" style="margin-top:12px"><div class="callout warn">同节的立场发现：33.4% 的争议类 AIO 以肯定或否定开头直接表态，Gemini 为 5.6%（${esc(PAPER.high.src)}）。示例议题：军用机器人、AI 诊断、肉类消费与移民改革。</div><div class="callout">对应发现：F1 趋势查询触发率仅 8.1%；F4 摘要随来源与措辞漂移。低触发不等于低风险，触发后需要核对引用来源。</div></div>${tip('中文转述保持论文原意；论文未为该案例给出成功率等数值，本页不估造收益。')}`;
+ return `<div class="kicker">依据方法构造的教学示意，尚未执行效果试验</div><p class="intro">${esc(PAPER.query)}</p><div class="two-docs">${panel('问题与输入',PAPER.before)}${panel('操作与检查',PAPER.after)}</div>${tip('原文完整案例请沿原文查看；本页仅解释方法。')}`;}
+function personaHtml(){const ps=PAPER.personas,p=ps[state.role];
+ return `${choices(ps.map(x=>x.role),state.role,'role')}<div class="columns"><div><h3>${esc(p.role)}</h3><p style="margin-top:12px">为什么适合：${esc(p.why)}</p><div class="callout warn">避免：${esc(p.avoid)}</div></div><div><div class="kicker">可以这样做</div><ul class="fact-list">${p.todos.map(s=>`<li>${esc(s)}<small>依据 F1–F4 · 本课应用推断</small></li>`).join('')}</ul></div></div>`;}
+function matureHtml(){const m=PAPER.mature;
+ return `<div class="kicker">这一对应关系是本页的推断；可观察字段的结构来自论文 Table 1/2/4</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的写法或字段</th><th>对应研究环节</th></tr></thead><tbody>${m.map(x=>`<tr><td>${esc(x.form)}</td><td>${esc(x.obs)}</td><td>${esc(x.step)}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:18px">采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i===0?'来自本篇研究范围与局限解读。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、指标含义、适用条件与证据强弱。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','concept','method','flow','compare','proof','metric','limit'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene')$('#sceneOut').innerHTML=`<h3>${v?'研究启发':'常见做法'}</h3><p>${esc(v?PAPER.after:PAPER.before)}</p>${tip(v?'论文实测：三对界面平均 Jaccard 0.11–0.18（Table 2 · PDF p.5）。':'观察这一做法遗漏了什么条件。')}`;
+ else if(a==='concept')$('#conceptOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p>`;
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flow(v);
+ else if(a==='metric'){state.metric=v;const m=PAPER.metrics[v];$('#metricOut').innerHTML=`<h3>${esc(m.name)}</h3><p class="only-plain">${esc(m.plain)}</p><div class="only-pro"><div class="formula">${esc(metricFormula(v))}</div><p>${esc(m.pro)}</p><div class="caption">URL 级计算；口径细节见 §3 · PDF p.3。</div></div>`;}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='method')$('#methodOut').innerHTML=`<h3>${esc(PAPER.steps[v])}</h3><p>${esc(notesForStep(v))}</p><div class="callout">核对发现：${esc(PAPER.findings[v])}。</div>`;
+ else if(a==='xq'){state.qsel=v;box.innerHTML=draw('lab');}
+ else if(a==='numtab'){state.numtab=v;box.innerHTML=draw('numbers');}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);const f=PAPER.fimplies[ix];$('#findingOut'+ix).innerHTML=`<p>${esc(v===0?PAPER.finding_details[ix]:v===1?f.imp:f.con)}</p>${tip(v===1?'行动建议属于教学推断。':v===2?'条件与证据范围见原文对应小节。':'需要连同研究设计解读，勿省略条件。')}`;}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(PAPER.quotes.map(q=>q.t).join('\n')+'\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>

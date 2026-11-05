@@ -1,0 +1,736 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>可扩展爬虫的组件设计 · 论文课堂</title><meta name="description" content="爬虫可扩展的关键是内存有界、以磁盘为主的数据结构，Mercator 八天发出 7,740 万次请求，每秒抓 112 个文档。"><meta name="paper-guide-spec" content="PGS v2.0"><meta name="paper-guide-source" content="World Wide Web"><style>/* ===== PGS core v2.0 · 课堂外壳与白板组件 · 新课程原样复制，不改 ===== */
+:root{
+  --bg:#ffffff;
+  --ink:#141414; --ink-2:#4a4a48; --ink-3:#8b8b87;
+  --line:#ebebe8; --line-2:#d6d6d1;
+  --tint:#f6f6f3;
+  --accent:#2446d8; --accent-ink:#1a33a3; --accent-tint:#eef1fd;
+  --pos:#127a4b; --pos-tint:#e8f4ed;
+  --neg:#c13a21; --neg-tint:#fbede9;
+  --mark:#fff0a6;
+  --c1:#2446d8; --c2:#127a4b; --c3:#c06a12;
+  --serif:"Songti SC","Noto Serif SC","Source Han Serif SC","STSong",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --side:284px; --bw:1160px; --bh:652px; --r:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;overflow:hidden}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(36,70,216,.25)}
+a:hover{border-bottom-color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+p{margin:0 0 .9em}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;letter-spacing:.01em;line-height:1.35;margin:0}
+.small{font-size:13px;color:var(--ink-3)}
+.mono{font-family:var(--mono);font-size:.88em}
+.pos-t{color:var(--pos)}.neg-t{color:var(--neg)}
+mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:2px}
+
+/* 应用外壳 */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);height:100vh;transition:grid-template-columns .25s ease}
+.app.side-off{grid-template-columns:0 minmax(0,1fr)}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff}
+.side-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.side-head .k{font-size:11px;letter-spacing:.1em;color:var(--ink-3)}
+.side-head h1{font-size:18px;margin:4px 0 2px}
+.side-head .en{font-size:12px;color:var(--ink-3);font-style:italic;font-family:Georgia,serif}
+.side-prog{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.side-prog .track{flex:1;height:4px;background:var(--tint);border-radius:999px;overflow:hidden}
+.side-prog .fill{height:100%;background:var(--ink);width:0;transition:width .3s}
+.toc{flex:1;overflow-y:auto;padding:8px 10px 16px}
+.toc-ch{margin-top:4px}
+.toc-ch>button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.toc-ch>button:hover{background:var(--tint)}
+.toc-ch .cn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;flex:none}
+.toc-ch.cur .cn{background:var(--ink);border-color:var(--ink);color:#fff}
+.toc-ch.done .cn{background:var(--pos-tint);border-color:transparent;color:var(--pos)}
+.toc-ch .cc{margin-left:auto;font-size:11px;color:var(--ink-3);font-weight:400}
+.toc-ch .chev{font-size:10px;color:var(--ink-3);transition:transform .2s}
+.toc-ch.open .chev{transform:rotate(90deg)}
+.toc-pages{display:none;padding:2px 0 6px 21px;margin-left:10px;border-left:1px solid var(--line)}
+.toc-ch.open .toc-pages{display:block}
+.toc-pages a{display:flex;gap:8px;align-items:baseline;padding:5px 10px;border:0;border-radius:6px;font-size:13px;color:var(--ink-2);line-height:1.45}
+.toc-pages a:hover{background:var(--tint);color:var(--ink)}
+.toc-pages a .pn{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);width:18px;flex:none}
+.toc-pages a .st{margin-left:auto;font-size:11px;color:var(--pos);flex:none}
+.toc-pages a.cur{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+.toc-pages a.cur .pn{color:var(--accent-ink)}
+.side-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap}
+
+.main{display:grid;grid-template-rows:52px minmax(0,1fr) auto 60px;min-width:0;height:100vh}
+.bar-top{display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);min-width:0}
+.crumb{font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.crumb b{color:var(--ink);font-weight:600}
+.icon-btn{border:1px solid transparent;background:none;border-radius:8px;padding:4px 9px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.icon-btn:hover{border-color:var(--line-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.icon-btn kbd{font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:4px}
+.icon-btn[aria-pressed="true"] kbd{color:#bbb}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;padding:2px;background:#fff;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-2);line-height:1.6}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.small button{padding:2px 10px;font-size:12px}
+
+.stage{position:relative;overflow:hidden}
+.page{display:none}
+.page.on{display:block}
+.board{position:absolute;left:50%;top:50%;width:var(--bw);height:var(--bh);transform-origin:center center;background:#fff;border:1px solid var(--line-2);border-radius:18px;padding:34px 52px 26px;display:flex;flex-direction:column;animation:enter .28s ease}
+@keyframes enter{from{opacity:0}to{opacity:1}}
+.b-head{margin-bottom:20px;padding-right:80px}
+.b-kicker{font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:6px}
+.b-kicker b{color:var(--accent);font-weight:600}
+.b-title{font-size:30px;line-height:1.3}
+.b-body{flex:1;min-height:0;display:grid;gap:34px;align-content:center}
+.b-body.split{grid-template-columns:5fr 7fr}
+.b-body.split-r{grid-template-columns:7fr 5fr}
+.b-body.even{grid-template-columns:1fr 1fr}
+.b-body.full{grid-template-columns:1fr}
+.b-key{display:flex;gap:12px;align-items:baseline;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:14.5px;color:var(--ink-2)}
+.b-key::before{content:"本页要点";flex:none;font-size:11px;letter-spacing:.06em;background:var(--ink);color:#fff;padding:1px 7px;border-radius:4px}
+.b-pno{position:absolute;right:30px;top:26px;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.b-body p{font-size:16.5px;color:var(--ink-2);line-height:1.8}
+.b-body p b{color:var(--ink)}
+.lead{font-family:var(--serif);font-size:19px!important;color:var(--ink)!important;line-height:1.7!important}
+
+.notes-panel{display:none;border-top:1px solid var(--line);padding:14px 22px;max-height:160px;overflow-y:auto;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.notes-panel.on{display:block}
+.notes-panel::before{content:"讲稿";display:inline-block;font-size:11px;letter-spacing:.06em;border:1px solid var(--line-2);color:var(--ink-3);padding:0 6px;border-radius:4px;margin-right:10px}
+.page>.notes{display:none}
+
+.bar-bot{display:flex;align-items:center;gap:14px;padding:0 16px;border-top:1px solid var(--line)}
+.nav-btn{border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.nav-btn:hover{border-color:var(--ink)}
+.nav-btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.ticks{flex:1;display:flex;gap:3px;align-items:center;min-width:0}
+.ticks button{flex:1;height:6px;border:0;border-radius:2px;background:var(--line);padding:0;min-width:3px}
+.ticks button.seen{background:var(--line-2)}
+.ticks button.cur{background:var(--ink)}
+.ticks button.chs{margin-left:6px}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+
+/* 抽屉：术语与引用 */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,92vw);background:#fff;border-left:1px solid var(--line-2);box-shadow:-12px 0 32px rgba(0,0,0,.06);transform:translateX(105%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer-body{overflow-y:auto;padding:6px 18px 30px}
+dl.gl{margin:0}
+dl.gl dt{font-weight:600;font-size:14.5px;margin-top:14px}
+dl.gl dd{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+pre.bib{background:var(--tint);border-radius:var(--r);padding:12px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;overflow-x:auto;white-space:pre}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* 术语浮层与提示 */
+.term{border:0;background:none;padding:0;border-bottom:1px dotted var(--ink-3);font-size:inherit;line-height:inherit;color:inherit}
+.term:hover,.term[aria-expanded="true"]{border-bottom-color:var(--accent);color:var(--accent-ink)}
+.pop{position:fixed;z-index:70;width:300px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.08);padding:12px 14px;font-size:14px;line-height:1.65;color:var(--ink-2)}
+.pop b{display:block;color:var(--ink);margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:7px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s;z-index:80}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 双层 */
+body.mode-plain .only-pro{display:none!important}
+body.mode-pro .only-plain{display:none!important}
+.pro-note{border:1px dashed var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.pro-note::before{content:"专业层";display:inline-block;font-size:10.5px;background:var(--ink);color:#fff;padding:0 6px;border-radius:4px;margin-right:8px;vertical-align:1px}
+.formula{font-family:var(--serif);font-size:17px;text-align:center;padding:6px 0;white-space:nowrap}
+
+/* 白板通用组件 */
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:8px;padding:5px 13px;font-size:13.5px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:disabled{opacity:.35;cursor:default}
+.panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.cap{font-size:12px!important;color:var(--ink-3)!important;line-height:1.6!important;margin-top:10px}
+.src{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid var(--line-2);color:var(--ink-2);margin:2px 4px 2px 0;background:#fff}
+.tag.pos{border-color:transparent;background:var(--pos-tint);color:var(--pos)}
+.tag.neg{border-color:transparent;background:var(--neg-tint);color:var(--neg)}
+.tag.acc{border-color:transparent;background:var(--accent-tint);color:var(--accent-ink)}
+button.tag{cursor:pointer}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{font-size:16px;margin:0 0 4px}
+.card p{font-size:14.5px!important;margin:0!important;line-height:1.7!important}
+.card .k{font-size:11px;letter-spacing:.06em;color:var(--ink-3);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.callout{padding:14px 16px;border-radius:var(--r);background:var(--tint);font-size:14.5px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout.warn{background:var(--neg-tint);color:#5b2117}
+.olist{list-style:none;margin:0;padding:0;counter-reset:o}
+.olist li{counter-increment:o;display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.olist li::before{content:counter(o,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:3px}
+.big{font-family:var(--serif);font-weight:700;line-height:1.05}
+.ev{font-size:12.5px;color:var(--ink-3)}
+.str-h{color:var(--pos);font-weight:600}.str-m{color:var(--c3);font-weight:600}.str-l{color:var(--neg);font-weight:600}
+.grp-t{font-size:12px;letter-spacing:.06em;color:var(--ink-3);margin:0 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th,table.t td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t th{font-size:11.5px;color:var(--ink-3);font-weight:500}
+table.t td.n{font-family:var(--mono);text-align:right}
+table.t.tight td,table.t.tight th{padding:4px 6px;font-size:12.5px}
+.scroll-x{overflow-x:auto}
+
+/* 移动端：白板改为纵向流式 */
+@media (max-width:900px){
+  body{overflow:auto}
+  .app,.app.side-off{display:block;height:auto}
+  .side{position:fixed;left:0;top:0;bottom:0;width:86vw;max-width:320px;z-index:65;transform:translateX(-100%);transition:transform .25s}
+  .app.side-mob .side{transform:none}
+  .main{display:block;height:auto}
+  .bar-top{position:sticky;top:0;background:#fff;z-index:20;height:52px}
+  .bar-top .icon-btn kbd,#fsBtn{display:none}
+  .stage{overflow:visible;padding:12px}
+  .board{position:static;width:auto;height:auto;transform:none!important;padding:22px 18px 18px}
+  .b-head{padding-right:44px}
+  .b-title{font-size:23px}
+  .b-pno{right:18px;top:20px}
+  .b-body.split,.b-body.split-r,.b-body.even{grid-template-columns:1fr;gap:22px}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .bar-bot{position:sticky;bottom:0;background:#fff;height:60px;z-index:20}
+  .nav-btn .nt{display:none}
+  .notes-panel{max-height:none}
+}
+/* ===== PGS core end ===== */
+/* Course-specific components. The PGS core above is copied unchanged. */
+.lesson{min-width:0;width:100%;font-size:16px;line-height:1.65}
+.lesson *{min-width:0;overflow-wrap:anywhere}
+.lesson .columns{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.lesson .columns.wide{grid-template-columns:1.25fr 1fr}
+.lesson .choice-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.lesson button.choice{background:#fff;border:1px solid var(--line-2);border-radius:8px;padding:7px 12px;text-align:left;font-size:14px;line-height:1.5}
+.lesson button.choice[aria-pressed=true]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-tint)}
+.lesson button:active{transform:translateY(1px)}
+.lesson .answer{border:1px solid var(--line);border-radius:12px;padding:20px 22px;background:#fff}
+.lesson .answer h3{font-size:23px;margin-bottom:12px}
+.lesson .answer p{font-size:16px;margin-bottom:10px}
+.lesson .caption{font-size:12px;color:#686863;line-height:1.6;margin-top:10px}
+.lesson .kicker{font-size:12px;color:#686863;letter-spacing:.05em;margin-bottom:9px}
+.lesson .english{font-family:Georgia,serif;font-size:15px;line-height:1.5;color:var(--ink-2);margin:10px 0 16px}
+.lesson .intro{font-family:var(--serif);font-size:23px!important;line-height:1.7!important;color:var(--ink)!important}
+.lesson .number-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lesson .number-tile{border:1px solid var(--line);border-radius:12px;padding:16px}
+.lesson .number{font-family:var(--serif);font-size:35px;font-weight:700;line-height:1.1;margin-bottom:7px;color:var(--ink)}
+.lesson .number-tile .label{font-size:13px;color:var(--ink-2)}
+.lesson .number-large{font-family:var(--serif);font-size:58px;font-weight:700;line-height:1.15;margin:12px 0}
+.lesson .route-list{list-style:none;margin:0;padding:0}
+.lesson .route-list button{display:flex;justify-content:space-between;gap:10px;width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);padding:9px 0;text-align:left;font-size:15px}
+.lesson .route-list small{color:var(--ink-2)}
+.lesson .term-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:14px}
+.lesson .step-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.lesson .step-track button{font-size:16px;padding:18px!important}
+.lesson .flow-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.lesson .flow-node{flex:1;text-align:center;border:1px solid var(--line-2);border-radius:10px;padding:18px 10px;font-size:16px}
+.lesson .flow-node.active{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-ink)}
+.lesson .fact-list{list-style:none;margin:0;padding:0}
+.lesson .fact-list li{padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.lesson .fact-list small{display:block;font-size:12px;color:var(--ink-2)}
+.lesson .source-text{font-family:Georgia,serif;font-size:14px;line-height:1.65;border:1px solid var(--line);border-radius:10px;padding:18px;max-height:210px;overflow:auto;white-space:pre-wrap;color:var(--ink-2)}
+.lesson .source-text.table{font-family:var(--mono);font-size:11px;white-space:pre;overflow:auto;overflow-wrap:normal}
+.lesson .proof{font-size:14px;color:var(--ink-2);margin:12px 0}
+.lesson .two-docs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.lesson .two-docs .answer p{font-family:var(--serif);font-size:19px}
+.lesson .check-list{display:flex;flex-direction:column;gap:9px}
+.lesson .check-list button{display:flex;gap:10px;align-items:center;width:100%}
+.lesson .checkmark{display:inline-flex;align-items:center;justify-content:center;flex:none;width:22px;height:22px;border:1px solid var(--line-2);border-radius:4px}
+.lesson [aria-pressed=true] .checkmark{background:var(--pos);border-color:var(--pos);color:#fff}
+.lesson .mini-table{width:100%;border-collapse:collapse;font-size:15px}
+.lesson .mini-table td,.lesson .mini-table th{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lesson .mini-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.lesson .flips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.lesson .flip-card{height:154px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:17px 18px;text-align:left;display:flex;flex-direction:column;justify-content:space-between}
+.lesson .flip-card b{font-family:var(--serif);font-size:18px;line-height:1.6}
+.lesson .flip-card .flip-back{display:none;font-size:14px;line-height:1.65}
+.lesson .flip-card[aria-pressed=true]{background:var(--tint)}
+.lesson .flip-card[aria-pressed=true] b{display:none}
+.lesson .flip-card[aria-pressed=true] .flip-back{display:block}
+.lesson .flip-card small{font-size:11px;color:var(--ink-2)}
+.lesson .quiz-options{display:grid;gap:8px;margin:12px 0}
+.lesson .quiz-options button{width:100%;padding:8px 13px!important;font-size:14px!important}
+.lesson .quiz-options button.correct{border-color:var(--pos);background:var(--pos-tint);color:var(--pos)}
+.lesson .quiz-options button.incorrect{border-color:var(--neg);background:var(--neg-tint);color:var(--neg)}
+.lesson .bar-result{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;margin:20px 0;font-size:14px}
+.lesson .bar-track{height:20px;background:var(--tint);border-radius:3px}
+.lesson .bar-fill{height:100%;background:var(--accent);border-radius:3px}
+.lesson input[type=range]{width:100%;accent-color:var(--accent)}
+.lesson .warning{padding:12px 16px;background:var(--neg-tint);color:#6e271a;border-radius:10px;font-size:14px;margin-top:12px}
+.lesson .muted{color:var(--ink-2);font-size:14px}
+/* A source paragraph is supplementary evidence; the whiteboard carries its Chinese interpretation. */
+@media(max-width:900px){
+.lesson .columns,.lesson .columns.wide,.lesson .two-docs{grid-template-columns:1fr;gap:18px}
+.lesson .step-track,.lesson .flips{grid-template-columns:1fr}
+.lesson .step-track button{padding:12px!important}
+.lesson .number-grid{grid-template-columns:1fr 1fr}
+.lesson .number{font-size:29px}.lesson .number-large{font-size:46px}
+.lesson .flow-line{flex-direction:column}.lesson .flow-node{width:100%}
+.lesson .flip-card{height:auto;min-height:140px}
+.lesson .bar-result{grid-template-columns:1fr;gap:4px}
+.lesson .mini-table{font-size:13px}.lesson .mini-table td,.lesson .mini-table th{padding:8px 5px}
+.lesson .intro{font-size:20px!important}
+.lesson .number-tile{padding:12px}
+.b-title{overflow-wrap:anywhere}.b-key{flex-wrap:wrap;gap:6px;font-size:13px}
+.crumb{display:none}.bar-top{gap:5px;padding:0 8px}.bar-top .seg button{padding:2px 8px}
+.drawer:not(.on){visibility:hidden}
+}
+
+.drawer:not(.on){visibility:hidden}
+.app.side-off .side{visibility:hidden}
+@media(max-width:900px){.app:not(.side-mob) .side{visibility:hidden}.app.side-mob .side{visibility:visible}}
+/* x- components for this course (id 79): memory lab, reading bars, alias picker */
+.lesson .step-track.x-track5{grid-template-columns:repeat(5,1fr)}
+.x-ml-ctl{display:flex;flex-wrap:wrap;gap:8px 26px;align-items:flex-start;margin-bottom:8px}
+.x-ml-ctl>.x-ctl{min-width:0}
+.x-ml-ctl .grp-t{margin:0 0 5px}
+.x-ml-ctl .choice-row{margin:0}
+.x-ml-ctl .choice-row button{padding:4px 11px;font-size:13px}
+.x-mchart{position:relative;height:102px;border-bottom:1px solid var(--line-2);display:flex;align-items:flex-end;gap:8px;padding:0 4px}
+.x-mbar{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;min-width:0}
+.x-mbar .v{font-size:10px;font-family:var(--mono);color:var(--ink-2);line-height:1.2}
+.x-mbar i{display:block;width:72%;max-width:54px;background:var(--c1);border-radius:3px 3px 0 0}
+.x-mbar.bad i{background:var(--neg)}
+.x-mbar.off i{height:0}
+.x-mbar .d{font-size:10px;color:var(--ink-3)}
+.x-ref{position:absolute;left:0;right:0;border-top:1px dashed var(--line-2);pointer-events:none}
+.x-ref b{position:absolute;font-size:10px;font-weight:500;color:var(--ink-3);background:rgba(255,255,255,.92);padding:0 3px;white-space:nowrap;top:-13px}
+.x-ref b.r{right:2px}.x-ref b.l{left:2px}
+.x-ref.x-acc{border-top-color:var(--accent)}.x-ref.x-acc b{color:var(--accent-ink)}
+.x-ml-g{margin-top:8px}
+.x-ml-glab{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--ink-2);margin-bottom:4px}
+.x-ml-glab b{font-size:13px;color:var(--ink)}
+.x-gtrack{height:13px;background:var(--tint);border-radius:3px;position:relative}
+.x-gfill{height:100%;background:var(--c1);border-radius:3px}
+.x-gfill.bad{background:var(--neg)}
+.x-ml-gval{font-size:11.5px;color:var(--ink-3);margin-top:3px;font-family:var(--mono)}
+.x-num-row{display:grid;grid-template-columns:168px 1fr 96px;gap:10px;align-items:center;margin:8px 0;font-size:13.5px;color:var(--ink-2)}
+.x-num-row .tr{height:14px;background:var(--tint);border-radius:3px;min-width:0}
+.x-num-row .fl{height:100%;border-radius:3px;background:var(--line-2)}
+.x-num-row .fl.acc{background:var(--c1)}
+.x-num-row .fl.bad{background:var(--neg)}
+.x-num-row .fl.ok{background:var(--c2)}
+.x-num-row .vl{text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.x-eq{font-family:var(--mono);font-size:12.5px;background:var(--tint);border-radius:8px;padding:9px 12px;line-height:1.7;color:var(--ink-2)}
+@media(max-width:900px){
+.lesson .step-track.x-track5{grid-template-columns:1fr 1fr}
+.x-num-row{grid-template-columns:96px 1fr 78px;font-size:12px}
+.x-mchart{gap:4px}
+.x-ml-ctl{gap:6px 14px}
+}
+
+/* Long formulas and chart values wrap within the mobile whiteboard. */
+@media(max-width:700px){
+  .formula,.x-val,.x-bv{white-space:normal;overflow-wrap:anywhere;min-width:0;}
+}
+</style><!-- Baidu visitor statistics -->
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?c0aa4d814a9bb0449f84d59c73cc5da4";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+</head><body class="mode-plain">
+<div class="app" id="app">
+
+<aside class="side" id="side" aria-label="课程目录">
+  <div class="side-head">
+    <div class="k">论文互动课堂 · 12 搜索架构与抓取</div>
+    <h1>可扩展爬虫的组件设计</h1>
+    <div class="en">1999 · 实证方法</div>
+    <div class="side-prog"><span id="progTxt"></span><div class="track"><div class="fill" id="progFill"></div></div></div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+
+  <div class="side-foot">
+    <button class="btn" type="button" data-drawer>术语与引用</button>
+    <a class="btn" href="index.html">学习首页</a><a class="btn" href="../index.html">论文导航</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar-top">
+    <button class="icon-btn" type="button" id="sideBtn" aria-label="显示或隐藏目录">☰ 目录</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="seg small" role="group" aria-label="讲解深度">
+      <button type="button" data-mode="plain" aria-pressed="true">通俗</button>
+      <button type="button" data-mode="pro" aria-pressed="false">专业</button>
+    </div>
+    <button class="icon-btn" type="button" id="notesBtn" aria-pressed="false">讲稿<kbd>N</kbd></button>
+    <button class="icon-btn" type="button" id="fsBtn">全屏<kbd>F</kbd></button>
+  </div>
+
+  <div class="stage" id="stage">
+<section class="page" data-ch="1" data-t="课程封面" data-view="cover"><div class="board"><div class="b-head"><h2 class="b-title">可扩展爬虫的组件设计</h2></div><div class="b-body full"><div class="lesson" id="lesson1"></div></div><div class="b-key">爬虫可扩展的关键是内存有界、以磁盘为主的数据结构，Mercator 八天发出 7,740 万次请求，每秒抓 112 个文档。<span class="src">摘要 · PDF p.1</span></div></div><div class="notes">开场先给结论：爬虫能不能爬全网，取决于数据结构能不能不靠内存装下一切。右侧四个数字都来自论文实测，先混个眼熟，后面每一章都会把它们拆开。M 键可切换专业层，N 键是讲稿。</div></section>
+<section class="page" data-ch="1" data-t="学习路线" data-view="route"><div class="board"><div class="b-head"><h2 class="b-title">沿着问题与证据完成这门课</h2></div><div class="b-body full"><div class="lesson" id="lesson2"></div></div><div class="b-key">带着四个问题进入正文，每章回答一个。<span class="src">全课结构</span></div></div><div class="notes">这一页把课程路线和四个核心问题放在一起。可以先点章节直达，也可以顺着翻页。正文里的虚线词都是术语按钮，随时可以点开解释。</div></section>
+<section class="page" data-ch="1" data-t="问题场景" data-view="scene"><div class="board"><div class="b-head"><h2 class="b-title">全网规模的爬虫必须既高效又礼貌</h2></div><div class="b-body full"><div class="lesson" id="lesson3"></div></div><div class="b-key">常见做法把状态全塞内存、又缺礼貌约束；论文逐项给出替代设计。<span class="src">§1 · §3 · PDF p.1–4</span></div></div><div class="notes">先让学生说说自己会怎么写爬虫，再切到论文设计对照。带着两个追问进入组件拆解：状态全放内存装得下吗？同一台服务器会不会被多个线程同时请求？</div></section>
+<section class="page" data-ch="2" data-t="核心概念" data-view="concept"><div class="board"><div class="b-head"><h2 class="b-title">爬虫主循环由五个功能组件支撑</h2></div><div class="b-body full"><div class="lesson" id="lesson4"></div></div><div class="b-key">五个组件各自回答一个工程问题，也各自有备选方案。<span class="src">§3 · PDF p.3–8</span></div></div><div class="notes">五个组件各管一段：队列、下载、内容查重、处理、URL 查重。逐个点开看，每个卡片的专业层都标了论文小节，专业词可以点开术语解释。</div></section>
+<section class="page" data-ch="2" data-t="系统流程" data-view="pipeline"><div class="board"><div class="b-head"><h2 class="b-title">抓取循环：取网址、下载、查重、抽链接、入队</h2></div><div class="b-body full"><div class="lesson" id="lesson5"></div></div><div class="b-key">每轮循环先查内容指纹再处理，重复文档到此为止。<span class="src">§3.1 · PDF p.3</span></div></div><div class="notes">主循环步进器按论文 §3.1 的工人线程顺序走，可用上一步下一步，也支持方向键。重点停在内容查重那一步：8.5% 的重复在这里被拦下，不再做任何处理。</div></section>
+<section class="page" data-ch="2" data-t="研究位置" data-view="boundary"><div class="board"><div class="b-head"><h2 class="b-title">插件化设计让同一核心适配不同任务</h2></div><div class="b-body full"><div class="lesson" id="lesson6"></div></div><div class="b-key">协议与处理模块、四个可插拔组件都能在配置文件里替换。<span class="src">§4 · PDF p.8–10</span></div></div><div class="notes">强调研究位置：Mercator 的贡献在组件设计与可扩展机制。随机行走任务只加了 360 行 Java、核心未改，这是可扩展性最直接的证据。</div></section>
+<section class="page" data-ch="3" data-t="指标口径" data-view="metric"><div class="board"><div class="b-head"><h2 class="b-title">看爬虫要看吞吐、内存与查重开销</h2></div><div class="b-body full"><div class="lesson" id="lesson7"></div></div><div class="b-key">吞吐、内存上限与查重开销口径各不相同，分母要逐个核对。<span class="src">§3 · §6 · PDF p.4–12</span></div></div><div class="notes">四个指标口径不同：队列看结构、指纹看实现、吞吐看速率、内存看上限。让学生分别说出每个数字的分母与条件，专业层里有具体实现参数。</div></section>
+<section class="page" data-ch="3" data-t="实验设计" data-view="design"><div class="board"><div class="b-head"><h2 class="b-title">全部结论来自 1999 年一次八天实测爬取</h2></div><div class="b-body full"><div class="lesson" id="lesson8"></div></div><div class="b-key">双 Alpha、2 GB 内存、118 GB 磁盘，1999 年 5 月连续爬 8 天。<span class="src">§6.1 · PDF p.11</span></div></div><div class="notes">实验设计页读原文节选，可切换三段抽取。提醒：1999 年的双 Alpha 机器与 100 Mbit 网络是所有性能数字的前提；右侧的换算核对可以现场心算验证。</div></section>
+<section class="page" data-ch="3" data-t="对照检查" data-view="control"><div class="board"><div class="b-head"><h2 class="b-title">爬虫对比只传达相对速度，未校准硬件</h2></div><div class="b-body full"><div class="lesson" id="lesson9"></div></div><div class="b-key">Google 与 Internet Archive 的数字只能看量级，不能当排名。<span class="src">§6.1 · PDF p.11</span></div></div><div class="notes">复验清单逐项勾选，四项都勾上才算齐。核心提醒来自论文原话：跨爬虫对比没有校准硬件差异，作者明示只传达相对速度。</div></section>
+<section class="page" data-ch="4" data-t="方法拆解" data-view="method"><div class="board"><div class="b-head"><h2 class="b-title">每个组件都要在内存与磁盘之间取舍</h2></div><div class="b-body full"><div class="lesson" id="lesson10"></div></div><div class="b-key">同一组件常有两条路线，取舍围绕内存、局部性与正确性。<span class="src">§3 · PDF p.4–9</span></div></div><div class="notes">五个组件各有备选方案，可让学生先猜论文的选择再点开对照。布隆过滤器那条最值得展开：省内存但有假阳性，漏掉的网址永远不会被抓。</div></section>
+<section class="page" data-ch="4" data-t="改动实验室" data-view="lab"><div class="board"><div class="b-head"><h2 class="b-title">内存有界的数据结构才撑得住全网爬取</h2></div><div class="b-body full"><div class="lesson" id="lesson11"></div></div><div class="b-key">演示：全放内存在第 7 天越过 2 GB；Mercator 混合结构 8 天跑完。<span class="src">Table 1 · PDF p.12</span></div></div><div class="notes">招牌实验室。默认状态就是故事：全放内存、2 GB 预算，第 7 天内存耗尽、吞吐崩掉。切到 Mercator 混合结构看到 8 天平稳跑完，再换内存预算验证「规模与内存无关」。演示吞吐已标注为构造值，实测 112 docs/s 带出处。</div></section>
+<section class="page" data-ch="4" data-t="证据读数" data-view="numbers"><div class="board"><div class="b-head"><h2 class="b-title">关键数字要连着口径一起读</h2></div><div class="b-body full"><div class="lesson" id="lesson12"></div></div><div class="b-key">吞吐、状态码、文档类型与请求算式都保留原单位与出处。<span class="src">Table 1–3 · PDF p.12–13</span></div></div><div class="notes">读数页有五种视图：吞吐对比、请求结果、文档类型、请求算式、原文节选。注意 404 只有 7.43% 这个反常点——作者原本预期更多死链。</div></section>
+<section class="page" data-ch="5" data-t="发现1" data-view="finding0"><div class="board"><div class="b-head"><h2 class="b-title">数据结构以磁盘为主、内存有界</h2></div><div class="b-body full"><div class="lesson" id="lesson13"></div></div><div class="b-key">内存有界使抓取规模与内存无关，128 MB–2 GB 都能运行。<span class="src">§3 · §7 · PDF p.15</span></div></div><div class="notes">发现 1 是全篇的纲。右侧列出 600 条缓冲、2^18 缓存等实现细节，点底部按钮回第 11 页动手验证：换三档内存预算，吞吐几乎不动。</div></section>
+<section class="page" data-ch="5" data-t="发现2" data-view="finding1"><div class="board"><div class="b-head"><h2 class="b-title">DNS 解析曾是最大性能瓶颈</h2></div><div class="b-body full"><div class="lesson" id="lesson14"></div></div><div class="b-key">87% → 25% 是每线程流逝时间占比，实际 CPU 占用极低。<span class="src">§3.7 · PDF p.6</span></div></div><div class="notes">87% 与 25% 是每线程流逝时间占比，实际 CPU 周期极少，多数时间在等远端 DNS 服务器。让学生解释为什么「并行发起请求」就能解决，再对照右侧横条。</div></section>
+<section class="page" data-ch="5" data-t="发现3" data-view="finding2"><div class="board"><div class="b-head"><h2 class="b-title">同一服务器至多被一个线程访问</h2></div><div class="b-body full"><div class="lesson" id="lesson15"></div></div><div class="b-key">按线程分子队列、按主机名归队，礼貌约束天然成立。<span class="src">§3.2 · PDF p.4</span></div></div><div class="notes">礼貌抓取的实现出人意料地简单。注意论文原文是每个工人线程一个 FIFO 子队列，归队依据是主机名——两个细节合起来才有「同一服务器至多一个线程」。</div></section>
+<section class="page" data-ch="5" data-t="发现4" data-view="finding3"><div class="board"><div class="b-head"><h2 class="b-title">镜像与别名使 8.5% 下载重复</h2></div><div class="b-body full"><div class="lesson" id="lesson16"></div></div><div class="b-key">四类成因里只有两类能事前规范化，其余靠 64 位指纹拦截。<span class="src">§5.1 · §6.2 · PDF p.10–12</span></div></div><div class="notes">8.5% 是下载后的拦截率，分母是状态 200 的成功下载。专业层里有换算：约 559 万条重复，剩下约 6,000 万唯一文档，与 Table 3 的合计对得上。</div></section>
+<section class="page" data-ch="5" data-t="研究对照" data-view="compare"><div class="board"><div class="b-head"><h2 class="b-title">同类爬虫只有两组公开的性能数字</h2></div><div class="b-body full"><div class="lesson" id="lesson17"></div></div><div class="b-key">与 Google、Internet Archive 对比看量级；布隆过滤器是另一条路线。<span class="src">§2 · §3.8 · PDF p.2–8</span></div></div><div class="notes">对照页有三档：本篇、相关研究、对照启发。「对照启发」里是 URL 查重的两条路线之争：指纹无假阳性，布隆过滤器省内存但可能漏抓。</div></section>
+<section class="page" data-ch="6" data-t="案例拆解" data-view="case"><div class="board"><div class="b-head"><h2 class="b-title">一个页面能被三种网址指到</h2></div><div class="b-body full"><div class="lesson" id="lesson18"></div></div><div class="b-key">论文原例：coke.com 与 cocacola.com 指向同一 IP。<span class="src">§5.1 · PDF p.10</span></div></div><div class="notes">用论文原例讲网址规范化：coke.com 与 cocacola.com 解析到同一个 IP。右侧四个按钮对应四类别名成因，前两类能事前规范化，后两类只能靠内容指纹兜底。</div></section>
+<section class="page" data-ch="6" data-t="角色行动" data-view="persona"><div class="board"><div class="b-head"><h2 class="b-title">不同角色各自要盯住哪些口径</h2></div><div class="b-body full"><div class="lesson" id="lesson19"></div></div><div class="b-key">行动建议为本课推断，需用对照试验确认。<span class="src">本课推断</span></div></div><div class="notes">三个角色各有一份清单，每条都带出处。提醒：这是本课的推断，用之前先做小范围复验，特别是性能参照那条。</div></section>
+<section class="page" data-ch="6" data-t="成熟形态" data-view="mature"><div class="board"><div class="b-head"><h2 class="b-title">成熟工作形态可以承接研究方法</h2></div><div class="b-body full"><div class="lesson" id="lesson20"></div></div><div class="b-key">成熟形态与研究方法的映射为本课推断。<span class="src">本课推断</span></div></div><div class="notes">三张对应表：运维手册、礼貌配置、运行报告。让学生补充自己团队里的对应物，并检查字段是否覆盖论文的三类读数。</div></section>
+<section class="page" data-ch="7" data-t="批判阅读" data-view="limits"><div class="board"><div class="b-head"><h2 class="b-title">结论的边界决定应用的尺度</h2></div><div class="b-body full"><div class="lesson" id="lesson21"></div></div><div class="b-key">性能数字基于 1999 年硬件与网络；爬虫陷阱无自动解法。<span class="src">§5.3 · §6.1 · PDF p.11</span></div></div><div class="notes">六条局限按影响排序。前两条决定数字能不能引用：年代与口径。陷阱那条决定运维流程——论文明说没有自动解法，靠人工发现加过滤规则。</div></section>
+<section class="page" data-ch="7" data-t="要点卡片" data-view="quotes"><div class="board"><div class="b-head"><h2 class="b-title">带走结论时也要带走条件</h2></div><div class="b-body full"><div class="lesson" id="lesson22"></div></div><div class="b-key">保留结论依据与适用条件，再转为实践动作。<span class="src">全课提炼</span></div></div><div class="notes">六张卡片先读正面再翻面，背面是依据与用法，都能追溯到具体小节。底部的复制按钮会把要点连同出处一起复制。</div></section>
+<section class="page" data-ch="7" data-t="课程自测" data-view="quiz"><div class="board"><div class="b-head"><h2 class="b-title">完成自测再回看薄弱环节</h2></div><div class="b-body full"><div class="lesson" id="lesson23"></div></div><div class="b-key">利用反馈回看对应页面，核对指标与边界。<span class="src">全课复盘</span></div></div><div class="notes">五道题覆盖核心结论、反常发现、指标口径、适用边界与局限。答错按提示回看对应页，重点是 Table 1 算式与流逝时间占比这两处。</div></section><!-- ============ PAPER CONTENT 结束 ============ -->
+  </div>
+
+  <div class="notes-panel" id="notesPanel" aria-live="polite"></div>
+
+  <div class="bar-bot">
+    <button class="nav-btn" type="button" id="prevBtn">← <span class="nt">上一页</span></button>
+    <div class="ticks" id="ticks"></div>
+    <span class="count" id="count"></span>
+    <button class="nav-btn primary" type="button" id="nextBtn"><span class="nt" id="nextT">下一页</span> →</button>
+  </div>
+</div>
+</div>
+
+<div class="scrim" id="scrim"></div><aside class="drawer" id="drawer" aria-label="术语与引用"><div class="drawer-head"><b>术语与引用</b><button class="icon-btn" type="button" id="drawerClose">关闭 Esc</button></div><div class="drawer-body"><dl class="gl" id="gl"></dl><h4>文献与版本</h4><p>Mercator: A Scalable, Extensible Web Crawler</p><p>1999 · World Wide Web</p><p><a href="https://cui.unige.ch/tcs/cours/algoweb/2002/articles/art_marculescu_andrei_2.pdf" target="_blank" rel="noopener">原文与作者署名</a></p><pre class="bib" id="bib">@misc{paper79,
+  author = {Allan Heydon and Marc Najork},
+  title = {Mercator: A Scalable, Extensible Web Crawler},
+  year = {1999},
+  url = {https://cui.unige.ch/tcs/cours/algoweb/2002/articles/art_marculescu_andrei_2.pdf}
+}</pre><p class="cap">本课程为 GEO Citation Lab 原创解读，CC BY 4.0。论文版权归原作者；作者信息按本地PDF署名及元数据核对；正式引用时请再核对会议信息。教学建议及示意为本课编写。</p><p class="cap">PDF SHA-256：c49f68108435fce24c6d0feb08579f82179c8ee58df74164b23155add160d1a1</p></div></aside><div class="toast" id="toast" role="status"></div><script>
+const CHAPTERS=[{"t": "导入", "d": "问题与结论"}, {"t": "原理", "d": "组件与主循环"}, {"t": "测量", "d": "指标与实验口径"}, {"t": "方法", "d": "组件取舍对照"}, {"t": "发现", "d": "逐条审视证据"}, {"t": "应用", "d": "把结论转为行动"}, {"t": "复盘", "d": "边界与检验"}];
+const PAPER={"id": 79, "zh": "可扩展爬虫的组件设计", "kind": "实证方法", "question": "想爬全网，又要快、又不压垮任何一台服务器，该怎么设计？", "claim": "爬虫可扩展的关键是内存有界、以磁盘为主的数据结构，Mercator 八天发出 7,740 万次请求，每秒抓 112 个文档。", "steps": ["从 URL 边界取网址", "协议模块下载文档", "内容指纹查重", "处理模块抽链接", "URL 查重后入队"], "findings": ["数据结构以磁盘为主、内存有界", "DNS 解析曾是最大性能瓶颈", "同一服务器至多被一个线程访问", "镜像与别名使 8.5% 下载重复"], "metrics": [{"name": "URL 边界", "plain": "存放已发现但尚未抓取网址的队列，多数内容只能放磁盘"}, {"name": "内容指纹", "plain": "用 64 位校验值判断文档内容是否已抓过"}, {"name": "抓取吞吐", "plain": "平均每秒下载的文档数，本篇为 112 docs/s"}, {"name": "内存上限", "plain": "数据结构常驻内存的上限，与抓取规模无关"}], "setting": "1999 年 5 月，双 533 MHz Alpha、2 GB 内存、118 GB 磁盘、100 Mbit FDDI 的单机，连续爬取 8 天。", "boundary": "性能数字基于 1999 年硬件与网络；爬虫陷阱无自动解法，靠人工发现并用过滤规则排除站点。", "query": "想爬全网，又要快、又不压垮任何一台服务器，该怎么设计？", "before": "把已见网址与文档全部放进内存，一个全局队列按先来后到发请求，同一台服务器可能被多个线程同时访问", "after": "状态以磁盘为主、内存有界；按主机分队列礼貌抓取；DNS 并行解析；64 位指纹在下载后拦截重复文档", "finding_details": ["绝大多数抓取状态放在磁盘，内存只留小缓冲与缓存，抓取规模因此与内存无关；同一套核心可配置在 128 MB 到 2 GB 内存的机器上运行。", "Java 与 Unix 的域名解析接口都是同步的，一次只能挂起一个未缓存请求；自研多线程解析器把 DNS 占每线程流逝时间的比例从 87% 降到 25%。", "URL 边界按工人线程分先进先出子队列，新网址按主机名归队；任一服务器至多被一个线程访问，避免压垮对方或被站长直接封禁爬虫。", "主机别名、省略端口、站内多路径与镜像都会造成重复；八天爬取中 8.5% 的成功下载为重复文档，由 64 位内容指纹在下载后识别。"], "catalog_title": "Mercator: A Scalable, Extensible Web Crawler", "title": "Mercator: A Scalable, Extensible Web Crawler", "authors": "Allan Heydon; Marc Najork", "year": "1999", "category": "12_搜索架构与抓取", "url": "https://cui.unige.ch/tcs/cours/algoweb/2002/articles/art_marculescu_andrei_2.pdf", "file": "12_搜索架构与抓取_B03_Mercator_A_Scalable_Extensible_Web_Crawler.html", "pdf": "", "kind_note": "基于受测环境，迁移效果需要另测", "extra": "与 Google、Internet Archive 爬虫的性能对比未校准硬件差异，作者明示只传达相对速度。", "evidence": [{"label": "摘要与研究目标", "text": "This paper describes Mercator, a scalable, extensible web crawler written entirely in Java. Scalable web crawlers are an important component of many web services, but their design is not well-documented in the literature. We enumerate the major components of any scalable web crawler, comment on alternatives and tradeoffs in their design, and describe the particular components used in Mercator. We also describe Mercator’s support for extensibility and customizability. Finally, we comment on Mercator’s performance, which we have found to be comparable to that of other crawlers for which performance numbers have been published. 1 Introduction Designing a scalable web crawler comparable to the ones used by the major search engines is a complex endeavor. However, due to the competitive nature of the search engine business, there are few papers in the literature describing the challenges and tradeoffs inherent in web crawler design. This paper’s main contribution is to fill that gap. It describes Mercator, a scalable, extensible web crawler written entirely in Java. By scalable, we mean that Mercator is designed to scale up to the entire web, and has been used to fetch tens of millions of web documents. We achieve scalability by implementing our data structures so that they use a bounded amount of memory, regardless of the size of the crawl. Hence, the vast majority of our data st", "page": 1}, {"label": "讨论与研究边界", "text": "Scalable web crawlers are an important component of many web services, but they have not been very well documented in the literature. Building a scalable crawler is a non-trivial endeavor because the data manipulated by the crawler is too big to fit entirely in memory, so there are performance issues relating to how to balance the use of disk and memory. This paper has enumerated the main components required in any scalable crawler, and it has discussed design alternatives for those components. In particular, the paper described Mercator, an extensible, scalable crawler written entirely in Java. Mercator’s design features a crawler core for handling the main crawling tasks, and extensibility through protocol and processing modules. Users may supply new modules for performing customized crawling tasks. We have used Mercator for a variety of purposes, including performing random walks on the web, crawling our corporate intranet, and collecting statistics about the web at large. Although", "page": 14}, {"label": "性能测量", "text": "Our production crawling machine is a Digital Ultimate Workstation with two 533 MHz Alpha processors, 2 GB of RAM, 118 GB of local disk, and a 100 Mbit/sec FDDI connection to the Internet. We run Mercator under srcjava, a Java runtime developed at our lab [10]. Running on this platform, a Mercator crawl run in May 1999 made 77.4 million HTTP requests in 8 days, achieving an average download rate of 112 documents/sec and 1,682 KB/sec.", "page": 11}], "table": {"text": "Table 1: Relationship between the total number of URLs removed from the frontier and the total number of\nHTTP requests.\n\n\n             These numbers indicate that Mercator’s performance compares favorably with that of the Google\n         and the Internet Archive crawlers. The Google crawler is reported to have issued 26 million HTTP\n         requests over 9 days, averaging 33.5 docs/sec and 200 KB/sec [4]. This crawl was performed using\n         four machines running crawler processes, and at least one more machine running the other processes.\n         The Internet Archive crawler, which also uses multiple crawler machines, is reported to fetch 4 million\n         HTML docs/day, the average HTML page being 5KB [21]. This download rate is equivalent to 46.3\n         HTML docs/sec and 231 KB/sec. It is worth noting that Mercator fetches not only HTML pages, but\n         documents of all other MIME types as well. This effect more than doubles the size of the average\n         document downloaded by Mercator as compared to the other crawlers.\n             Achieving the performance numbers described above required considerable optimization work. In\n         particular, we spent a fair amount of time overcoming performance limitations of the Java core li-\n         braries [13].\n             We used DCPI, the Digital Continuous Profiling Infrastructure [8], to measure where Mercator\n         spends CPU cycles. DCPI is a freely available tool that runs on Alpha platforms. It can be used to\n         profile both the kernel and user-level processes, and it provides CPU cycle accounting at the granularity\n         of processes, procedures, and individual instructions. We found that Mercator spends 37% of its cy-\n         cles in JIT-compiled Java bytecode, 19% in the Java runtime, and 44% in the Unix kernel. The Mercator\n         method accounting for the most cycles is the one t", "page": 12, "label": "Table 1 / Table I 原文抽取"}, "throughput": [{"name": "Mercator（本篇）", "v": "112", "src": "§6.1"}, {"name": "Internet Archive", "v": "46.3", "src": "§6.1"}, {"name": "Google", "v": "33.5", "src": "§6.1"}], "status": [{"c": "200 OK", "p": "87.03"}, {"c": "404 Not Found", "p": "7.43"}, {"c": "302 Moved Temporarily", "p": "3.33"}, {"c": "301 Moved Permanently", "p": "1.12"}, {"c": "其余状态合计", "p": "1.10"}], "mime": [{"c": "text/html", "p": "69.2"}, {"c": "image/gif", "p": "17.9"}, {"c": "image/jpeg", "p": "8.1"}, {"c": "text/plain", "p": "1.5"}, {"c": "application/pdf", "p": "0.9"}, {"c": "其余类型合计", "p": "2.5"}], "t1": [["从边界取出的网址", "76,732,515"], ["＋ robots.txt 请求", "3,675,634"], ["－ 被排除的网址", "3,050,768"], ["＝ HTTP 请求总数", "77,357,381"]], "cpu": [["Unix 内核", "44%"], ["JIT 编译的 Java 字节码", "37%"], ["Java 运行时", "19%"]], "version": "World Wide Web", "sha256": "c49f68108435fce24c6d0feb08579f82179c8ee58df74164b23155add160d1a1", "stats": [{"v": "77,357,381", "name": "八天 HTTP 请求总数", "source": "Table 1", "context": "1999 年 5 月连续 8 天发出的请求总量；其中 65,790,953 次返回 200（Table 2）", "page": 12}, {"v": "112", "name": "平均每秒抓取文档数", "source": "§6.1", "context": "八天平均下载 112 docs/s，约合 1,682 KB/s；抓取对象含全部 MIME 类型", "page": 11}, {"v": "87%", "name": "DNS 等待占每线程流逝时间", "source": "§3.7", "context": "自研多线程解析器之前为 87%，改后降至 25%；实际 CPU 周期极少", "page": 6}, {"v": "8.5%", "name": "重复文档比例", "source": "§5.1 · §6.2", "context": "八天爬取中状态 200 的成功下载里 8.5% 为重复，由内容指纹识别", "page": 10}], "related": {"id": 77, "zh": "大规模搜索引擎解剖", "title": "The Anatomy of a Large-Scale Hypertextual Web Search Engine", "url": "./12_搜索架构与抓取_B01_The_Anatomy_of_a_Large_Scale_Hypertextual_Web_Search_Engine.html", "pdf": "https://www.cs.cmu.edu/~christos/courses/826-resources/PAPERS%2BBOOK/google-anatomy.pdf", "claim": "早期 Google 以 PageRank、锚文本与邻近度为核心，2,400 万页原型一周内完成抓取索引，链接结构成为质量与可见性的门槛。"}, "strength": "中", "strength_why": "本课保守评级：有实证比较；样本独立性、自动评价或生产迁移仍有约束。", "limitations": [["高", "研究结论有明确范围", "性能数字基于 1999 年硬件与网络；爬虫陷阱无自动解法，靠人工发现并用过滤规则排除站点。"], ["高", "评价口径决定可以推断的结果", "与 Google、Internet Archive 爬虫的性能对比未校准硬件差异，作者明示只传达相对速度。"], ["中", "环境变化需要重新验证", "引擎版本、界面、查询与候选来源变化时，重新执行同口径测量。该项为本课迁移审查。"], ["中", "证据与建议需逐项区分", "应用页的行动与成熟形态是教学推断。核查原论文方法、结果及局限后再作为实验假设。"], ["中", "相关研究提供新的对照", "早期 Google 以 PageRank、锚文本与邻近度为核心，2,400 万页原型一周内完成抓取索引，链接结构成为质量与可见性的门槛。"], ["低", "原文版本与内部一致性", "采用本地PDF可识别版本；不将清单页数与PDF分页混用。未逐表重算的指标仍需人工复核。"]], "quiz": [{"q": "Mercator 靠什么把抓取规模做到与内存无关？", "o": ["把所有已见网址放进内存哈希表，不够再扩容迁移", "数据结构大部分放磁盘，内存只留小缓冲与缓存", "用布隆过滤器把已见集合压进固定大小的位向量", "只抓重要度高的网址，让集合天然变小"], "a": 1, "e": "绝大多数状态放磁盘、内存有界，同一核心可配置在 128 MB–2 GB 内存上运行（§3、§7）。", "p": 13}, {"q": "Table 1：从边界取出 76,732,515 条网址，HTTP 请求却有 77,357,381 次，为什么请求反而更多？", "o": ["统计口径把 FTP 与 Gopher 的请求也算了进去", "每个新主机要先取 robots.txt，共 3,675,634 次请求", "失败的请求会自动重试，重试也被计入总数", "边界里的网址在统计期间被重复取出"], "a": 1, "e": "76,732,515 + 3,675,634 − 3,050,768 = 77,357,381（Table 1）。", "p": 12}, {"q": "「DNS 查找从 87% 降到 25%」，这个 87% 指什么？", "o": ["每 CPU 周期里花在 DNS 计算的比例", "每线程流逝时间里等待 DNS 的占比", "DNS 缓存的未命中率", "DNS 请求中超时的比例"], "a": 1, "e": "是每线程流逝时间占比；实际 CPU 周期极少，多数在等远端 DNS 服务器（§3.7）。", "p": 14}, {"q": "与 Google（33.5 docs/s）、Internet Archive（46.3 docs/s）的对比，论文如何定位？", "o": ["同一硬件上复测后的准确排名", "只传达相对速度，未校准硬件差异", "换算成单机吞吐后的公平对比", "证明多线程同步 I/O 优于异步 I/O"], "a": 1, "e": "作者明示未校准硬件；且 Mercator 抓全部 MIME 类型，平均文档比对方大一倍以上（§6.1）。", "p": 9}, {"q": "遇到爬虫陷阱（会无限生成网址的站点），Mercator 的做法是？", "o": ["用内容指纹自动识别并跳过陷阱站点", "限制同一主机的队列长度，超限即停", "没有自动解法，人工确认后用 URL 过滤器排除", "依赖 robots.txt 声明自动规避"], "a": 2, "e": "§5.3：无自动技术；陷阱站点因发现的文档数异常多而被人工确认，再用 URL 过滤器排除。", "p": 21}]};
+const GLOSSARY=Object.fromEntries(PAPER.metrics.map((m,i)=>["metric"+i,{t:m.name,d:m.plain}]));
+Object.assign(GLOSSARY,{dns:{t:"DNS 解析",d:"把主机名映射为 IP 地址的查询；同步的解析接口曾是爬虫的主要等待来源。"},robots:{t:"Robots 排除协议",d:"站长用 robots.txt 声明不许抓的路径；爬虫取文档前先查，声明会被缓存。"},rabin:{t:"Rabin 指纹",d:"带可证明碰撞概率上界的校验值算法；Mercator 用 64 位指纹代表整个文档。"},bloom:{t:"布隆过滤器",d:"用位向量做集合判断，可能有假阳性；Internet Archive 爬虫用它做 URL 查重。"},lru:{t:"LRU 缓存",d:"按最近最少使用淘汰条目的固定大小缓存。"},ris:{t:"RIS",d:"RewindInputStream：可回卷的文档缓存，64 KB 以内放内存，更大的写临时文件。"},cname:{t:"CNAME 记录",d:"DNS 中把别名指向规范主机名的记录，用于主机名规范化。"},trap:{t:"爬虫陷阱",d:"让爬虫无限抓取的网址集合；论文靠人工发现后用 URL 过滤器排除。"},checkpoint:{t:"检查点",d:"定期把爬虫状态快照写盘，中断后从最近检查点重启，约一天一次。"}});
+/* ===== PGS core runtime v2.0 · 原样复制 ===== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = (v, b) => (v - b) / b * 100;
+const fmt = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v).toFixed(1) + '%';
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const KEY = 'pgs:' + decodeURIComponent(location.pathname.split('/').pop());
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),1800)}
+function bindSeg(el, fn){el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!el.contains(b))return;$$('button',el).forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v,b)})}
+function copyText(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制'),()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()})}
+const isPro = () => document.body.classList.contains('mode-pro');
+const MODE_HOOKS = [];
+const pages = $$('.page');
+const N = pages.length;
+const chPages = n => pages.map((p,i)=>+p.dataset.ch===n?i:-1).filter(i=>i>=0);
+let cur = 0;
+let seen = new Set();
+try{ seen = new Set(JSON.parse(store.get(KEY+':seen') || '[]').filter(i=>i<N)) }catch(e){}
+pages.forEach((p,i)=>{
+  const ch = +p.dataset.ch;
+  $('.b-head', p).insertAdjacentHTML('afterbegin', `<div class="b-kicker">第 ${ch} 章 · <b>${CHAPTERS[ch-1].t}</b></div>`);
+  $('.board', p).insertAdjacentHTML('beforeend', `<div class="b-pno">${String(i+1).padStart(2,'0')} / ${N}</div>`);
+});
+
+// 二级目录与页码刻度
+function buildToc(){
+  $('#toc').innerHTML = CHAPTERS.map((c,ci)=>{const ps=chPages(ci+1);
+    return `<div class="toc-ch" data-ch="${ci+1}"><button type="button" aria-expanded="false"><span class="cn">${ci+1}</span><span>${c.t}</span><span class="cc">${ps.length} 页</span><span class="chev">▶</span></button>
+      <div class="toc-pages">${ps.map(i=>`<a href="#p${i+1}" data-i="${i}"><span class="pn">${String(i+1).padStart(2,'0')}</span><span>${pages[i].dataset.t}</span><span class="st"></span></a>`).join('')}</div></div>`}).join('');
+  $('#ticks').innerHTML = pages.map((p,i)=>`<button type="button" data-i="${i}" aria-label="第 ${i+1} 页：${p.dataset.t}" title="${i+1}. ${p.dataset.t}" class="${i>0&&p.dataset.ch!==pages[i-1].dataset.ch?'chs':''}"></button>`).join('');
+}
+function syncNav(){
+  const ch = +pages[cur].dataset.ch;
+  $$('.toc-ch').forEach(el=>{const n=+el.dataset.ch;
+    el.classList.toggle('cur',n===ch);el.classList.toggle('done',n!==ch&&chPages(n).every(i=>seen.has(i)));
+    if(n===ch){el.classList.add('open');$('button',el).setAttribute('aria-expanded','true')}});
+  $$('.toc-pages a').forEach(a=>{const i=+a.dataset.i;a.classList.toggle('cur',i===cur);if(i===cur)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');$('.st',a).textContent=seen.has(i)&&i!==cur?'✓':''});
+  $$('#ticks button').forEach((b,i)=>{b.classList.toggle('cur',i===cur);b.classList.toggle('seen',seen.has(i))});
+  $('#crumb').innerHTML = `第 ${ch} 章 ${CHAPTERS[ch-1].t}<span style="margin:0 6px">›</span><b>${pages[cur].dataset.t}</b>`;
+  $('#count').textContent = `${String(cur+1).padStart(2,'0')} / ${N}`;
+  $('#prevBtn').disabled = cur===0;
+  const last = cur===N-1; $('#nextBtn').disabled = last;
+  $('#nextT').textContent = last ? '已是最后一页' : '下一页：' + pages[cur+1].dataset.t;
+  $('#progTxt').textContent = `已学 ${seen.size} / ${N}`;
+  $('#progFill').style.width = seen.size/N*100 + '%';
+  const nt = $('.notes', pages[cur]); $('#notesPanel').innerHTML = nt ? nt.innerHTML : '本页暂无讲稿。';
+  const a = $('.toc-pages a.cur'); if(a) a.scrollIntoView({block:'nearest'});
+}
+function go(i, setHash=true){
+  i = Math.max(0, Math.min(N-1, i));
+  pages[cur].classList.remove('on'); cur = i; pages[cur].classList.add('on');
+  seen.add(cur); store.set(KEY+':seen', JSON.stringify([...seen])); store.set(KEY+':last', String(cur));
+  if(setHash) history.replaceState(null, '', '#p'+(cur+1));
+  fit(); syncNav(); checkOverflow(cur);
+  if(innerWidth<=900){ $('#app').classList.remove('side-mob'); $('#scrim').classList.remove('on'); scrollTo(0,0) }
+}
+// 白板等比缩放：设计尺寸 1160×652（16:9）
+function fit(){
+  const b = $('.board', pages[cur]); if(!b) return;
+  if(innerWidth<=900){ b.style.transform=''; return }
+  const st = $('#stage');
+  const s = Math.min((st.clientWidth-40)/1160, (st.clientHeight-32)/652, 1.3);
+  b.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// 内容溢出自检：生成与审校时在控制台运行 PGS.checkAll()
+function checkOverflow(i){
+  if(innerWidth<=900) return true;
+  const body = $('.b-body', pages[i]); if(!body) return true;
+  const ok = body.scrollHeight <= body.clientHeight + 2 && body.scrollWidth <= body.clientWidth + 2;
+  if(!ok) console.warn(`[PGS] 第 ${i+1} 页「${pages[i].dataset.t}」内容溢出白板：${body.scrollHeight}px > ${body.clientHeight}px`);
+  return ok;
+}
+window.PGS = {go, checkAll(){const r=[];const keep=cur,keepSeen=new Set(seen);for(let i=0;i<N;i++){go(i,false);if(!checkOverflow(i))r.push(i+1)}seen=keepSeen;go(keep);seen=keepSeen;store.set(KEY+':seen',JSON.stringify([...seen]));syncNav();return r}};
+
+function setMode(m){document.body.classList.toggle('mode-pro',m==='pro');document.body.classList.toggle('mode-plain',m!=='pro');$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));store.set('pgs-mode',m);MODE_HOOKS.forEach(f=>f());checkOverflow(cur)}
+$$('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+function toggleNotes(){const on=!$('#notesPanel').classList.contains('on');$('#notesPanel').classList.toggle('on',on);$('#notesBtn').setAttribute('aria-pressed',on);store.set('pgs-notes',on?'1':'');requestAnimationFrame(fit)}
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}
+function toggleSide(){if(innerWidth<=900){const on=!$('#app').classList.contains('side-mob');$('#app').classList.toggle('side-mob',on);$('#scrim').classList.toggle('on',on)}else{$('#app').classList.toggle('side-off');setTimeout(fit,270)}}
+function drawer(on){$('#drawer').classList.toggle('on',on);$('#scrim').classList.toggle('on',on)}
+$('#notesBtn').onclick=toggleNotes; $('#fsBtn').onclick=toggleFs; $('#sideBtn').onclick=toggleSide;
+$('#prevBtn').onclick=()=>go(cur-1); $('#nextBtn').onclick=()=>go(cur+1);
+$('#drawerClose').onclick=()=>drawer(false);
+$('#scrim').onclick=()=>{drawer(false);$('#app').classList.remove('side-mob')};
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go-1);return}
+  const d=e.target.closest('[data-drawer]'); if(d){drawer(true);return}
+  const c=e.target.closest('[data-copy]'); if(c){copyText($(c.dataset.copy).textContent);return}
+  const t=e.target.closest('#ticks button'); if(t){go(+t.dataset.i);return}
+  const a=e.target.closest('.toc-pages a'); if(a){e.preventDefault();go(+a.dataset.i);return}
+  const h=e.target.closest('.toc-ch>button'); if(h){const el=h.parentElement;el.classList.toggle('open');h.setAttribute('aria-expanded',el.classList.contains('open'))}
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||e.defaultPrevented) return;
+  const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(e.key==='Escape'){closePop();drawer(false);return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(cur+1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(cur-1)}
+  else if(e.key===' '&&tag!=='button'&&!e.target.closest('[role="button"]')){e.preventDefault();go(cur+(e.shiftKey?-1:1))}
+  else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(N-1)}
+  else if(e.key==='n'||e.key==='N'){toggleNotes()} else if(e.key==='f'||e.key==='F'){toggleFs()}
+  else if(e.key==='m'||e.key==='M'){setMode(isPro()?'plain':'pro')}
+});
+addEventListener('resize',fit);
+addEventListener('hashchange',()=>{const m=location.hash.match(/^#p(\d+)$/);if(m&&+m[1]-1!==cur)go(+m[1]-1,false)});
+
+// 术语浮层
+let pop=null;
+function closePop(){if(pop){pop.remove();pop=null;$$('.term[aria-expanded="true"]').forEach(t=>t.setAttribute('aria-expanded','false'))}}
+document.addEventListener('click',e=>{const t=e.target.closest('.term');if(!t){if(!e.target.closest('.pop'))closePop();return}
+  const open=t.getAttribute('aria-expanded')==='true';closePop();if(open)return;const g=GLOSSARY[t.dataset.term];if(!g)return;
+  pop=document.createElement('div');pop.className='pop';pop.setAttribute('role','tooltip');pop.innerHTML=`<b>${g.t}</b>${g.d}`;document.body.appendChild(pop);
+  const r=t.getBoundingClientRect();pop.style.left=Math.max(12,Math.min(innerWidth-312,r.left))+'px';pop.style.top=Math.max(12,Math.min(innerHeight-pop.offsetHeight-12,r.bottom+8))+'px';t.setAttribute('aria-expanded','true')});
+$$('.term').forEach(t=>t.setAttribute('aria-expanded','false'));
+$('#gl').innerHTML=Object.values(GLOSSARY).map(g=>`<dt>${g.t}</dt><dd>${g.d}</dd>`).join('');
+
+
+/* PAPER CONTENT runtime. All paper-specific claims and values live in PAPER. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ext=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+const src=e=>`<span class="src">${esc(e.label)} · PDF p.${e.page}</span>`;
+const tip=t=>`<div class="caption">${esc(t)}</div>`;
+const panel=(t,s)=>`<div class="answer"><div class="kicker">${esc(t)}</div><p>${esc(s)}</p></div>`;
+const relatedLink=()=>`<a href="${esc(PAPER.related.url)}">${esc(PAPER.related.zh)}互动课</a> · ${ext(PAPER.related.pdf,'对照原文')}`;
+const termHtml=()=>Object.entries(GLOSSARY).map(([k,g])=>`<button type="button" class="term" data-term="${k}">${esc(g.t)}</button>`).join(' · ');
+const state={step:0,metric:0,nview:0,lim:0,role:0,proof:0,q:0,comp:0,methodPick:0,alias:0,answers:[],checks:new Set(),flips:new Set(),mlab:{strat:0,budget:2,dns:1,day:8}};
+function choices(labels,selected,action){return `<div class="choice-row" role="group">${labels.map((t,i)=>`<button type="button" class="choice" data-action="${action}" data-value="${i}" aria-pressed="${i===selected}">${esc(t)}</button>`).join('')}</div>`}
+function dataNumbers(){return PAPER.stats.length?`<div class="number-grid">${PAPER.stats.slice(0,4).map(s=>`<div class="number-tile"><div class="number">${esc(s.v)}</div><div class="label">${esc(s.name)}</div>${tip(s.source)}</div>`).join('')}</div>`:`<div class="answer"><div class="kicker">证据类型 · ${esc(PAPER.kind)}</div><h3>${esc(PAPER.zh)}</h3><p>${esc(PAPER.kind_note)}</p>${tip('本篇未在封面展示未经逐项核对的效果数值。')}</div>`}
+function sourceView(index=0){const e=PAPER.evidence[index%PAPER.evidence.length];return `<div class="source-text" lang="en">${esc(e.text)}</div>${src(e)}${tip('原文抽取节选，保留核验入口；完整方法与表格请查看原文。')}`}
+// 五个功能组件（§3.1），每项附论文小节
+const COMPS=[
+ {n:'URL 边界',p:'存放待抓网址的队列。实现为按工人线程分的先进先出子队列，新网址按主机名归队。',pro:'实际爬取中边界达数亿条，多数内容在磁盘；入队与出队缓冲各存 600 条。',s:'§3.2'},
+ {n:'协议模块',p:'按 URL 的 scheme 下载文档，默认支持 HTTP、FTP、Gopher，每个线程一份实例。',pro:'robots.txt 缓存 2^18 条（LRU）；自研 HTTP 模块超时 1 分钟，避免恶意服务器挂起线程。',s:'§3.3'},
+ {n:'内容查重',p:'下载后判断文档内容是否已抓过，重复文档到此为止，不再处理。',pro:'存 64 位 Rabin 指纹（Broder 实现）：内存小表 + 磁盘有序表，块内检索至多 2 次内核调用。',s:'§3.5'},
+ {n:'处理模块',p:'按 MIME 类型处理文档，text/html 默认抽链接，也可计标签、统计 GIF。',pro:'现有模块 70–270 行 Java；每线程独立实例，避免同步开销。',s:'§4.1'},
+ {n:'URL 查重',p:'抽出的链接先经用户过滤器，再做 URL 查重，新网址才入队。',pro:'校验值由主机名指纹（高位）与全 URL 指纹合并，保留主机局部性；缓存净命中率 75.7%。',s:'§3.8'}];
+// 工人线程主循环（§3.1）逐步解释
+const LOOP=[
+ {p:'数百个工人线程各自从自己的先进先出子队列取网址；子队列按主机名归队，同一服务器至多被一个线程访问。',pro:'线程数通常上百；每线程一份协议与处理模块实例，访问本地数据无需同步。',s:'§3.1 · §3.2'},
+ {p:'按 scheme 选协议模块，把文档下载进 RIS：64 KB 以内放内存，更大的写临时文件，默认上限 1 MB。',pro:'RIS 可反复回卷，让同一文档被多个处理模块复用，避免重复下载。',s:'§3.4'},
+ {p:'计算 64 位内容指纹并查重；重复文档直接跳过。八天爬取中 8.5% 的成功下载是重复。',pro:'指纹用 Rabin 算法，有可证明的碰撞概率上界；MD5、SHA 没有这类保证且计算更贵。',s:'§3.5 · §5.1'},
+ {p:'按 MIME 类型调用处理模块，text/html 默认抽出全部链接并绝对化。',pro:'随机行走任务即靠替换处理模块实现，仅 360 行 Java，爬虫核心未改。',s:'§3.1 · §4.3'},
+ {p:'链接先过用户 URL 过滤器，再做 URL 查重；全新网址加入边界，等待下一轮。',pro:'先查重再入队让边界更小；URL set 用内存缓存 + 磁盘文件，平均每次检验 0.16 次寻道、0.17 次读。',s:'§3.1 · §3.8'}];
+const STAGES=[['取网址','从边界取出待抓网址'],['下载与查重','协议模块下载，内容指纹拦截重复'],['处理与入队','抽链接、过滤、URL 查重后入队']];
+const METRICS4=[
+ {n:'URL 边界',plain:'存放已发现但尚未抓取网址的队列，多数内容只能放磁盘。',pro:'按工人线程分先进先出子队列，入队与出队缓冲各 600 条；实际边界达数亿条。',s:'§3.2'},
+ {n:'内容指纹',plain:'用 64 位校验值判断文档内容是否已抓过。',pro:'Rabin 指纹（Broder 实现）；内存小表 + 磁盘有序表，每次检验至多 2 次内核调用。',s:'§3.5'},
+ {n:'抓取吞吐',plain:'平均每秒下载的文档数，本篇为 112 docs/s。',pro:'八天平均 112 docs/s、1,682 KB/s；对照 Google 33.5、IA 46.3 docs/s 未校准硬件。',s:'§6.1'},
+ {n:'内存上限',plain:'数据结构常驻内存的上限，与抓取规模无关。',pro:'同一核心可配置在 128 MB–2 GB 内存的机器上；多个缓存各存 2^18 个条目。',s:'§7 · §3.3'}];
+const CHECKS=['口径可追溯：机器、时长、请求数都写明（§6.1）','对照对象明确：Google 33.5 与 IA 46.3 docs/s（§6.1）','区分单机与多机：Google、IA 用多台爬虫机器','负向结果也记录：8.5% 重复、2.3% 无响应（§6.2）'];
+const COMPDESIGN=[
+ {c:'URL 边界',m:'按工人线程分先进先出子队列，按主机名归队',a:'按重要度排序的边界（Cho 等人的模拟显示可提升抓取效果）',s:'§3.2'},
+ {c:'域名解析',m:'自研多线程解析器，并行转发请求到本地域名服务器',a:'Java/BIND 同步接口：一次只能挂起一个未缓存请求，占流逝时间 87%',s:'§3.7'},
+ {c:'内容查重',m:'64 位指纹：内存小表 + 磁盘有序表，无需全部驻留内存',a:'保存全文逐一比对（空间与时间都不可行）',s:'§3.5'},
+ {c:'URL 查重',m:'主机名指纹合并保磁盘局部性 + 2^18 条 LRU 缓存',a:'布隆过滤器（Internet Archive 采用）：省内存但有假阳性，漏抓永不补',s:'§3.8'},
+ {c:'I/O 模型',m:'多线程 + 同步 I/O，程序结构简单，调度交给操作系统',a:'单线程 + 异步 I/O（Google、Internet Archive 采用）',s:'§3.9'}];
+const FINDX=[
+ {k:'这一发现的实现细节',items:['入队与出队缓冲各存 600 条（§3.2）','robots.txt 与 URL 查重缓存各 2^18 条（§3.3 · §3.8）','检查点约一天一次写盘（§3.10）'],metric:3,link:11,linkT:'打开内存实验室 →'},
+ {k:'如何核查这一发现',items:['数字指每线程流逝时间里的等待占比；CPU 占用极低','实际 CPU 周期极少，多数在等远端 DNS（§3.7）','BIND 8.2 起修复了 Unix 解析接口的同步问题'],metric:2,link:0,linkT:''},
+ {k:'如何核查这一发现',items:['论文原文：每个工人线程一个先进先出子队列（§3.2）','归队依据是规范化后的主机名','备选实现：按重要度排序的边界（§3.2）'],metric:0,link:0,linkT:''},
+ {k:'如何核查这一发现',items:['8.5% 按状态 200 的成功下载计（§6.2 脚注）','65,790,953 × 8.5% ≈ 559 万条重复（换算）','约 6,000 万唯一文档 ≈ Table 3 合计 59,947,946'],metric:1,link:18,linkT:'看论文原例 →'}];
+const ALIASES=[
+ {c:'主机别名',ex:'coke.com 与 cocacola.com 都解析到 208.134.241.178（§5.1）',fix:'抓取前发 CNAME 与 A 查询，改用规范主机名'},
+ {c:'省略端口',ex:'未写端口的网址与写明 :80 的等价（§5.1）',fix:'检验前补上协议默认端口（HTTP 为 80）'},
+ {c:'同主机多路径',ex:'/index.html 与 /home.html 可能指向同一文件（§5.1）',fix:'无法事前识别；下载后由内容指纹拦截'},
+ {c:'跨主机镜像',ex:'同一文档可存在于多台镜像服务器（§5.1）',fix:'无法避免下载；只处理第一份，其余靠指纹跳过'}];
+const ROLES=[
+ {r:'搜索与数据团队',why:'要自建或采购抓取服务，需要看懂吞吐与内存口径。',todos:['用 112 docs/s 做量级参照，先问硬件口径（§6.1）','把内存上限写进需求：状态要能放磁盘（F1）','要求报告重复率与无响应率（F4 · §6.2）'],avoid:'引用性能数字时不附硬件与负载口径'},
+ {r:'平台与运维工程师',why:'爬虫的稳定性与礼貌策略最终落在配置上。',todos:['检查 DNS 与超时：同步解析会拖慢全部线程（§3.7）','按主机分队列或限速，避免压垮同一服务器（F3）','为爬虫陷阱准备人工发现与过滤流程（§5.3）'],avoid:'把状态全放进内存，规模一大就触顶（见第 11 页演示）'},
+ {r:'研究与审核人员',why:'复现或审阅爬虫研究时需要独立核对口径。',todos:['核对 Table 1 算式与状态码分布（第 12 页）','区分实测值与教学示意，各自标注出处','与《大规模搜索引擎解剖》对照抓取口径'],avoid:'把 1999 年的绝对速度直接外推到今天的硬件'}];
+const MATURE=[
+ ['爬虫运维手册','内存预算、超时、检查点周期（约一天一次，§3.10）','内存有界与检查点（F1）'],
+ ['礼貌抓取配置','按主机分队列、robots.txt 缓存、URL 过滤规则','礼貌与过滤（F3 · §3.3 · §3.6）'],
+ ['抓取运行报告','请求总数、状态码分布、重复率、MIME 分布','Table 1–3 的读数口径（F4）']];
+const QUOTES=[
+ {q:'数据结构以磁盘为主、内存有界',b:'依据：§3 与 §7——同一核心可配置在 128 MB–2 GB 内存上运行。',u:'用法：设计长时任务先列状态量的内存上限。'},
+ {q:'DNS 解析曾是最大性能瓶颈',b:'依据：§3.7——87% 降到 25% 是每线程流逝时间占比。',u:'用法：外部服务调用先测等待占比，再谈并行。'},
+ {q:'同一服务器至多被一个线程访问',b:'依据：§3.2——按线程分子队列、按主机名归队。',u:'用法：并发访问第三方服务时按目标分队列。'},
+ {q:'镜像与别名使 8.5% 下载重复',b:'依据：§5.1——64 位内容指纹在下载后拦截重复。',u:'用法：抓取报告固定记录重复率。'},
+ {q:'对比吞吐先校准硬件口径',b:'依据：§6.1——与 Google、IA 对比未校准硬件，只传达相对速度。',u:'用法：引用他人性能数字先列硬件与负载差异。'},
+ {q:'爬虫陷阱没有自动解法',b:'依据：§5.3——人工发现后用 URL 过滤器排除站点。',u:'用法：为长跑爬虫准备人工排除流程。'}];
+function flow(highlight){return `<div class="flow-line">${STAGES.map((s,i)=>`${i?'<span aria-hidden="true">→</span>':''}<div class="flow-node ${highlight===i?'active':''}">${esc(s[0])}<div class="caption">${esc(s[1])}</div></div>`).join('')}</div>`}
+function draw(view){
+ let h='';
+ if(view==='cover')h=`<div class="columns wide"><div><div class="kicker">${esc(PAPER.kind)} · ${esc(PAPER.year)} · ${esc(PAPER.version)}</div><p class="intro">${esc(PAPER.claim)}</p><div class="english">${esc(PAPER.title)}</div><div class="muted" style="margin-bottom:12px">${esc(PAPER.authors.split("; ")[0])}${PAPER.authors.includes(";")?" 等":""} · 署名见引用抽屉</div><div class="muted">${ext(PAPER.url,'论文原站与署名')}${PAPER.pdf?' · '+ext(PAPER.pdf,'本地PDF'):''}</div><div class="choice-row" style="margin-top:20px"><button class="btn primary" type="button" data-go="2">开始上课 →</button><a class="btn" href="index.html">返回学习地图</a></div>${tip('按 ← → 翻页，M 切换深度，N 查看讲稿。进度自动保存在当前浏览器。')}</div>${dataNumbers()}</div>`;
+ else if(view==='route')h=`<div class="columns"><div><ol class="fact-list"><li>全网爬虫怎样做到既快又礼貌？</li><li>内存有界为什么能撑住全网规模？</li><li>112 docs/s 与 87% 这些数字怎么读？</li><li>哪些结论能迁移到今天的系统？</li></ol><div class="term-row">${termHtml()}</div></div><ul class="route-list">${CHAPTERS.map((c,i)=>`<li><button type="button" data-go="${chPages(i+1)[0]+1}"><span>${esc(c.t)} · ${esc(c.d)}</span><small>进入 →</small></button></li>`).join('')}</ul></div>`;
+ else if(view==='scene')h=`<div class="columns"><div><p class="intro">${esc(PAPER.query)}</p><p>同一目标下，先对照常见做法与论文设计。</p>${tip('以下为围绕论文机制构造的教学情境，不给示意做法附加实测收益。')}</div><div>${choices(['常见做法','论文设计'],0,'scene')}<div class="answer" id="sceneOut" aria-live="polite"><h3>常见做法</h3><p>${esc(PAPER.before)}</p>${tip('两个追问：内存装得下吗？同一台服务器会被几个线程同时访问？')}</div></div></div>`;
+ else if(view==='concept')h=`${choices(COMPS.map(c=>c.n),state.comp,'concept')}<div class="columns"><div class="answer" id="conceptOut" aria-live="polite"><h3>${esc(COMPS[state.comp].n)}</h3><p>${esc(COMPS[state.comp].p)}</p><div class="caption">${esc(COMPS[state.comp].pro)} <span class="src">${esc(COMPS[state.comp].s)}</span></div></div><div><div class="kicker">本篇要区分的量</div><ul class="fact-list">${PAPER.metrics.map((m,i)=>`<li><button type="button" class="term" data-term="metric${i}">${esc(m.name)}</button><small>${esc(m.plain)}</small></li>`).join('')}</ul></div></div>`;
+ else if(view==='pipeline'){const L=LOOP[state.step];h=`<div class="step-track">${PAPER.steps.map((s,i)=>`<button class="choice" type="button" data-action="step" data-value="${i}" aria-pressed="${i===state.step}">${esc(s)}</button>`).join('')}</div><div class="answer" id="stepOut" aria-live="polite"><h3>${esc(PAPER.steps[state.step])}</h3><p>${esc(L.p)}</p><div class="only-pro pro-note" style="margin-top:8px">${esc(L.pro)} <span class="src">${esc(L.s)}</span></div></div><div class="choice-row" style="margin-top:14px"><button class="btn" type="button" data-action="prevStep" ${state.step===0?'disabled':''}>上一步</button><button class="btn" type="button" data-action="nextStep" ${state.step===PAPER.steps.length-1?'disabled':''}>下一步</button></div>${tip('流程按论文 §3.1 的工人线程主循环组织；专业层给出实现细节。')}`;}
+ else if(view==='boundary')h=`${choices(['研究输入','干预环节','结果口径'],1,'flow')}<div id="flowOut" aria-live="polite">${flow(1)}</div><div class="columns">${panel('能够支持',PAPER.claim)}${panel('适用边界',PAPER.boundary)}</div><div class="only-pro pro-note" style="margin-top:12px">可插拔组件：URL 边界、文档指纹集、URL 过滤器、URL set（§4）；协议与处理模块经配置文件动态加载；随机行走任务仅 360 行 Java（§4.3）。</div>`;
+ else if(view==='metric'){const m=METRICS4[state.metric];h=`<div class="columns"><div>${choices(METRICS4.map(x=>x.n),state.metric,'metric')}<div class="answer" id="metricOut" aria-live="polite"><h3>${esc(m.n)}</h3><p class="only-plain">${esc(m.plain)}</p><div class="only-pro"><p>${esc(m.plain)}</p><div class="pro-note">${esc(m.pro)} <span class="src">${esc(m.s)}</span></div></div></div></div><div><div class="kicker">读数的检查次序</div><ul class="fact-list"><li>单位与分母<small>docs/s 是含全部 MIME 类型的平均值，KB/s 另列</small></li><li>口径条件<small>${esc(PAPER.setting)}</small></li><li>禁止越界<small>${esc(PAPER.extra)}</small></li></ul></div></div>`;}
+ else if(view==='design')h=`<div class="columns"><div><div class="kicker">${esc(PAPER.kind)} · 研究设计</div><p class="intro">${esc(PAPER.setting)}</p><div class="callout">换算核对：8 天 = 691,200 秒；77,357,381 ÷ 691,200 ≈ 112 docs/s，与论文一致。<span class="src">Table 1 · §6.1</span></div>${tip('本篇是系统实证：看实现、测吞吐、报状态分布；读原文节选时留意这些前提。')}</div><div>${choices(PAPER.evidence.map(e=>e.label),state.proof,'proof')}<div id="proofOut" aria-live="polite">${sourceView(state.proof)}</div></div></div>`;
+ else if(view==='control')h=`<div class="columns"><div><div class="kicker">给你的复验方案做检查 · 本课推断</div><div class="check-list">${CHECKS.map((s,i)=>`<button type="button" class="choice" data-action="check" data-value="${i}" aria-pressed="${state.checks.has(i)}"><span class="checkmark">${state.checks.has(i)?'✓':''}</span>${esc(s)}</button>`).join('')}</div></div><div class="answer" id="controlOut" aria-live="polite"><h3>${state.checks.size===CHECKS.length?'具备基本复验要素':'继续补齐比较条件'}</h3><p>${esc(PAPER.extra)}</p><div class="caption">勾选用于检查方案完整性，无法自动证明因果识别成立。</div><div class="only-pro pro-note">${esc(PAPER.boundary)}</div></div></div>`;
+ else if(view==='method'){const d=COMPDESIGN[state.methodPick];h=`<div class="step-track x-track5">${COMPDESIGN.map((x,i)=>`<button type="button" class="choice" data-action="compdesign" data-value="${i}" aria-pressed="${i===state.methodPick}">${esc(x.c)}</button>`).join('')}</div><div class="columns"><div class="answer" id="methodOut" aria-live="polite"><h3>${esc(d.c)}：Mercator 的选择</h3><p>${esc(d.m)} <span class="src">${esc(d.s)}</span></p><div class="callout">备选方案：${esc(d.a)}。</div></div><div><div class="kicker">保持不变的约束</div><ul class="fact-list"><li>内存有界，状态大多落盘</li><li>同一组件可整体替换（§4）</li><li>${esc(PAPER.boundary)}</li></ul></div></div>`;}
+ else if(view==='lab')h=mlabHtml();
+ else if(view==='numbers')h=numbersHtml();
+ else if(view.startsWith('finding')){const ix=+view.slice(-1),fx=FINDX[ix];h=`<div class="ev" style="margin-bottom:14px">F${ix+1} · 证据强度 <span class="${PAPER.strength==='弱'?'str-l':'str-m'}">${esc(PAPER.strength)}</span> · ${esc(PAPER.strength_why)}</div><div class="columns"><div><p class="intro">${esc(PAPER.findings[ix])}</p>${choices(['论文发现','实践含义','适用条件'],0,'finding'+ix)}<div class="answer" id="findingOut${ix}" aria-live="polite"><p>${esc(PAPER.finding_details[ix])}</p><div class="caption">结合本篇研究设计理解这条发现。</div></div></div><div><div class="kicker">${esc(fx.k)}</div><ul class="fact-list">${fx.items.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>${ix===1?fbarHtml():''}${fx.link?`<button type="button" class="btn" data-go="${fx.link}" style="margin-top:12px">${esc(fx.linkT)}</button>`:''}<div class="callout" style="margin-top:12px">观察指标：${esc(PAPER.metrics[fx.metric].name)}——${esc(PAPER.metrics[fx.metric].plain)}</div></div></div>`;}
+ else if(view==='compare')h=`${choices(['本篇研究','相关研究','对照启发'],0,'compare')}<div id="compareOut" aria-live="polite">${compareHtml(0)}</div>`;
+ else if(view==='case')h=caseHtml();
+ else if(view==='persona')h=personaHtml();
+ else if(view==='mature')h=matureHtml();
+ else if(view==='limits')h=`<div class="columns"><div>${choices(PAPER.limitations.map(l=>l[1]),state.lim,'limit')}</div><div class="answer" id="limitOut" aria-live="polite">${limitHtml(state.lim)}</div></div>`;
+ else if(view==='quotes')h=`<div class="flips">${QUOTES.map((t,i)=>`<button type="button" class="flip-card" data-action="flip" data-value="${i}" aria-pressed="${state.flips.has(i)}"><b>${esc(t.q)}。</b><span class="flip-back">${esc(t.b)}<br>${esc(t.u)}</span><small>本课提炼 · 点击查看依据</small></button>`).join('')}</div><div class="choice-row" style="margin-top:12px"><button class="btn" type="button" data-action="copySummary">复制要点与出处</button></div>`;
+ else if(view==='quiz')h=quizHtml();
+ return h;
+}
+// ===== 招牌交互：内存预算实验室（演示模型；实测值一律带出处） =====
+const ML={total:77357381,entryB:32,speeds:{mem:140,memPost:6,disk:14,hy:112,hyOff:19},memDisk:24,memHy:64,
+ budgets:[['128 MB',128],['512 MB',512],['2 GB',2048]],stratN:['全部放内存','全部走磁盘','Mercator 混合'],dnsN:['默认同步解析','自研多线程解析器']};
+function mlabCalc(){
+ const s=state.mlab,B=ML.budgets[s.budget][1],dnsK=s.dns?1:5.8;
+ const cap=B*1048576/ML.entryB;
+ let collDay=0;for(let i=1;i<=8;i++){if(Math.round(ML.total*i/8)>cap){collDay=i;break}}
+ const bars=[];
+ for(let i=1;i<=8;i++){const done=i<=s.day;let v=null,over=false;
+  if(done){if(s.strat===0){const ok=Math.round(ML.total*i/8)<=cap;v=ok?ML.speeds.mem/dnsK:ML.speeds.memPost;over=!ok}
+   else if(s.strat===1){v=ML.speeds.disk/dnsK}
+   else{v=s.dns?ML.speeds.hy:ML.speeds.hyOff}}
+  bars.push({v,over})}
+ const cum=Math.round(ML.total*s.day/8);
+ const used=s.strat===0?cum*ML.entryB/1048576:s.strat===1?ML.memDisk:ML.memHy;
+ return {s,B,collDay,bars,cum,used,day:s.day};
+}
+function mlabVerdict(c){
+ const s=c.s;
+ if(s.strat===0){
+  if(c.collDay&&c.day>=c.collDay)return {b:'内存耗尽：系统颠簸，吞吐崩塌（演示虚构）',r:`第 ${c.collDay} 天内存越过 ${c.B} MB 预算，此后吞吐跌至 ${ML.speeds.memPost} docs/s（示意），全网爬取无法按期完成。`};
+  if(c.collDay)return {b:'内存随已抓网址线性增长',r:`按每条 32 B 估算，第 ${c.collDay} 天将越过 ${c.B} MB 预算；论文提到实际边界的网址数以亿计（§3.2）。`};
+  return {b:'内存持续增长',r:'77,357,381 条 × 32 B ≈ 2.3 GB，仍会超出预算（示意估算）。'};}
+ if(s.strat===1)return {b:'瓶颈在磁盘寻道',r:`爬取能完成，但平均 ${Math.round(ML.speeds.disk/(s.dns?1:5.8))} docs/s（示意）：每次内容指纹检验都要碰磁盘，至多 2 次内核调用（§3.5）。`};
+ if(s.dns)return {b:'无单一瓶颈',r:'实测：8 天 77,357,381 次请求、平均 112 docs/s（§6.1 · Table 1）；内存是固定量（示意），不随抓取规模增长。'};
+ return {b:'瓶颈在 DNS',r:'同步解析接口一次只能挂起一个未缓存请求；按 87%→25% 流逝时间占比换算约 19 docs/s（示意换算，§3.7）。'};
+}
+function mlabHtml(){
+ const c=mlabCalc(),v=mlabVerdict(c),s=c.s;
+ const bars=c.bars.map((b,i)=>`<div class="x-mbar${b.over?' bad':''}${b.v==null?' off':''}"><span class="v">${b.v==null?'·':Math.round(b.v)}</span><i style="height:${b.v==null?0:Math.max(2,Math.round(b.v/200*100))}%"></i><span class="d">${i+1}</span></div>`).join('');
+ const refs=`<div class="x-ref x-acc" style="bottom:56%"><b class="r">Mercator 实测 112</b></div><div class="x-ref" style="bottom:23%"><b class="r">IA 46.3</b></div><div class="x-ref" style="bottom:17%"><b class="l">Google 33.5</b></div>`;
+ const over=c.used>c.B;
+ const usedTxt=s.strat===0?`约 ${Math.round(c.used).toLocaleString('en-US')} MB`:`约 ${c.used} MB（示意固定量）`;
+ return `<div class="x-ml-ctl"><div class="x-ctl"><div class="grp-t">数据结构策略</div>${choices(ML.stratN,s.strat,'mstrat')}</div><div class="x-ctl"><div class="grp-t">内存预算</div>${choices(ML.budgets.map(b=>b[0]),s.budget,'mbudget')}</div><div class="x-ctl"><div class="grp-t">DNS 解析器 · 次要开关</div>${choices(ML.dnsN,s.dns,'mdns')}</div></div><div class="x-mchart" role="img" aria-label="逐日吞吐演示柱状图，虚线为对照爬虫实测值">${bars}${refs}</div>${tip('柱高为逐日吞吐（docs/s，演示模型）：第 1–8 天为八天爬取，Table 1 总量按天均分；切换策略与预算，看瓶颈在哪天出现。')}
+ <div class="x-ml-g"><div class="x-ml-glab"><b>内存占用</b><span>第 ${s.day} 天 · 已抓约 ${(c.cum/1e6).toFixed(1)}M 条</span></div><div class="x-gtrack"><div class="x-gfill${over?' bad':''}" style="width:${Math.min(100,c.used/c.B*100)}%"></div></div><div class="x-ml-gval">${usedTxt} / 预算 ${c.B} MB${over?' · 超出预算（示意估算）':''}</div></div>
+ <div class="callout x-verdict" aria-live="polite" style="margin-top:8px"><b>${esc(v.b)}</b> — ${esc(v.r)}</div>
+ <div class="choice-row" style="margin-top:8px"><button class="btn" type="button" data-action="mday" ${s.day>=8?'disabled':''}>推进一天 →</button><button class="btn" type="button" data-action="mreset">回到第 1 天</button><button class="btn" type="button" data-go="13">对应发现 F1 →</button></div>
+ <div class="only-pro pro-note" style="margin-top:8px">Table 1 算式：76,732,515 + 3,675,634 − 3,050,768 = 77,357,381；对照 IA 46.3、Google 33.5 docs/s（§6.1，未校准硬件）。缓冲各 600 条、缓存各 2^18 条（§3.2–3.8）；DNS 换算约 5.8 倍（示意）。演示值：每条 32 B、140 与 14 docs/s。</div>`;
+}
+function fbarHtml(){return `<div style="margin-top:10px"><div class="grp-t">DNS 占每线程流逝时间（§3.7）</div><div class="x-num-row"><span>改造前</span><div class="tr"><div class="fl bad" style="width:87%"></div></div><span class="vl">87%</span></div><div class="x-num-row"><span>改造后</span><div class="tr"><div class="fl ok" style="width:25%"></div></div><span class="vl">25%</span></div>${tip('横条以 100% 流逝时间为满格；改造指自研多线程解析器。')}</div>`}
+function numbersHtml(){
+ const views=['吞吐对比','请求结果','文档类型','请求算式','原文表格节选'];
+ let body='';
+ if(state.nview===0)body=`<div>${PAPER.throughput.map(t=>`<div class="x-num-row"><span>${esc(t.name)}</span><div class="tr"><div class="fl${t.v==='112'?' acc':''}" style="width:${parseFloat(t.v)/112*100}%"></div></div><span class="vl">${esc(t.v)} docs/s</span></div>`).join('')}</div><div class="callout" style="margin-top:12px">对比未校准硬件差异，作者明示只传达相对速度；Mercator 抓全部 MIME 类型，平均文档比对方大一倍以上。<span class="src">§6.1</span></div>`;
+ else if(state.nview===1)body=`<div>${PAPER.status.map(t=>`<div class="x-num-row"><span>${esc(t.c)}</span><div class="tr"><div class="fl${t.c.startsWith('200')?' acc':''}" style="width:${parseFloat(t.p)}%"></div></div><span class="vl">${esc(t.p)}%</span></div>`).join('')}</div><div class="callout" style="margin-top:12px">反常点：作者预期更多死链，404 只有 7.43%。另有约 180 万次请求（2.3%）无响应。<span class="src">Table 2 · §6.2</span></div>`;
+ else if(state.nview===2)body=`<div>${PAPER.mime.map(t=>`<div class="x-num-row"><span>${esc(t.c)}</span><div class="tr"><div class="fl${t.c==='text/html'?' acc':''}" style="width:${parseFloat(t.p)}%"></div></div><span class="vl">${esc(t.p)}%</span></div>`).join('')}</div><div class="callout" style="margin-top:12px">约 6,000 万唯一文档的类型分布；百分比按论文各栏原样相加，因四舍五入合计可能偏差 0.1 个百分点。<span class="src">Table 3 · §6.2</span></div>`;
+ else if(state.nview===3)body=`<div class="x-eq">${PAPER.t1.map(r=>esc(r[0])+'　'+esc(r[1])).join('<br>')}</div><div class="callout" style="margin-top:12px">两个折扣来源：新主机要先取 robots.txt（增加请求）；被排除的网址不发请求（§6.2）。</div><div class="only-pro" style="margin-top:10px"><div class="grp-t">CPU 周期分布（DCPI 实测）</div>${PAPER.cpu.map(t=>`<div class="x-num-row"><span>${esc(t[0])}</span><div class="tr"><div class="fl acc" style="width:${parseFloat(t[1])}%"></div></div><span class="vl">${esc(t[1])}</span></div>`).join('')}${tip('占用周期最多的方法是文档指纹计算，占全部周期的 2.3%（§6.1）。')}</div>`;
+ else body=`<div class="source-text table" lang="en">${esc(PAPER.table.text)}</div>${src(PAPER.table)}${tip('版面抽取节选，换行可能影响列对齐；完整表格及脚注以 PDF 为准。')}`;
+ return `${choices(views,state.nview,'nview')}<div id="nviewOut" aria-live="polite" style="margin-top:12px">${body}</div>`;
+}
+function compareHtml(v){
+ if(v===0)return `<div class="columns">${panel(PAPER.zh,PAPER.claim)}${panel('证据边界',PAPER.boundary)}</div>`;
+ if(v===1)return `<div class="answer"><h3>${esc(PAPER.related.zh)}</h3><p>${esc(PAPER.related.claim)}</p>${relatedLink()}${tip('按相关论文摘要转述；沿用该论文的研究范围。')}</div>`;
+ return `<div class="answer"><h3>URL 查重的两条路线</h3><p>Mercator：指纹查重，无假阳性，内存有界（§3.8）。Internet Archive：布隆过滤器，10 个哈希函数、每站点 32 KB 位向量，批量合并用 2 GB 位向量；假阳性会让网址永远不被抓（§3.8）。</p><p>对照阅读时记录：对象、阶段与指标口径是否一致。</p>${relatedLink()}${tip('本段为教学推断。两篇论文的数字不宜直接相加。')}</div>`;
+}
+const CASE79=['一台服务器上的同一个页面，为什么会被三个网址指到？','论文原例：coke.com 与 cocacola.com 都解析到 208.134.241.178；加上直接写 IP，同一文档至少有三个网址（§5.1）。','先发 CNAME 与 A 查询把主机名规范化，再补全省略的端口；路径与镜像无法事前识别，由 64 位指纹在下载后拦截。','§5.1 URL Aliases · PDF p.10'];
+function caseHtml(){const c=CASE79,a=ALIASES[state.alias];return `<div class="kicker">论文原例的中文转述 · 出处：${esc(c[3])}</div><p class="intro">${esc(c[0])}</p><div class="columns"><div>${panel('问题与输入',c[1])}${panel('操作与检查',c[2])}</div><div><div class="kicker">四类别名成因 · 点选查看（§5.1）</div>${choices(ALIASES.map(x=>x.c),state.alias,'alias')}<div class="answer" id="aliasOut" aria-live="polite"><h3 style="font-size:17px">${esc(a.c)}</h3><p>${esc(a.ex)}</p><div class="caption">对策：${esc(a.fix)}</div></div></div></div><div class="callout" style="margin-top:10px">对应发现：F4 ${esc(PAPER.findings[3])}；事前规范化只覆盖前两类成因。本页未为案例补造提升幅度。</div>`;}
+function personaHtml(){const r=ROLES[state.role];return `${choices(ROLES.map(x=>x.r),state.role,'role')}<div class="columns"><div><h3>${esc(r.r)}</h3><p style="margin-top:10px">为什么适合：${esc(r.why)}</p><div class="callout warn">避免：${esc(r.avoid)}。</div></div><div><div class="kicker">可以这样做（本课推断）</div><ul class="fact-list">${r.todos.map(t=>`<li>${esc(t)}<small>本课应用推断 · 括号内为依据</small></li>`).join('')}</ul></div></div>`;}
+function matureHtml(){return `<div class="kicker">这一对应关系是本页的推断</div><table class="mini-table"><thead><tr><th>成熟形态</th><th>可观察的字段</th><th>对应研究环节</th></tr></thead><tbody>${MATURE.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}</tbody></table><div class="callout" style="margin-top:18px">采用已有工作形态承接证据，先做小范围复验，再决定扩大应用。</div>`;}
+function limitHtml(i){const l=PAPER.limitations[i];return `<span class="tag ${l[0]==='高'?'neg':'acc'}">影响${esc(l[0])}</span><h3>${esc(l[1])}</h3><p>${esc(l[2])}</p>${i===4?relatedLink():tip(i===0?'来自本篇研究范围与局限解读。':'本课审查提示，需结合原文进一步核验。')}`;}
+function quizHtml(){
+ const q=PAPER.quiz[state.q];
+ if(!q){const score=state.answers.filter((a,i)=>a===PAPER.quiz[i].a).length;return `<div class="columns"><div><div class="kicker">自测完成</div><div class="number-large">${score} / ${PAPER.quiz.length}</div><p>按每题反馈回看对应页面，再继续学习。</p><div class="choice-row"><button class="btn" type="button" data-action="resetQuiz">重新作答</button><a class="btn" href="index.html">回学习地图</a></div></div><div>${panel('带走的结论',PAPER.claim)}<div class="caption">${ext(PAPER.url,'论文原文')} · ${relatedLink()}</div></div></div>`;}
+ const a=state.answers[state.q];return `<div class="columns wide"><div><div class="kicker">第 ${state.q+1} 题 / 共 ${PAPER.quiz.length} 题</div><h3>${esc(q.q)}</h3><div class="quiz-options">${q.o.map((s,i)=>`<button type="button" class="choice ${a==null?'':i===q.a?'correct':i===a?'incorrect':''}" data-action="answer" data-value="${i}" ${a!=null?'disabled':''}>${esc(s)}</button>`).join('')}</div>${a!=null?`<div aria-live="polite" class="muted">${a===q.a?'回答正确。':'请回看对应证据。'}${esc(q.e)}<button type="button" class="term" data-go="${q.p}">复习第 ${q.p} 页</button></div><button class="btn primary" type="button" data-action="nextQuiz" style="margin-top:10px">${state.q===PAPER.quiz.length-1?'查看得分':'下一题'}</button>`:''}</div><div>${panel('自测的目的','辨别核心结论、指标含义、适用条件与证据强弱。答错会提供对应复习页。')}<div class="caption">${ext(PAPER.url,'打开原文核对')} · 可切换专业模式回看研究口径。</div></div></div>`;
+}
+function renderAll(){pages.forEach(p=>$('.lesson',p).innerHTML=draw(p.dataset.view));}
+renderAll();
+// Existing HTML owns layout; delegated events update only the affected learning activity.
+function selectIn(b){$$('button',b.parentElement).forEach(x=>x.setAttribute('aria-pressed',x===b));}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;const v=+(b.dataset.value||0),a=b.dataset.action;
+ const box=b.closest('.lesson');const p=b.closest('.page');
+ if(['scene','concept','flow','compare','proof','metric','limit','nview','mstrat','mbudget','mdns','compdesign','alias'].includes(a)||a.startsWith('finding'))selectIn(b);
+ if(a==='scene')$('#sceneOut').innerHTML=`<h3>${v?'论文设计':'常见做法'}</h3><p>${esc(v?PAPER.after:PAPER.before)}</p>${tip(v?'机制细节见第 4–5 页，动手对比见第 11 页实验室。':'两个追问：内存装得下吗？同一台服务器会被几个线程同时访问？')}`;
+ else if(a==='concept'){state.comp=v;const c=COMPS[v];$('#conceptOut').innerHTML=`<h3>${esc(c.n)}</h3><p>${esc(c.p)}</p><div class="caption">${esc(c.pro)} <span class="src">${esc(c.s)}</span></div>`;}
+ else if(a==='step'||a==='prevStep'||a==='nextStep'){state.step=a==='step'?v:Math.max(0,Math.min(PAPER.steps.length-1,state.step+(a==='nextStep'?1:-1)));box.innerHTML=draw('pipeline');}
+ else if(a==='flow')$('#flowOut').innerHTML=flow(v);
+ else if(a==='metric'){state.metric=v;box.innerHTML=draw('metric');}
+ else if(a==='proof'){state.proof=v;$('#proofOut').innerHTML=sourceView(v);}
+ else if(a==='check'){state.checks.has(v)?state.checks.delete(v):state.checks.add(v);box.innerHTML=draw('control');}
+ else if(a==='compdesign'){state.methodPick=v;box.innerHTML=draw('method');}
+ else if(a==='mstrat'){state.mlab.strat=v;box.innerHTML=draw('lab');}
+ else if(a==='mbudget'){state.mlab.budget=v;box.innerHTML=draw('lab');}
+ else if(a==='mdns'){state.mlab.dns=v;box.innerHTML=draw('lab');}
+ else if(a==='mday'){state.mlab.day=Math.min(8,state.mlab.day+1);box.innerHTML=draw('lab');}
+ else if(a==='mreset'){state.mlab.day=1;box.innerHTML=draw('lab');}
+ else if(a==='nview'){state.nview=v;box.innerHTML=draw('numbers');}
+ else if(a.startsWith('finding')){const ix=+a.slice(-1);$('#findingOut'+ix).innerHTML=`<p>${esc(v===0?PAPER.finding_details[ix]:v===1?'应用推断（教学示意）：把这一机制落到自己的抓取任务，先做小规模对照再评估。':PAPER.boundary)}</p>${tip(v===1?'行动建议属于教学推断。':v===2?PAPER.extra:'需要连同研究设计解读，勿省略条件。')}`;}
+ else if(a==='compare')$('#compareOut').innerHTML=compareHtml(v);
+ else if(a==='role'){state.role=v;box.innerHTML=personaHtml();}
+ else if(a==='limit'){state.lim=v;$('#limitOut').innerHTML=limitHtml(v);}
+ else if(a==='flip'){state.flips.has(v)?state.flips.delete(v):state.flips.add(v);b.setAttribute('aria-pressed',state.flips.has(v));}
+ else if(a==='copySummary')copyText(PAPER.findings.map(t=>t+'。').join('\n')+'\n来源：'+PAPER.title+' · '+PAPER.version+'\n'+PAPER.url+'\n边界：'+PAPER.boundary);
+ else if(a==='answer'&&state.answers[state.q]==null){state.answers[state.q]=v;box.innerHTML=quizHtml();}
+ else if(a==='nextQuiz'){state.q++;box.innerHTML=quizHtml();}
+ else if(a==='resetQuiz'){state.q=0;state.answers=[];box.innerHTML=quizHtml();}
+ // Preserve keyboard continuity after components render fresh buttons.
+ if(!b.isConnected){const replacement=box.querySelector(`[data-action="${a}"][data-value="${v}"]`)||box.querySelector('[data-action]');if(replacement)replacement.focus({preventScroll:true});}
+ checkOverflow(pages.indexOf(p));
+});
+// Arrow keys within a choice group change that activity, and leave slide navigation untouched.
+document.addEventListener('keydown',e=>{
+ const b=e.target.closest('.lesson .choice-row button,.lesson .step-track button');
+ if(!b||!['ArrowLeft','ArrowRight'].includes(e.key))return;
+ e.preventDefault();e.stopImmediatePropagation();const group=b.parentElement,bs=$$('button',group);const ix=(bs.indexOf(b)+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[ix].click();if(bs[ix].isConnected)bs[ix].focus();
+},true);
+
+/* ===== 启动 ===== */
+buildToc();
+setMode(store.get('pgs-mode')==='pro'?'pro':'plain');
+if(store.get('pgs-notes')==='1'){$('#notesPanel').classList.add('on');$('#notesBtn').setAttribute('aria-pressed','true')}
+const hm=location.hash.match(/^#p(\d+)$/);
+const last=+store.get(KEY+':last')||0;
+pages[0].classList.add('on');
+go(hm?+hm[1]-1:0, !!hm);
+if(!hm&&last>0)toast(`上次学到第 ${last+1} 页，可在左侧目录继续`);
+</script></body></html>
