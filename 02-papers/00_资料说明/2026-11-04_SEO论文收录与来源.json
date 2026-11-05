@@ -69,7 +69,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/A01.pdf",
       "filename": "11_检索与文本相关性_A01_A_Statistical_Approach_to_Mechanized_Encoding_and_Searching_of_Literary_Information.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -112,7 +111,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/A02.pdf",
       "filename": "11_检索与文本相关性_A02_A_Statistical_Interpretation_of_Term_Specificity_and_Its_Application_in_Retrieval.pdf",
       "format": "PDF",
       "copyright_excerpt": "Copyright © MCB University Press ISSN 0022-0418"
@@ -154,7 +152,6 @@
       "title_keyword_match": 0.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/A03.pdf",
       "visual_check": "2026-11-04：已渲染并目视核对首面题名、作者及可读性",
       "filename": "11_检索与文本相关性_A03_A_Vector_Space_Model_for_Automatic_Indexing.pdf",
       "format": "PDF",
@@ -197,7 +194,6 @@
       "title_keyword_match": 0.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/A04.pdf",
       "visual_check": "2026-11-04：已渲染并目视核对首面题名、作者及可读性",
       "filename": "11_检索与文本相关性_A04_Relevance_Weighting_of_Search_Terms.pdf",
       "format": "PDF",
@@ -240,7 +236,6 @@
       "title_keyword_match": 0.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/A05.pdf",
       "visual_check": "2026-11-04：已渲染并目视核对首面题名、作者及可读性",
       "filename": "11_检索与文本相关性_A05_Term_weighting_Approaches_in_Automatic_Text_Retrieval.pdf",
       "format": "PDF",
@@ -284,7 +279,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/A06.pdf",
       "filename": "11_检索与文本相关性_A06_The_Probabilistic_Relevance_Framework_BM25_and_Beyond.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -326,7 +320,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/B01.pdf",
       "filename": "12_搜索架构与抓取_B01_The_Anatomy_of_a_Large_Scale_Hypertextual_Web_Search_Engine.pdf",
       "format": "PDF",
       "copyright_excerpt": "\"This page is copyrighted and should not be indexed\", which needless to say is difficult for web crawlers"
@@ -368,7 +361,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/B02.pdf",
       "filename": "12_搜索架构与抓取_B02_Efficient_Crawling_Through_URL_Ordering.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -410,7 +402,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/B03.pdf",
       "filename": "12_搜索架构与抓取_B03_Mercator_A_Scalable_Extensible_Web_Crawler.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -452,7 +443,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/B04.pdf",
       "filename": "12_搜索架构与抓取_B04_The_Evolution_of_the_Web_and_Implications_for_an_Incremental_Crawler.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to copy without fee all or part of this material is granted"
@@ -494,7 +484,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/B05.pdf",
       "filename": "12_搜索架构与抓取_B05_Graph_Structure_in_the_Web.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -536,7 +525,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/B06.pdf",
       "filename": "12_搜索架构与抓取_B06_A_Taxonomy_of_Web_Search.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -578,7 +566,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/C01.pdf",
       "filename": "13_链接分析与外链理论_C01_Citation_Indexes_for_Science_A_New_Dimension_in_Documentation_through_Association_of_Ideas.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -620,7 +607,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/C02.pdf",
       "filename": "13_链接分析与外链理论_C02_Citation_Influence_for_Journal_Aggregates_of_Scientific_Publications_Theory_with_Application_to_the_Liter.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -662,7 +648,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/C03.pdf",
       "filename": "13_链接分析与外链理论_C03_The_Quest_for_Correct_Information_on_the_Web_Hyper_Search_Engines.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -704,7 +689,6 @@
       "title_keyword_match": 0.8,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/C04.pdf",
       "filename": "13_链接分析与外链理论_C04_The_PageRank_Citation_Ranking_Bringing_Order_to_the_Web.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -746,7 +730,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/C05.pdf",
       "filename": "13_链接分析与外链理论_C05_Authoritative_Sources_in_a_Hyperlinked_Environment.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -788,7 +771,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/C06.pdf",
       "filename": "13_链接分析与外链理论_C06_Improved_Algorithms_for_Topic_Distillation_in_a_Hyperlinked_Environment.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to make digital/hard copy of all or part of this work"
@@ -830,7 +812,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/C07.pdf",
       "filename": "13_链接分析与外链理论_C07_The_Stochastic_Approach_for_Link_Structure_Analysis_SALSA_and_the_TKC_Effect.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to make digital/hard copy of part or all of this work for personal or classroom use"
@@ -872,7 +853,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/C08.pdf",
       "filename": "13_链接分析与外链理论_C08_Topic_Sensitive_PageRank.pdf",
       "format": "PDF",
       "copyright_excerpt": "Copyright is held by the author/owner(s)."
@@ -914,7 +894,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/C09.pdf",
       "filename": "13_链接分析与外链理论_C09_The_Intelligent_Surfer_Probabilistic_Combination_of_Link_and_Content_Information_in_PageRank.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -1002,7 +981,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/C11.pdf",
       "filename": "13_链接分析与外链理论_C11_Effective_Site_Finding_Using_Link_Anchor_Information.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to make digital or hard copies of all or part of this work for"
@@ -1044,7 +1022,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/D01.pdf",
       "filename": "14_反垃圾与链接作弊_D01_Combating_Web_Spam_with_TrustRank.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to copy without fee all or part of this material is granted pro-"
@@ -1086,7 +1063,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/D02.pdf",
       "filename": "14_反垃圾与链接作弊_D02_Web_Spam_Taxonomy.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -1128,7 +1104,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/D03.pdf",
       "filename": "14_反垃圾与链接作弊_D03_Link_Spam_Alliances.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to copy without fee all or part of this material is"
@@ -1170,7 +1145,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/D04.pdf",
       "filename": "14_反垃圾与链接作弊_D04_SpamRank_Fully_Automatic_Link_Spam_Detection.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -1212,7 +1186,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/D05.pdf",
       "filename": "14_反垃圾与链接作弊_D05_Detecting_Spam_Web_Pages_through_Content_Analysis.pdf",
       "format": "PDF",
       "copyright_excerpt": "Copyright is held by the International World Wide Web Conference Com-"
@@ -1254,7 +1227,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/D06.pdf",
       "filename": "14_反垃圾与链接作弊_D06_Survey_on_Web_Spam_Detection_Principles_and_Algorithms.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -1296,7 +1268,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/E01.pdf",
       "filename": "15_SEO与自然流量_E01_Optimal_Search_Engine_Marketing_Strategy.pdf",
       "format": "PDF",
       "copyright_excerpt": "Copyright © 2005 M.E. Sharpe, Inc. All rights reserved."
@@ -1338,7 +1309,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/E02.pdf",
       "filename": "15_SEO与自然流量_E02_Worst_Practices_in_Search_Engine_Optimization.pdf",
       "format": "PDF",
       "copyright_excerpt": "© 2008 ACM 0001-0782/08/1200 $5.00"
@@ -1380,7 +1350,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/E03.pdf",
       "filename": "15_SEO与自然流量_E03_The_Role_of_Search_Engine_Optimization_in_Search_Marketing.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -1451,7 +1420,6 @@
       "title_keyword_match": 0.857,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/E05.pdf",
       "filename": "15_SEO与自然流量_E05_Search_Engine_Optimization_What_Drives_Organic_Traffic_to_Retail_Sites.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -1493,7 +1461,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/E06.pdf",
       "filename": "15_SEO与自然流量_E06_Important_Factors_for_Improving_Google_Search_Rank.pdf",
       "format": "PDF",
       "copyright_excerpt": "© 2019 by the authors. Licensee MDPI, Basel, Switzerland. This article is an open access"
@@ -1535,7 +1502,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/E07.pdf",
       "filename": "15_SEO与自然流量_E07_Public_Awareness_and_Attitudes_towards_Search_Engine_Optimization.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -1577,7 +1543,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/E08.pdf",
       "filename": "15_SEO与自然流量_E08_Is_Google_Getting_Worse_A_Longitudinal_Investigation_of_SEO_Spam_in_Search_Engines.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -1619,7 +1584,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/F01.pdf",
       "filename": "16_机器学习排序_F01_Optimizing_Search_Engines_Using_Clickthrough_Data.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to make digital or hard copies of all or part of this work for"
@@ -1661,7 +1625,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/F02.pdf",
       "filename": "16_机器学习排序_F02_Learning_to_Rank_Using_Gradient_Descent.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -1704,7 +1667,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/F03.pdf",
       "filename": "16_机器学习排序_F03_Learning_to_Rank_for_Information_Retrieval.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -1746,7 +1708,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/F04.pdf",
       "filename": "16_机器学习排序_F04_From_RankNet_to_LambdaRank_to_LambdaMART_An_Overview.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -1788,7 +1749,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/G01.pdf",
       "filename": "17_用户行为与搜索评估_G01_Cumulated_Gain_Based_Evaluation_of_IR_Techniques.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to make digital/hard copy of part or all of this work for personal or classroom use is"
@@ -1830,7 +1790,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/G02.pdf",
       "filename": "17_用户行为与搜索评估_G02_Accurately_Interpreting_Clickthrough_Data_as_Implicit_Feedback.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to make digital or hard copies of all or part of this work for"
@@ -1872,7 +1831,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/G03.pdf",
       "filename": "17_用户行为与搜索评估_G03_What_Are_You_Looking_For_An_Eye_Tracking_Study_of_Information_Usage_in_Web_Search.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to make digital or hard copies of all or part of this work for"
@@ -1914,7 +1872,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/G04.pdf",
       "filename": "17_用户行为与搜索评估_G04_An_Experimental_Comparison_of_Click_Position_Bias_Models.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to make digital or hard copies of all or part of this work for"
@@ -1956,7 +1913,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/G05.pdf",
       "filename": "17_用户行为与搜索评估_G05_A_Dynamic_Bayesian_Network_Click_Model_for_Web_Search_Ranking.pdf",
       "format": "PDF",
       "copyright_excerpt": "Copyright is held by the International World Wide Web Conference Com-"
@@ -1998,7 +1954,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/H01.pdf",
       "filename": "18_语义搜索与现代检索_H01_Indexing_by_Latent_Semantic_Analysis.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -2040,7 +1995,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/H02.pdf",
       "filename": "18_语义搜索与现代检索_H02_Learning_Deep_Structured_Semantic_Models_for_Web_Search_Using_Clickthrough_Data.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to make digital or hard copies of all or part of this work for personal or"
@@ -2082,7 +2036,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/H03.pdf",
       "filename": "18_语义搜索与现代检索_H03_A_Deep_Relevance_Matching_Model_for_Ad_hoc_Retrieval.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to make digital or hard copies of all or part of thi s work for personal or"
@@ -2124,7 +2077,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/H04.pdf",
       "filename": "18_语义搜索与现代检索_H04_Passage_Re_ranking_with_BERT.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -2166,7 +2118,6 @@
       "title_keyword_match": 1.0,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/H05.pdf",
       "filename": "18_语义搜索与现代检索_H05_Dense_Passage_Retrieval_for_Open_Domain_Question_Answering.pdf",
       "format": "PDF",
       "copyright_excerpt": ""
@@ -2208,7 +2159,6 @@
       "title_keyword_match": 0.778,
       "needs_visual_check": false,
       "fetched_on": "2026-11-04",
-      "pdf_path": "/Users/laoyao/AI Coding/04-Content/国内GEO研究/outputs/20261104-seo-papers-download/verified-pdfs/H06.pdf",
       "filename": "18_语义搜索与现代检索_H06_ColBERT_Efficient_and_Effective_Passage_Search_via_Contextualized_Late_Interaction_over_BERT.pdf",
       "format": "PDF",
       "copyright_excerpt": "Permission to make digital or hard copies of all or part of this work for personal or"
