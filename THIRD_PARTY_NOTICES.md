@@ -39,9 +39,11 @@ The batch adds 16 bibliography records. Eleven original PDFs are redistributed u
 
 This batch adds 52 classic SEO, information retrieval, search architecture, link analysis, anti-spam, learning-to-rank, and semantic retrieval bibliography entries. Reading copies are stored in the ignored local batch directory and are excluded from public redistribution. The public catalog contains metadata and original-source links. Versions, original license status, local full-text availability, and SHA-256 values are recorded in `02-papers/00_资料说明/2026-11-04_SEO论文收录与来源.json`. The Hilltop entry uses the author's complete HTML paper with its figures. A bibliography entry is counted independently of whether its full text is locally available.
 
-## GEO book snapshots collected on 2026-11-05
+## Domestic GEO book exports collected on 2026-11-06
 
-`04-whitepapers/` contains three Feishu book snapshots, with original source URLs and revision IDs in `sources.json`. Attribution follows each original document. Formatting, document references, embedded tables and image paths were adapted for local reading. Feishu user comments are excluded from the public files. Third-party paper attachments are linked to their sources. Quoted materials, screenshots, trademarks and third-party illustrations retain their respective rights; the repository license only covers rights held by the contributors. The full checkout includes local images; the lightweight Viewer includes book HTML, Markdown, CSV tables and metadata, and loads book images online from the repository.
+`04-whitepapers/domestic/` contains the complete HTML and PDF exports of the domestic GEO White, Red, and Blue Books, written by Yao Jingang and Xiangyang Qiaomu. Sources, export date, page counts, and original and published file checksums are recorded in `04-whitepapers/sources.json`. The PDFs retain their original bytes. HTML changes adapt the home and book navigation and replace eleven local paper attachment links with original publication URLs. The Pages site serves all six files; the lightweight Viewer links to the online catalog and excludes these complete book assets. Quoted materials, screenshots, trademarks and third-party illustrations retain their respective rights. The repository license covers only rights held by the contributors.
+
+The three book HTML files retain the original Baidu Tongji loader for site ID `36ea9c696138754f4714dd6d19b601f5`. Reading these pages can request the third-party script from `hm.baidu.com`.
 
 
 ## Interactive learning map visitor statistics

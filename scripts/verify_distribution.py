@@ -88,6 +88,7 @@ def _verify_resource_navigation(viewer: Path) -> None:
     for category in ("04-whitepapers", "05-articles"):
         assert f"https://github.com/yaojingang/GEOLab/tree/main/{category}" in root.links
         assert (REPO_ROOT / category / "README.md").is_file()
+    assert "https://yaojingang.github.io/GEOLab/04-whitepapers/" in root.links
 
     routes = {
         "01-geo-experiment-data-report/04-repet/final_report.html":
@@ -111,6 +112,41 @@ def _verify_resource_navigation(viewer: Path) -> None:
     assert (viewer / "02-geo-aeo-ai-search-papers" / csv_suffix).read_bytes() == (
         viewer / "02-papers" / csv_suffix
     ).read_bytes()
+
+
+def _verify_whitepapers(pages: Path, viewer: Path) -> None:
+    source = REPO_ROOT / "04-whitepapers"
+    published = pages / "04-whitepapers"
+    catalog = LinkCollector()
+    catalog.feed((published / "index.html").read_text(encoding="utf-8"))
+    metadata = json.loads((published / "sources.json").read_text(encoding="utf-8"))
+    expected = {
+        f"domestic/geo-{color}.{suffix}"
+        for color in ("white", "red", "blue")
+        for suffix in ("html", "pdf")
+    }
+    files = [file for book in metadata["books"] for file in book["files"]]
+    assert len(metadata["books"]) == 3 and len(files) == 6
+    assert {file["path"] for file in files} == expected
+    assert expected <= set(catalog.links), "Book catalog is missing a reading or download link"
+    assert sum(book["pdf_pages"] for book in metadata["books"]) == 618
+    checksums = {}
+    for line in (published / "checksums.sha256").read_text(encoding="utf-8").splitlines():
+        digest, relative = line.split("  ", 1)
+        assert relative not in checksums
+        checksums[relative] = digest
+    assert set(checksums) == expected
+    for file in files:
+        path = published / file["path"]
+        data = path.read_bytes()
+        assert data and len(data) == file["bytes"]
+        assert data == (source / file["path"]).read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        assert digest == file["sha256"] == checksums[file["path"]]
+        if path.suffix == ".pdf":
+            assert data.startswith(b"%PDF-")
+            assert digest == file["source_sha256"], "PDF differs from the supplied original"
+    assert not (viewer / "04-whitepapers").exists(), "Complete books entered the lightweight ZIP"
 
 
 def _verify_archive(viewer: Path, package_dir: Path, manifest: dict) -> None:
@@ -541,6 +577,13 @@ def main() -> int:
         _verify_interactive_guides(viewer)
         _verify_licenses(viewer, manifest)
         _verify_archive(viewer, package_dir, manifest)
+        pages = root / "pages"
+        subprocess.run(
+            ["python3", str(BUILD_SCRIPT), "--pages", "--output", str(pages)],
+            check=True,
+        )
+        _verify_links(pages)
+        _verify_whitepapers(pages, viewer)
         _run_shell_install(package_dir, root / "shell-install")
         _run_shell_rejection_tests(package_dir, root)
         powershell_verified = _run_powershell_install_if_available(
@@ -556,6 +599,7 @@ def main() -> int:
         print("viewer_licenses=pass")
         print("agent_skill=pass")
         print("viewer_archive=pass")
+        print("pages_links_and_complete_whitepapers=pass")
         print("shell_install=pass")
         print("shell_rejection_tests=pass")
         print(

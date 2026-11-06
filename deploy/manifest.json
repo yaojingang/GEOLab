@@ -32,7 +32,7 @@
     "full": {
       "description": "Complete research repository with datasets, papers, reports, and analysis pipelines.",
       "git_url": "https://github.com/yaojingang/GEOLab.git",
-      "approx_uncompressed_mib": 568,
+      "approx_uncompressed_mib": 641,
       "analysis_requirements": [
         "Git",
         "Python 3.11 or newer",

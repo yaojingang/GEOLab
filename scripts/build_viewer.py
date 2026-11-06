@@ -19,6 +19,7 @@ from urllib.parse import quote
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = REPO_ROOT / "dist" / "viewer"
+DEFAULT_PAGES_OUTPUT = REPO_ROOT / "dist" / "pages"
 DEFAULT_PACKAGE_DIR = REPO_ROOT / "dist" / "release"
 MANIFEST_PATH = REPO_ROOT / "deploy" / "manifest.json"
 PAPER_DIR = REPO_ROOT / "02-papers"
@@ -205,7 +206,17 @@ def _build_legacy_routes(target: Path) -> None:
             ))
 
 
-def build_viewer(output: Path) -> Path:
+def _build_whitepapers(target: Path) -> None:
+    source = REPO_ROOT / "04-whitepapers"
+    for name in ("index.html", "README.md", "sources.json", "checksums.sha256"):
+        _copy_file(source / name, target / "04-whitepapers" / name)
+    for color in ("white", "red", "blue"):
+        for suffix in ("html", "pdf"):
+            relative = Path("domestic") / f"geo-{color}.{suffix}"
+            _copy_file(source / relative, target / "04-whitepapers" / relative)
+
+
+def build_viewer(output: Path, *, pages: bool = False) -> Path:
     output = output.expanduser()
     output.parent.mkdir(parents=True, exist_ok=True)
     _assert_replaceable_output(output)
@@ -219,6 +230,8 @@ def build_viewer(output: Path) -> Path:
         _build_root_index(stage)
         _build_paper_catalog(stage)
         _build_interactive_guides(stage)
+        if pages:
+            _build_whitepapers(stage)
         _copy_file(REPO_ROOT / ".nojekyll", stage / ".nojekyll")
         _copy_file(
             REPO_ROOT
@@ -322,8 +335,13 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=DEFAULT_OUTPUT,
+        default=None,
         help="Viewer output directory. Existing directories are replaced only under dist/.",
+    )
+    parser.add_argument(
+        "--pages",
+        action="store_true",
+        help="Build the online site in dist/pages, including complete book HTML and PDFs.",
     )
     parser.add_argument(
         "--package",
@@ -337,8 +355,11 @@ def main() -> int:
         help="Release asset output directory.",
     )
     args = parser.parse_args()
+    if args.pages and args.package:
+        parser.error("--pages and --package are separate distribution modes")
 
-    viewer = build_viewer(args.output)
+    output = args.output or (DEFAULT_PAGES_OUTPUT if args.pages else DEFAULT_OUTPUT)
+    viewer = build_viewer(output, pages=args.pages)
     total_bytes = sum(path.stat().st_size for path in viewer.rglob("*") if path.is_file())
     print(f"viewer_path={viewer.resolve()}")
     print(f"viewer_uncompressed_bytes={total_bytes}")

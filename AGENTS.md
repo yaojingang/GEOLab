@@ -42,7 +42,10 @@ external mutations.
 3. Show the target repository and confirm public visibility before creating or changing it.
 4. Confirm before switching an existing Pages source to GitHub Actions.
 5. Run `python3 scripts/verify_distribution.py`.
-6. Use `.github/workflows/publish.yml`; it publishes `dist/viewer`, not the repository root.
+6. Use `.github/workflows/publish.yml`; it publishes `dist/pages`, not the repository root.
+   Build it with `python3 scripts/build_viewer.py --pages`. The Pages site includes the complete
+   domestic book HTML and PDFs under `04-whitepapers/`; the lightweight release ZIP continues
+   to exclude those assets and links to the online book catalog.
 7. After deployment, read the workflow conclusion and open the returned Pages URL.
 8. Report the public URL, workflow run, source commit, release tag when applicable, and retained
    license notices.
@@ -51,7 +54,7 @@ The canonical repository uses `https://yaojingang.github.io/GEOLab/`.
 
 ## Full repository mode
 
-The complete working tree is approximately 568 MiB and contains large research assets. State the
+The complete working tree is approximately 641 MiB and contains large research assets. State the
 expected size before cloning. Read the directory-level README for the selected research line.
 Python analysis for `03-datasets` requires Python 3.11 or newer and `uv`.
 

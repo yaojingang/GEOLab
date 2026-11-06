@@ -1,4 +1,4 @@
-# 白皮书
+# GEO 白皮书、红皮书与蓝皮书
 
 整理 GEO / AEO / AI Search 相关的行业白皮书、平台指南与方法评测报告。优先收录发布机构明确、来源可核查、研究范围与方法清楚的资料。
 
@@ -10,10 +10,24 @@
 
 ## 资料索引
 
-当前尚未收录白皮书。添加首份资料时，在下表补充条目；主题可使用上述分类。
+本次收录的三本书均由姚金刚、向阳乔木创作。以下是 2026 年 11 月 6 日导出版本，共 618 页。原始文档的首发日期未标注，导出日期用于区分本次文件版本。
 
-| 标题 | 发布机构 | 发布日期 | 主题 | 原始来源 | 本地文件或阅读笔记 |
-| --- | --- | --- | --- | --- | --- |
+[在线阅读与下载导航](https://yaojingang.github.io/GEOLab/04-whitepapers/)
+
+| 文档 | 主题 | 页数 | HTML | PDF | 原始来源 |
+| --- | --- | ---: | --- | --- | --- |
+| 国内 GEO 白皮书 | AI 搜索时代的品牌增长新范式 | 245 | [阅读](./domestic/geo-white.html) | [下载](./domestic/geo-white.pdf) | [飞书原文](https://yaojingang.feishu.cn/docx/Jv85dXAeZoKJ7exJi4Yc4Edrnhf) |
+| GEO 红皮书 | 伦理边界、作弊风险与治理手册 | 204 | [阅读](./domestic/geo-red.html) | [下载](./domestic/geo-red.pdf) | [飞书原文](https://yaojingang.feishu.cn/wiki/Otqtw0HFbiNeCMkjKalcFkoJnpf) |
+| GEO 蓝皮书 | 企业与 GEO 服务商合作评估指南 | 169 | [阅读](./domestic/geo-blue.html) | [下载](./domestic/geo-blue.pdf) | [飞书原文](https://yaojingang.feishu.cn/wiki/MwkiwPDqCiHGwVk2uOtcNUlrnnf) |
+
+## 文件与版本
+
+- PDF 保留用户提供文件的原始字节。
+- HTML 保留正文、图片与署名，首页入口指向本目录，文档切换保留三本书；白皮书中的 11 个论文附件链接指向原始论文来源。
+- [sources.json](./sources.json) 记录来源、页数、文件大小、原文件与发布文件的 SHA-256。[checksums.sha256](./checksums.sha256) 可用于校验六个发布文件。
+- 在线 Pages 站点提供完整 HTML 和 PDF。轻量离线阅读包保留在线导航入口。
+- 三份 HTML 保留原有百度统计脚本，站点 ID 为 `36ea9c696138754f4714dd6d19b601f5`。阅读时可能请求 `hm.baidu.com`。
+- 请保留作者署名。引用的论文、截图、商标及第三方图片保留各自权利，仓库许可的适用范围见 [LICENSE](../LICENSE)。
 
 ## 添加资料
 

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GEO 白皮书、红皮书与蓝皮书 · GEOLab</title>
+  <meta name="description" content="姚金刚、向阳乔木的国内 GEO 白皮书、红皮书与蓝皮书，提供完整 HTML 在线阅读和 PDF 下载。">
+  <style>
+    :root { --paper: #f6f1e7; --sheet: #fffdfa; --ink: #17202a; --muted: #5c6670; --accent: #1b365d; --rule: #d8d0c1; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.7 "Iowan Old Style", "Palatino Linotype", Georgia, "Noto Serif CJK SC", "Source Han Serif SC", serif; }
+    main { max-width: 1040px; margin: auto; padding: 36px 24px 48px; }
+    a { color: var(--accent); text-underline-offset: .2em; }
+    a:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+    nav { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font: 600 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    header { padding: 44px 0 30px; }
+    h1 { color: var(--accent); margin: 0 0 14px; font-size: clamp(30px, 5vw, 46px); line-height: 1.3; }
+    header p { color: var(--muted); margin: 8px 0; }
+    .books { background: var(--sheet); border-top: 1px solid var(--rule); }
+    article { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: center; padding: 30px 24px; border-bottom: 1px solid var(--rule); }
+    h2 { margin: 0 0 5px; font-size: 25px; color: var(--accent); }
+    .subtitle { margin: 0 0 9px; }
+    .meta { margin: 0; color: var(--muted); font: 14px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .button { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 10px 17px; border: 1px solid var(--accent); color: var(--accent); text-decoration: none; font: 600 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; touch-action: manipulation; }
+    .primary { background: var(--accent); color: #fff; }
+    .button:active { transform: scale(.98); }
+    footer { margin-top: 26px; color: var(--muted); font-size: 14px; }
+    footer p { margin: 8px 0; }
+    @media (hover: hover) { .button:hover { background: #e5edf6; color: var(--accent); } }
+    @media (max-width: 640px) {
+      main { padding: 22px 16px 32px; }
+      header { padding-top: 32px; }
+      article { grid-template-columns: 1fr; gap: 20px; padding: 24px 18px; }
+      .actions a { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="资料导航">
+      <a href="../index.html">GEOLab 研究资料库</a>
+      <a href="https://github.com/yaojingang/GEOLab/tree/main/04-whitepapers">仓库文件</a>
+    </nav>
+    <header>
+      <h1>GEO 白皮书、红皮书与蓝皮书</h1>
+      <p>作者：姚金刚、向阳乔木</p>
+      <p>2026 年 11 月 6 日导出版本 · 三本共 618 页</p>
+    </header>
+    <section class="books" aria-label="三本 GEO 文档">
+      <article>
+        <div>
+          <h2>国内 GEO 白皮书</h2>
+          <p class="subtitle">AI 搜索时代的品牌增长新范式</p>
+          <p class="meta">245 页 · PDF 8.2 MB</p>
+        </div>
+        <div class="actions">
+          <a class="button primary" href="domestic/geo-white.html" aria-label="在线阅读国内 GEO 白皮书">在线阅读</a>
+          <a class="button" href="domestic/geo-white.pdf" download aria-label="下载国内 GEO 白皮书 PDF">下载 PDF</a>
+        </div>
+      </article>
+      <article>
+        <div>
+          <h2>GEO 红皮书</h2>
+          <p class="subtitle">生成式引擎优化的伦理边界、作弊风险与治理手册</p>
+          <p class="meta">204 页 · PDF 7.5 MB</p>
+        </div>
+        <div class="actions">
+          <a class="button primary" href="domestic/geo-red.html" aria-label="在线阅读 GEO 红皮书">在线阅读</a>
+          <a class="button" href="domestic/geo-red.pdf" download aria-label="下载 GEO 红皮书 PDF">下载 PDF</a>
+        </div>
+      </article>
+      <article>
+        <div>
+          <h2>GEO 蓝皮书</h2>
+          <p class="subtitle">企业与 GEO 服务商合作评估指南</p>
+          <p class="meta">169 页 · PDF 12.5 MB</p>
+        </div>
+        <div class="actions">
+          <a class="button primary" href="domestic/geo-blue.html" aria-label="在线阅读 GEO 蓝皮书">在线阅读</a>
+          <a class="button" href="domestic/geo-blue.pdf" download aria-label="下载 GEO 蓝皮书 PDF">下载 PDF</a>
+        </div>
+      </article>
+    </section>
+    <footer>
+      <p>文档持续更新，当前页面提供本次导出的阅读与下载版本。</p>
+      <p><a href="https://github.com/yaojingang/GEOLab/blob/main/04-whitepapers/README.md">来源与版本说明</a> · <a href="checksums.sha256">SHA-256 校验值</a></p>
+      <p>请保留原作者署名及第三方材料的权利说明。<a href="../LICENSE">查看许可范围</a></p>
+    </footer>
+  </main>
+</body>
+</html>

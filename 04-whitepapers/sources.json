@@ -1,0 +1,85 @@
+{
+  "snapshot_date": "2026-11-06",
+  "authors": [
+    "姚金刚",
+    "向阳乔木"
+  ],
+  "original_publication_date": null,
+  "adaptations": [
+    "HTML 首页入口指向本目录，文档切换保留本次发布的三本书。",
+    "白皮书中的 11 个论文附件链接指向原始论文来源。",
+    "PDF 保留用户提供文件的原始字节；正文、署名与原有统计脚本保持原样。"
+  ],
+  "paper_attachment_sources": {
+    "GEO- Generative Engine Optimization.pdf": "https://arxiv.org/pdf/2311.09735v3",
+    "Why Trust in AI May Be Inevitable.pdf": "https://arxiv.org/pdf/2502.20701",
+    "Search-o1- Agentic Search-Enhanced Large Reasoning Models.pdf": "https://arxiv.org/pdf/2501.05366v1",
+    "ChatGPT vs. Google- A Comparative Study of Search Performance and User Experience.pdf": "https://arxiv.org/pdf/2307.01135",
+    "News Source Citing Patterns in AI Search Systems.pdf": "https://arxiv.org/pdf/2507.05301v1",
+    "Search S-ll Maers Informa-on Retrieval in the Era of Genera-ve AI.pdf": "https://arxiv.org/pdf/2311.18550",
+    "How does AI chat change search behaviors.pdf": "https://arxiv.org/pdf/2307.03826v1",
+    "AI Guided Accelerator For Search Experience.pdf": "https://ceur-ws.org/Vol-4123/paper_25.pdf",
+    "LLM-First Search- Self-Guided Exploration of the Solution Space.pdf": "https://arxiv.org/pdf/2506.05213v1",
+    "When Search Engine Services meet Large Language Models- Visions and Challenges.pdf": "https://arxiv.org/pdf/2407.00128v1",
+    "Human Trust in AI Search- A Large-Scale Experiment.pdf": "https://arxiv.org/pdf/2504.06435v1"
+  },
+  "books": [
+    {
+      "title": "国内GEO白皮书：AI搜索时代的品牌增长新范式",
+      "source_url": "https://yaojingang.feishu.cn/docx/Jv85dXAeZoKJ7exJi4Yc4Edrnhf",
+      "pdf_pages": 245,
+      "files": [
+        {
+          "path": "domestic/geo-white.html",
+          "bytes": 2512290,
+          "sha256": "75ae06833cf78460fb0f9d9a0998a7468140c5c4ad7fbc7f71a81f1e0311420c",
+          "source_sha256": "77ee96ed732a9f56a0a9e5a44f0be91de3a2e1836d413b9580ccc0bc63be6258"
+        },
+        {
+          "path": "domestic/geo-white.pdf",
+          "bytes": 8206760,
+          "sha256": "25c3c7cc3a757e07dbe808f8a8879f7cd83abfb76319fcb0db01b52ecd0fb538",
+          "source_sha256": "25c3c7cc3a757e07dbe808f8a8879f7cd83abfb76319fcb0db01b52ecd0fb538"
+        }
+      ]
+    },
+    {
+      "title": "GEO红皮书：生成式引擎优化的伦理边界、作弊风险与治理手册",
+      "source_url": "https://yaojingang.feishu.cn/wiki/Otqtw0HFbiNeCMkjKalcFkoJnpf",
+      "pdf_pages": 204,
+      "files": [
+        {
+          "path": "domestic/geo-red.html",
+          "bytes": 3255923,
+          "sha256": "0202002cd238e6b5ab2d73935bdbad2577f8df718fa62693df2efb32cc9d6d00",
+          "source_sha256": "36231792be08214e8675b3a7d0986121310cfd9b19f6b4efe221135a67da5c49"
+        },
+        {
+          "path": "domestic/geo-red.pdf",
+          "bytes": 7546142,
+          "sha256": "1ee6bae9ce5680e9364da6089cd4b25009684c8ce62bad268b794bb2cacfdfc8",
+          "source_sha256": "1ee6bae9ce5680e9364da6089cd4b25009684c8ce62bad268b794bb2cacfdfc8"
+        }
+      ]
+    },
+    {
+      "title": "GEO蓝皮书：企业与GEO服务商合作评估指南",
+      "source_url": "https://yaojingang.feishu.cn/wiki/MwkiwPDqCiHGwVk2uOtcNUlrnnf",
+      "pdf_pages": 169,
+      "files": [
+        {
+          "path": "domestic/geo-blue.html",
+          "bytes": 7478540,
+          "sha256": "be80a1610e01501838217631bbbe1a4d278fef206a579b3f0e019fc503ad1e1f",
+          "source_sha256": "bff2551ba4afc383089c6cea678dab6ac19a8e9712c75db15829b412ebd7e7a1"
+        },
+        {
+          "path": "domestic/geo-blue.pdf",
+          "bytes": 12476244,
+          "sha256": "265d3ac396d7d2c1cf5d16866d847d6b97d3aed9ffdad5adad76c12368759731",
+          "source_sha256": "265d3ac396d7d2c1cf5d16866d847d6b97d3aed9ffdad5adad76c12368759731"
+        }
+      ]
+    }
+  ]
+}

@@ -17,10 +17,24 @@ GEOLab 是一个 GEO / AEO / AI Search 研究资料库，用于持续整理相�
 | [`01-experiments/`](./01-experiments/) | 跨平台实验、分析脚本与研究报告 |
 | [`02-papers/`](./02-papers/) | GEO / AEO / AI Search 论文与主题导航 |
 | [`03-datasets/`](./03-datasets/) | CN-GEO 引用数据、数据说明与可视化分析 |
-| [`04-whitepapers/`](./04-whitepapers/) | 行业白皮书、平台指南与方法评测报告 |
+| [`04-whitepapers/`](./04-whitepapers/) | 国内 GEO 白皮书、红皮书与蓝皮书的 HTML 和 PDF，行业指南与方法报告 |
 | [`05-articles/`](./05-articles/) | 有数据、方法或来源支持的高质量研究文章 |
 
-白皮书和研究文章目录已建立，等待首批资料。添加资料时，按对应目录的 README 补充来源、日期、主题与文件链接。
+国内 GEO 白皮书、红皮书与蓝皮书已收录，提供完整 HTML 与 PDF。研究文章目录等待首批资料。添加资料时，按对应目录的 README 补充来源、日期、主题与文件链接。
+
+## 国内 GEO 白皮书、红皮书与蓝皮书
+
+作者：姚金刚、向阳乔木。本次收录 2026 年 11 月 6 日导出的三个版本，共 618 页。
+
+| 文档 | 主题 | 页数 | 在线阅读 | PDF |
+| --- | --- | ---: | --- | --- |
+| 国内 GEO 白皮书 | AI 搜索时代的品牌增长新范式 | 245 | [阅读 HTML](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-white.html) | [下载 PDF](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-white.pdf) |
+| GEO 红皮书 | 生成式引擎优化的伦理边界、作弊风险与治理手册 | 204 | [阅读 HTML](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-red.html) | [下载 PDF](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-red.pdf) |
+| GEO 蓝皮书 | 企业与 GEO 服务商合作评估指南 | 169 | [阅读 HTML](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-blue.html) | [下载 PDF](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-blue.pdf) |
+
+[打开三本书导航](https://yaojingang.github.io/GEOLab/04-whitepapers/) · [来源、版本与文件校验](./04-whitepapers/README.md)
+
+在线站点提供完整阅读和下载文件；轻量离线阅读包保留在线入口。PDF 保持原文件，HTML 适配目录导航和论文来源链接。
 
 ## 在 AI 客户端一句话安装
 
@@ -41,7 +55,7 @@ AI 客户端会下载版本固定的 `v0.1.0` Viewer、验证 SHA-256、解压�
 | --- | --- |
 | “安装并打开 GEOLab” | 安装轻量 Viewer，并在默认浏览器打开 |
 | “把 GEOLab Viewer 部署到我的 GitHub Pages” | 保留许可与署名文件，确认目标仓库与公开可见性后运行 Pages 发布流程 |
-| “下载完整数据并准备分析环境” | 提示约 568 MiB 体积，再克隆仓库并配置 Python 3.11 与 `uv` |
+| “下载完整数据并准备分析环境” | 提示约 641 MiB 体积，再克隆仓库并配置 Python 3.11 与 `uv` |
 
 网页聊天客户端通常没有本地文件权限，可以直接使用
 [在线首页](https://yaojingang.github.io/GEOLab/)。本地 AI 客户端应遵循
@@ -91,7 +105,7 @@ AI 搜索中的可见性包含多个环节。一条内容可能进入检索候�
 | 了解 GEO 研究结论 | [CN-GEO 在线分析报告](https://yaojingang.github.io/GEOLab/03-datasets/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [跨平台实验摘要](./01-experiments/QUICK_REPORT.md) |
 | 使用数据或继续分析 | [CN-GEO 数据集说明](./03-datasets/) · [清洗后数据使用说明](./03-datasets/data/清洗后数据使用说明.md) |
 | 阅读论文或引用研究 | [两篇实证论文](#两条实证研究主线) · [122 项论文导航](https://yaojingang.github.io/GEOLab/02-papers/) |
-| 查找行业白皮书与平台指南 | [白皮书目录与收录说明](./04-whitepapers/) |
+| 阅读国内 GEO 白皮书、红皮书与蓝皮书 | [在线阅读与 PDF 下载](https://yaojingang.github.io/GEOLab/04-whitepapers/) · [来源与版本](./04-whitepapers/) |
 | 阅读研究文章与实务分析 | [研究文章目录与收录说明](./05-articles/) |
 | 复查实验与处理方法 | [跨平台实验管线](./01-experiments/03-pipeline/) · [CN-GEO 构建脚本](./03-datasets/scripts/) |
 | 测试 GEO 理解程度 | [在线测试](https://ai.laoyao.cn/geo/) · [系统源码与本地运行](./geo-assessment/) |

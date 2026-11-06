@@ -17,10 +17,24 @@ Simplified Chinese is the default documentation language. This page provides an 
 | [`01-experiments/`](./01-experiments/) | Cross-platform experiments, analysis scripts, and research reports |
 | [`02-papers/`](./02-papers/) | GEO / AEO / AI Search papers and a topic-based catalog |
 | [`03-datasets/`](./03-datasets/) | CN-GEO citation data, documentation, and visual analysis |
-| [`04-whitepapers/`](./04-whitepapers/) | Industry white papers, platform guides, and measurement reports |
+| [`04-whitepapers/`](./04-whitepapers/) | Domestic GEO White, Red, and Blue Books in HTML and PDF, industry guides, and measurement reports |
 | [`05-articles/`](./05-articles/) | Research articles supported by data, methods, or traceable sources |
 
-The white paper and research article directories are ready for their first entries. Follow each directory's README when adding materials, including the source, date, topic, and file link.
+The domestic GEO White, Red, and Blue Books are available as complete HTML and PDF files. The research article directory is ready for its first entries. Follow each directory's README when adding materials, including the source, date, topic, and file link.
+
+## Domestic GEO White, Red, and Blue Books
+
+Written by Yao Jingang and Xiangyang Qiaomu. This collection contains the November 6, 2026 exports, totaling 618 pages. All three books are in Chinese.
+
+| Book | Topic | Pages | Read online | PDF |
+| --- | --- | ---: | --- | --- |
+| Domestic GEO White Book | Brand growth in the AI search era | 245 | [Read HTML](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-white.html) | [Download PDF](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-white.pdf) |
+| GEO Red Book | Ethical boundaries, manipulation risks, and governance | 204 | [Read HTML](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-red.html) | [Download PDF](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-red.pdf) |
+| GEO Blue Book | Evaluating cooperation between enterprises and GEO service providers | 169 | [Read HTML](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-blue.html) | [Download PDF](https://yaojingang.github.io/GEOLab/04-whitepapers/domestic/geo-blue.pdf) |
+
+[Open the book catalog](https://yaojingang.github.io/GEOLab/04-whitepapers/) · [Sources, versions, and checksums](./04-whitepapers/README.md)
+
+The online site serves the complete books and downloads; the lightweight offline Viewer links to the online catalog. PDFs retain their original bytes. HTML navigation and paper-source links are adapted for this collection.
 
 ## Install with an AI client
 
@@ -37,7 +51,7 @@ The current `release_status` in `deploy/manifest.json` is `released`. The instal
 | --- | --- |
 | "Install and open GEOLab" | Install the lightweight Viewer and open it in the default browser |
 | "Deploy the GEOLab Viewer to my GitHub Pages" | Preserve license and attribution files, confirm the target repository and public visibility, then run the Pages publishing workflow |
-| "Download the complete data and prepare an analysis environment" | Explain the approximate 568 MiB size, clone the repository, and configure Python 3.11 and `uv` |
+| "Download the complete data and prepare an analysis environment" | Explain the approximate 641 MiB size, clone the repository, and configure Python 3.11 and `uv` |
 
 Web-based chat clients usually cannot manage local files. Use the [online homepage](https://yaojingang.github.io/GEOLab/) for browsing. Local AI clients should follow the installation contract in [`AGENTS.md`](./AGENTS.md) and [`deploy/manifest.json`](./deploy/manifest.json).
 
@@ -84,7 +98,7 @@ Visibility in AI search involves several stages. Content can enter the retrieval
 | Understand the research findings | [CN-GEO online analysis](https://yaojingang.github.io/GEOLab/03-datasets/reports/final/CN-GEO_%E5%A4%9A%E7%BB%B4%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html) · [Cross-platform experimental summary](./01-experiments/QUICK_REPORT.md) |
 | Use the data or extend the analysis | [CN-GEO dataset overview](./03-datasets/) · [Guide to the cleaned data](./03-datasets/data/清洗后数据使用说明.md) |
 | Read papers or cite the research | [Two empirical research tracks](#two-empirical-research-tracks) · [122-entry catalog](https://yaojingang.github.io/GEOLab/02-papers/) |
-| Find industry white papers and platform guides | [White paper directory and collection guide](./04-whitepapers/) |
+| Read the domestic GEO White, Red, and Blue Books | [Online reading and PDF downloads](https://yaojingang.github.io/GEOLab/04-whitepapers/) · [Sources and versions](./04-whitepapers/) |
 | Read research articles and practical analyses | [Research article directory and collection guide](./05-articles/) |
 | Review experiments and processing methods | [Cross-platform pipeline](./01-experiments/03-pipeline/) · [CN-GEO build scripts](./03-datasets/scripts/) |
 | Assess your understanding of GEO | [Online assessment](https://ai.laoyao.cn/geo/) · [Source code and local setup](./geo-assessment/) |
